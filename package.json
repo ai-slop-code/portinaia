@@ -1,0 +1,29 @@
+{
+  "name": "portinaia",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "workspaces": [
+    "web"
+  ],
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "build": "npm run build --workspace web",
+    "format": "prettier --write --ignore-unknown \"api/**/*.yaml\" \"web/**/*.{ts,tsx,json,html,css}\" \"*.{json,yaml,yml,md}\" \"spec/**/*.md\"",
+    "format:check": "prettier --check --ignore-unknown \"api/**/*.yaml\" \"web/**/*.{ts,tsx,json,html,css}\" \"*.{json,yaml,yml,md}\" \"spec/**/*.md\"",
+    "lint": "eslint web/src web/tests web/vite.config.ts web/playwright.config.ts",
+    "test": "npm run test --workspace web",
+    "test:e2e": "playwright test --config web/playwright.config.ts",
+    "typecheck": "npm run typecheck --workspace web"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.5",
+    "@playwright/test": "1.62.1",
+    "eslint": "9.39.5",
+    "globals": "17.9.0",
+    "prettier": "3.9.6",
+    "typescript-eslint": "8.65.0"
+  }
+}

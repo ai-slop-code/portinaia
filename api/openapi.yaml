@@ -1,0 +1,5402 @@
+openapi: 3.0.3
+info:
+  title: Portinaia API
+  version: 1.0.0
+  description: |
+    Versioned API for Portinaia inventory, discovery, history, DNS control,
+    authentication, audit, and operations. UUID identifiers are canonical
+    lower-case UUIDv7 strings and timestamps are RFC 3339 UTC values.
+servers:
+  - url: /api/v1
+    description: Product API version 1
+security:
+  - sessionCookie: []
+  - personalAccessToken: []
+tags:
+  - { name: Authentication, description: Administrator browser sessions. }
+  - {
+      name: Personal access tokens,
+      description: Named scoped automation credentials.,
+    }
+  - { name: Providers, description: Commercial supplier inventory. }
+  - { name: Locations, description: Physical sites and provider regions. }
+  - { name: Computes, description: "Physical hosts, VPSs, and VMs." }
+  - {
+      name: Containers,
+      description: Podman workload inventory and observations.,
+    }
+  - {
+      name: IP assignments,
+      description: Manual and discovered address assignments.,
+    }
+  - { name: Domains, description: Registered domain inventory. }
+  - { name: Costs, description: Compute and domain costs. }
+  - { name: Tags, description: Normalized inventory tags. }
+  - { name: Inventory, description: Cross-resource hierarchy reads. }
+  - { name: Dashboard, description: Bounded dashboard aggregates. }
+  - { name: Agents, description: Discovery agent administration. }
+  - {
+      name: Agent protocol,
+      description: Credential-isolated discovery client protocol.,
+    }
+  - {
+      name: History,
+      description: Retained discovery reports and structured differences.,
+    }
+  - { name: DNS zones, description: Cloudflare zone discovery and selection. }
+  - { name: DNS imports, description: Selective Cloudflare record adoption. }
+  - {
+      name: DNS names,
+      description: Desired DNS-name aggregates and projection status.,
+    }
+  - { name: DNS drafts, description: Previewed DNS change workflow. }
+  - { name: Audit, description: Immutable mutation audit history. }
+  - {
+      name: Health,
+      description: Unauthenticated liveness and readiness checks.,
+    }
+paths:
+  /auth/login:
+    post:
+      tags: [Authentication]
+      operationId: login
+      summary: Create an administrator session
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LoginRequest" }
+      responses:
+        "200": { $ref: "#/components/responses/LoginResponse" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+  /auth/logout:
+    post:
+      tags: [Authentication]
+      operationId: logout
+      summary: Revoke the current browser session
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/CsrfToken"
+      responses:
+        "204": { $ref: "#/components/responses/LogoutNoContent" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /auth/session:
+    get:
+      tags: [Authentication]
+      operationId: getSession
+      summary: Read the current administrator session
+      security:
+        - sessionCookie: []
+      responses:
+        "200": { $ref: "#/components/responses/SessionResponse" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /personal-access-tokens:
+    get:
+      tags: [Personal access tokens]
+      operationId: listPersonalAccessTokens
+      x-required-scopes: [admin]
+      summary: List personal access tokens
+      parameters:
+        - $ref: "#/components/parameters/PageAfter"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: Personal access token page
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PersonalAccessTokenPage" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    post:
+      tags: [Personal access tokens]
+      operationId: createPersonalAccessToken
+      x-required-scopes: [admin]
+      summary: Create a personal access token
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PersonalAccessTokenCreate" }
+      responses:
+        "201":
+          { $ref: "#/components/responses/PersonalAccessTokenSecretResponse" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+  /personal-access-tokens/{token_id}:
+    parameters:
+      - $ref: "#/components/parameters/TokenId"
+    delete:
+      tags: [Personal access tokens]
+      operationId: revokePersonalAccessToken
+      x-required-scopes: [admin]
+      summary: Revoke a personal access token
+      parameters:
+        - $ref: "#/components/parameters/CsrfToken"
+      responses:
+        "204": { $ref: "#/components/responses/NoContentNoStore" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /providers:
+    get:
+      tags: [Providers]
+      operationId: listProviders
+      x-required-scopes: ["inventory:read"]
+      summary: List and search providers
+      parameters:
+        - $ref: "#/components/parameters/PageAfter"
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/Search"
+        - $ref: "#/components/parameters/Archived"
+      responses:
+        "200": { $ref: "#/components/responses/ProviderPageResponse" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    post:
+      tags: [Providers]
+      operationId: createProvider
+      x-required-scopes: ["inventory:write"]
+      summary: Create a provider
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody: { $ref: "#/components/requestBodies/ProviderWrite" }
+      responses:
+        "201": { $ref: "#/components/responses/ProviderResponse" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+  /providers/{provider_id}:
+    parameters: [{ $ref: "#/components/parameters/ProviderId" }]
+    get:
+      tags: [Providers]
+      operationId: getProvider
+      x-required-scopes: ["inventory:read"]
+      summary: Read a provider
+      responses:
+        "200": { $ref: "#/components/responses/ProviderResponse" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    put:
+      tags: [Providers]
+      operationId: updateProvider
+      x-required-scopes: ["inventory:write"]
+      summary: Replace writable provider fields
+      parameters:
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody: { $ref: "#/components/requestBodies/ProviderWrite" }
+      responses:
+        "200": { $ref: "#/components/responses/ProviderResponse" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "412": { $ref: "#/components/responses/PreconditionFailed" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+  /providers/{provider_id}/archive:
+    parameters: [{ $ref: "#/components/parameters/ProviderId" }]
+    post:
+      tags: [Providers]
+      operationId: archiveProvider
+      x-required-scopes: ["inventory:write"]
+      summary: Archive a provider
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      responses:
+        {
+          "200": { $ref: "#/components/responses/ProviderResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+        }
+  /providers/{provider_id}/restore:
+    parameters: [{ $ref: "#/components/parameters/ProviderId" }]
+    post:
+      tags: [Providers]
+      operationId: restoreProvider
+      x-required-scopes: ["inventory:write"]
+      summary: Restore an archived provider
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      responses:
+        {
+          "200": { $ref: "#/components/responses/ProviderResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+        }
+  /providers/{provider_id}/purge:
+    parameters: [{ $ref: "#/components/parameters/ProviderId" }]
+    delete:
+      tags: [Providers]
+      operationId: purgeProvider
+      x-required-scopes: ["inventory:write"]
+      summary: Permanently purge an archived provider
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      responses:
+        {
+          "204": { $ref: "#/components/responses/NoContent" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+        }
+
+  /locations:
+    get:
+      tags: [Locations]
+      operationId: listLocations
+      x-required-scopes: ["inventory:read"]
+      summary: List and search locations
+      parameters:
+        [
+          { $ref: "#/components/parameters/PageAfter" },
+          { $ref: "#/components/parameters/PageSize" },
+          { $ref: "#/components/parameters/Search" },
+          { $ref: "#/components/parameters/Archived" },
+          { $ref: "#/components/parameters/ProviderFilter" },
+        ]
+      responses:
+        {
+          "200": { $ref: "#/components/responses/LocationPageResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+        }
+    post:
+      tags: [Locations]
+      operationId: createLocation
+      x-required-scopes: ["inventory:write"]
+      summary: Create a location
+      parameters:
+        [
+          { $ref: "#/components/parameters/IdempotencyKey" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      requestBody: { $ref: "#/components/requestBodies/LocationWrite" }
+      responses:
+        {
+          "201": { $ref: "#/components/responses/LocationResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "422": { $ref: "#/components/responses/ValidationFailed" },
+        }
+  /locations/{location_id}:
+    parameters: [{ $ref: "#/components/parameters/LocationId" }]
+    get:
+      tags: [Locations]
+      operationId: getLocation
+      x-required-scopes: ["inventory:read"]
+      summary: Read a location
+      responses:
+        {
+          "200": { $ref: "#/components/responses/LocationResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+        }
+    put:
+      tags: [Locations]
+      operationId: updateLocation
+      x-required-scopes: ["inventory:write"]
+      summary: Replace writable location fields
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      requestBody: { $ref: "#/components/requestBodies/LocationWrite" }
+      responses:
+        {
+          "200": { $ref: "#/components/responses/LocationResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+          "422": { $ref: "#/components/responses/ValidationFailed" },
+        }
+  /locations/{location_id}/archive:
+    parameters: [{ $ref: "#/components/parameters/LocationId" }]
+    post:
+      tags: [Locations]
+      operationId: archiveLocation
+      x-required-scopes: ["inventory:write"]
+      summary: Archive a location
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      responses:
+        {
+          "200": { $ref: "#/components/responses/LocationResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+        }
+  /locations/{location_id}/restore:
+    parameters: [{ $ref: "#/components/parameters/LocationId" }]
+    post:
+      tags: [Locations]
+      operationId: restoreLocation
+      x-required-scopes: ["inventory:write"]
+      summary: Restore an archived location
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      responses:
+        {
+          "200": { $ref: "#/components/responses/LocationResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+        }
+  /locations/{location_id}/purge:
+    parameters: [{ $ref: "#/components/parameters/LocationId" }]
+    delete:
+      tags: [Locations]
+      operationId: purgeLocation
+      x-required-scopes: ["inventory:write"]
+      summary: Permanently purge an archived location
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      responses:
+        {
+          "204": { $ref: "#/components/responses/NoContent" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+        }
+
+  /computes:
+    get:
+      tags: [Computes]
+      operationId: listComputes
+      x-required-scopes: ["inventory:read"]
+      summary: List and search computes
+      parameters:
+        [
+          { $ref: "#/components/parameters/PageAfter" },
+          { $ref: "#/components/parameters/PageSize" },
+          { $ref: "#/components/parameters/Search" },
+          { $ref: "#/components/parameters/Archived" },
+          { $ref: "#/components/parameters/ProviderFilter" },
+          { $ref: "#/components/parameters/LocationFilter" },
+          { $ref: "#/components/parameters/FreshnessFilter" },
+        ]
+      responses:
+        {
+          "200": { $ref: "#/components/responses/ComputePageResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+        }
+    post:
+      tags: [Computes]
+      operationId: createCompute
+      x-required-scopes: ["inventory:write"]
+      summary: Create a compute
+      parameters:
+        [
+          { $ref: "#/components/parameters/IdempotencyKey" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      requestBody: { $ref: "#/components/requestBodies/ComputeWrite" }
+      responses:
+        {
+          "201": { $ref: "#/components/responses/ComputeResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "422": { $ref: "#/components/responses/ValidationFailed" },
+        }
+  /computes/{compute_id}:
+    parameters: [{ $ref: "#/components/parameters/ComputeId" }]
+    get:
+      tags: [Computes]
+      operationId: getCompute
+      x-required-scopes: ["inventory:read"]
+      summary: Read a compute and current observation
+      responses:
+        {
+          "200": { $ref: "#/components/responses/ComputeResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+        }
+    put:
+      tags: [Computes]
+      operationId: updateCompute
+      x-required-scopes: ["inventory:write"]
+      summary: Replace manually owned compute fields
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      requestBody: { $ref: "#/components/requestBodies/ComputeWrite" }
+      responses:
+        {
+          "200": { $ref: "#/components/responses/ComputeResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+          "422": { $ref: "#/components/responses/ValidationFailed" },
+        }
+  /computes/{compute_id}/archive:
+    parameters: [{ $ref: "#/components/parameters/ComputeId" }]
+    post:
+      tags: [Computes]
+      operationId: archiveCompute
+      x-required-scopes: ["inventory:write"]
+      summary: Archive a compute
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      responses:
+        {
+          "200": { $ref: "#/components/responses/ComputeResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+        }
+  /computes/{compute_id}/restore:
+    parameters: [{ $ref: "#/components/parameters/ComputeId" }]
+    post:
+      tags: [Computes]
+      operationId: restoreCompute
+      x-required-scopes: ["inventory:write"]
+      summary: Restore an archived compute
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      responses:
+        {
+          "200": { $ref: "#/components/responses/ComputeResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+        }
+  /computes/{compute_id}/purge:
+    parameters: [{ $ref: "#/components/parameters/ComputeId" }]
+    delete:
+      tags: [Computes]
+      operationId: purgeCompute
+      x-required-scopes: ["inventory:write"]
+      summary: Permanently purge an archived compute
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      responses:
+        {
+          "204": { $ref: "#/components/responses/NoContent" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+        }
+
+  /containers:
+    get:
+      tags: [Containers]
+      operationId: listContainers
+      x-required-scopes: ["inventory:read"]
+      summary: List and search containers
+      parameters:
+        [
+          { $ref: "#/components/parameters/PageAfter" },
+          { $ref: "#/components/parameters/PageSize" },
+          { $ref: "#/components/parameters/Search" },
+          { $ref: "#/components/parameters/Archived" },
+          { $ref: "#/components/parameters/ComputeFilter" },
+          { $ref: "#/components/parameters/StaleFilter" },
+        ]
+      responses:
+        {
+          "200": { $ref: "#/components/responses/ContainerPageResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+        }
+  /containers/{container_id}:
+    parameters: [{ $ref: "#/components/parameters/ContainerId" }]
+    get:
+      tags: [Containers]
+      operationId: getContainer
+      x-required-scopes: ["inventory:read"]
+      summary: Read a container and current observation
+      responses:
+        {
+          "200": { $ref: "#/components/responses/ContainerResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+        }
+    put:
+      tags: [Containers]
+      operationId: updateContainer
+      x-required-scopes: ["inventory:write"]
+      summary: Replace manually owned container fields
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      requestBody: { $ref: "#/components/requestBodies/ContainerWrite" }
+      responses:
+        {
+          "200": { $ref: "#/components/responses/ContainerResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+          "422": { $ref: "#/components/responses/ValidationFailed" },
+        }
+  /containers/{container_id}/archive:
+    parameters: [{ $ref: "#/components/parameters/ContainerId" }]
+    post:
+      tags: [Containers]
+      operationId: archiveContainer
+      x-required-scopes: ["inventory:write"]
+      summary: Archive a container
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      responses:
+        {
+          "200": { $ref: "#/components/responses/ContainerResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+        }
+  /containers/{container_id}/restore:
+    parameters: [{ $ref: "#/components/parameters/ContainerId" }]
+    post:
+      tags: [Containers]
+      operationId: restoreContainer
+      x-required-scopes: ["inventory:write"]
+      summary: Restore an archived container
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      responses:
+        {
+          "200": { $ref: "#/components/responses/ContainerResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+        }
+  /containers/{container_id}/purge:
+    parameters: [{ $ref: "#/components/parameters/ContainerId" }]
+    delete:
+      tags: [Containers]
+      operationId: purgeContainer
+      x-required-scopes: ["inventory:write"]
+      summary: Permanently purge an archived container
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      responses:
+        {
+          "204": { $ref: "#/components/responses/NoContent" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+        }
+
+  /ip-assignments:
+    get:
+      tags: [IP assignments]
+      operationId: listIpAssignments
+      x-required-scopes: ["inventory:read"]
+      summary: List and search IP assignments
+      parameters:
+        [
+          { $ref: "#/components/parameters/PageAfter" },
+          { $ref: "#/components/parameters/PageSize" },
+          { $ref: "#/components/parameters/Search" },
+          { $ref: "#/components/parameters/Archived" },
+          { $ref: "#/components/parameters/ComputeFilter" },
+          { $ref: "#/components/parameters/ContainerFilter" },
+          { $ref: "#/components/parameters/SourceFilter" },
+          { $ref: "#/components/parameters/StaleFilter" },
+        ]
+      responses:
+        {
+          "200": { $ref: "#/components/responses/IpAssignmentPageResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+        }
+    post:
+      tags: [IP assignments]
+      operationId: createIpAssignment
+      x-required-scopes: ["inventory:write"]
+      summary: Create a manual IP assignment
+      parameters:
+        [
+          { $ref: "#/components/parameters/IdempotencyKey" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      requestBody: { $ref: "#/components/requestBodies/IpAssignmentWrite" }
+      responses:
+        {
+          "201": { $ref: "#/components/responses/IpAssignmentResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "422": { $ref: "#/components/responses/ValidationFailed" },
+        }
+  /ip-assignments/{ip_assignment_id}:
+    parameters: [{ $ref: "#/components/parameters/IpAssignmentId" }]
+    get:
+      tags: [IP assignments]
+      operationId: getIpAssignment
+      x-required-scopes: ["inventory:read"]
+      summary: Read an IP assignment
+      responses:
+        {
+          "200": { $ref: "#/components/responses/IpAssignmentResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+        }
+    put:
+      tags: [IP assignments]
+      operationId: updateIpAssignment
+      x-required-scopes: ["inventory:write"]
+      summary: Replace manually owned IP assignment fields
+      description: Discovery-owned IP assignments cannot be updated through the human API and return 409 Conflict.
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      requestBody: { $ref: "#/components/requestBodies/IpAssignmentWrite" }
+      responses:
+        {
+          "200": { $ref: "#/components/responses/IpAssignmentResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+          "422": { $ref: "#/components/responses/ValidationFailed" },
+        }
+  /ip-assignments/{ip_assignment_id}/archive:
+    parameters: [{ $ref: "#/components/parameters/IpAssignmentId" }]
+    post:
+      tags: [IP assignments]
+      operationId: archiveIpAssignment
+      x-required-scopes: ["inventory:write"]
+      summary: Archive an IP assignment
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      responses:
+        {
+          "200": { $ref: "#/components/responses/IpAssignmentResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+        }
+  /ip-assignments/{ip_assignment_id}/restore:
+    parameters: [{ $ref: "#/components/parameters/IpAssignmentId" }]
+    post:
+      tags: [IP assignments]
+      operationId: restoreIpAssignment
+      x-required-scopes: ["inventory:write"]
+      summary: Restore an archived IP assignment
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      responses:
+        {
+          "200": { $ref: "#/components/responses/IpAssignmentResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+        }
+  /ip-assignments/{ip_assignment_id}/purge:
+    parameters: [{ $ref: "#/components/parameters/IpAssignmentId" }]
+    delete:
+      tags: [IP assignments]
+      operationId: purgeIpAssignment
+      x-required-scopes: ["inventory:write"]
+      summary: Permanently purge an archived IP assignment
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      responses:
+        {
+          "204": { $ref: "#/components/responses/NoContent" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+        }
+
+  /domains:
+    get:
+      tags: [Domains]
+      operationId: listDomains
+      x-required-scopes: ["inventory:read"]
+      summary: List and search domains
+      parameters:
+        [
+          { $ref: "#/components/parameters/PageAfter" },
+          { $ref: "#/components/parameters/PageSize" },
+          { $ref: "#/components/parameters/Search" },
+          { $ref: "#/components/parameters/Archived" },
+          { $ref: "#/components/parameters/RegistrarFilter" },
+        ]
+      responses:
+        {
+          "200": { $ref: "#/components/responses/DomainPageResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+        }
+    post:
+      tags: [Domains]
+      operationId: createDomain
+      x-required-scopes: ["inventory:write"]
+      summary: Create a domain
+      parameters:
+        [
+          { $ref: "#/components/parameters/IdempotencyKey" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      requestBody: { $ref: "#/components/requestBodies/DomainWrite" }
+      responses:
+        {
+          "201": { $ref: "#/components/responses/DomainResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "422": { $ref: "#/components/responses/ValidationFailed" },
+        }
+  /domains/{domain_id}:
+    parameters: [{ $ref: "#/components/parameters/DomainId" }]
+    get:
+      tags: [Domains]
+      operationId: getDomain
+      x-required-scopes: ["inventory:read"]
+      summary: Read a domain
+      responses:
+        {
+          "200": { $ref: "#/components/responses/DomainResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+        }
+    put:
+      tags: [Domains]
+      operationId: updateDomain
+      x-required-scopes: ["inventory:write"]
+      summary: Replace writable domain fields
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      requestBody: { $ref: "#/components/requestBodies/DomainWrite" }
+      responses:
+        {
+          "200": { $ref: "#/components/responses/DomainResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+          "422": { $ref: "#/components/responses/ValidationFailed" },
+        }
+  /domains/{domain_id}/archive:
+    parameters: [{ $ref: "#/components/parameters/DomainId" }]
+    post:
+      tags: [Domains]
+      operationId: archiveDomain
+      x-required-scopes: ["inventory:write"]
+      summary: Archive a domain
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      responses:
+        {
+          "200": { $ref: "#/components/responses/DomainResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+        }
+  /domains/{domain_id}/restore:
+    parameters: [{ $ref: "#/components/parameters/DomainId" }]
+    post:
+      tags: [Domains]
+      operationId: restoreDomain
+      x-required-scopes: ["inventory:write"]
+      summary: Restore an archived domain
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      responses:
+        {
+          "200": { $ref: "#/components/responses/DomainResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+        }
+  /domains/{domain_id}/purge:
+    parameters: [{ $ref: "#/components/parameters/DomainId" }]
+    delete:
+      tags: [Domains]
+      operationId: purgeDomain
+      x-required-scopes: ["inventory:write"]
+      summary: Permanently purge an archived domain
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      responses:
+        {
+          "204": { $ref: "#/components/responses/NoContent" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+        }
+
+  /costs:
+    get:
+      tags: [Costs]
+      operationId: listCosts
+      x-required-scopes: ["inventory:read"]
+      summary: List and search costs
+      parameters:
+        [
+          { $ref: "#/components/parameters/PageAfter" },
+          { $ref: "#/components/parameters/PageSize" },
+          { $ref: "#/components/parameters/Search" },
+          { $ref: "#/components/parameters/Archived" },
+          { $ref: "#/components/parameters/ComputeFilter" },
+          { $ref: "#/components/parameters/DomainFilter" },
+          { $ref: "#/components/parameters/CurrencyFilter" },
+        ]
+      responses:
+        {
+          "200": { $ref: "#/components/responses/CostPageResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+        }
+    post:
+      tags: [Costs]
+      operationId: createCost
+      x-required-scopes: ["inventory:write"]
+      summary: Create a cost
+      parameters:
+        [
+          { $ref: "#/components/parameters/IdempotencyKey" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      requestBody: { $ref: "#/components/requestBodies/CostWrite" }
+      responses:
+        {
+          "201": { $ref: "#/components/responses/CostResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "422": { $ref: "#/components/responses/ValidationFailed" },
+        }
+  /costs/{cost_id}:
+    parameters: [{ $ref: "#/components/parameters/CostId" }]
+    get:
+      tags: [Costs]
+      operationId: getCost
+      x-required-scopes: ["inventory:read"]
+      summary: Read a cost
+      responses:
+        {
+          "200": { $ref: "#/components/responses/CostResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+        }
+    put:
+      tags: [Costs]
+      operationId: updateCost
+      x-required-scopes: ["inventory:write"]
+      summary: Replace writable cost fields
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      requestBody: { $ref: "#/components/requestBodies/CostWrite" }
+      responses:
+        {
+          "200": { $ref: "#/components/responses/CostResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+          "422": { $ref: "#/components/responses/ValidationFailed" },
+        }
+  /costs/{cost_id}/archive:
+    parameters: [{ $ref: "#/components/parameters/CostId" }]
+    post:
+      tags: [Costs]
+      operationId: archiveCost
+      x-required-scopes: ["inventory:write"]
+      summary: Archive a cost
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      responses:
+        {
+          "200": { $ref: "#/components/responses/CostResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+        }
+  /costs/{cost_id}/restore:
+    parameters: [{ $ref: "#/components/parameters/CostId" }]
+    post:
+      tags: [Costs]
+      operationId: restoreCost
+      x-required-scopes: ["inventory:write"]
+      summary: Restore an archived cost
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      responses:
+        {
+          "200": { $ref: "#/components/responses/CostResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+        }
+  /costs/{cost_id}/purge:
+    parameters: [{ $ref: "#/components/parameters/CostId" }]
+    delete:
+      tags: [Costs]
+      operationId: purgeCost
+      x-required-scopes: ["inventory:write"]
+      summary: Permanently purge an archived cost
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      responses:
+        {
+          "204": { $ref: "#/components/responses/NoContent" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+        }
+
+  /tags:
+    get:
+      tags: [Tags]
+      operationId: listTags
+      x-required-scopes: ["inventory:read"]
+      summary: List and search tags
+      parameters:
+        [
+          { $ref: "#/components/parameters/PageAfter" },
+          { $ref: "#/components/parameters/PageSize" },
+          { $ref: "#/components/parameters/Search" },
+          { $ref: "#/components/parameters/Archived" },
+        ]
+      responses:
+        {
+          "200": { $ref: "#/components/responses/TagPageResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+        }
+    post:
+      tags: [Tags]
+      operationId: createTag
+      x-required-scopes: ["inventory:write"]
+      summary: Create a tag
+      parameters:
+        [
+          { $ref: "#/components/parameters/IdempotencyKey" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      requestBody: { $ref: "#/components/requestBodies/TagWrite" }
+      responses:
+        {
+          "201": { $ref: "#/components/responses/TagResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "422": { $ref: "#/components/responses/ValidationFailed" },
+        }
+  /tags/{tag_id}:
+    parameters: [{ $ref: "#/components/parameters/TagId" }]
+    get:
+      tags: [Tags]
+      operationId: getTag
+      x-required-scopes: ["inventory:read"]
+      summary: Read a tag
+      responses:
+        {
+          "200": { $ref: "#/components/responses/TagResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+        }
+    put:
+      tags: [Tags]
+      operationId: updateTag
+      x-required-scopes: ["inventory:write"]
+      summary: Replace writable tag fields
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      requestBody: { $ref: "#/components/requestBodies/TagWrite" }
+      responses:
+        {
+          "200": { $ref: "#/components/responses/TagResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+          "422": { $ref: "#/components/responses/ValidationFailed" },
+        }
+  /tags/{tag_id}/archive:
+    parameters: [{ $ref: "#/components/parameters/TagId" }]
+    post:
+      tags: [Tags]
+      operationId: archiveTag
+      x-required-scopes: ["inventory:write"]
+      summary: Archive a tag
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      responses:
+        {
+          "200": { $ref: "#/components/responses/TagResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+        }
+  /tags/{tag_id}/restore:
+    parameters: [{ $ref: "#/components/parameters/TagId" }]
+    post:
+      tags: [Tags]
+      operationId: restoreTag
+      x-required-scopes: ["inventory:write"]
+      summary: Restore an archived tag
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      responses:
+        {
+          "200": { $ref: "#/components/responses/TagResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+        }
+  /tags/{tag_id}/purge:
+    parameters: [{ $ref: "#/components/parameters/TagId" }]
+    delete:
+      tags: [Tags]
+      operationId: purgeTag
+      x-required-scopes: ["inventory:write"]
+      summary: Permanently purge an archived tag
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      responses:
+        {
+          "204": { $ref: "#/components/responses/NoContent" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+        }
+
+  /inventory/tree:
+    get:
+      tags: [Inventory]
+      operationId: getInventoryTree
+      x-required-scopes: ["inventory:read"]
+      summary: Read the bounded typed inventory hierarchy
+      parameters:
+        - $ref: "#/components/parameters/Archived"
+        - name: max_depth
+          in: query
+          description: Maximum returned hierarchy depth.
+          schema: { type: integer, minimum: 1, maximum: 16, default: 8 }
+      responses:
+        "200":
+          description: Inventory hierarchy
+          content:
+            {
+              application/json:
+                { schema: { $ref: "#/components/schemas/InventoryTree" } },
+            }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /computes/{compute_id}/summary:
+    parameters: [{ $ref: "#/components/parameters/ComputeId" }]
+    get:
+      tags: [Computes]
+      operationId: getComputeSummary
+      x-required-scopes: ["inventory:read"]
+      summary: Read compute overview counts and status
+      responses:
+        {
+          "200":
+            {
+              description: Compute summary,
+              content:
+                {
+                  application/json:
+                    { schema: { $ref: "#/components/schemas/ComputeSummary" } },
+                },
+            },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+        }
+  /computes/{compute_id}/containers:
+    parameters: [{ $ref: "#/components/parameters/ComputeId" }]
+    get:
+      tags: [Computes, Containers]
+      operationId: listComputeContainers
+      x-required-scopes: ["inventory:read"]
+      summary: List containers belonging to a compute
+      parameters:
+        [
+          { $ref: "#/components/parameters/PageAfter" },
+          { $ref: "#/components/parameters/PageSize" },
+          { $ref: "#/components/parameters/Search" },
+          { $ref: "#/components/parameters/Archived" },
+          { $ref: "#/components/parameters/StaleFilter" },
+        ]
+      responses:
+        {
+          "200": { $ref: "#/components/responses/ContainerPageResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+        }
+  /computes/{compute_id}/snapshots:
+    parameters: [{ $ref: "#/components/parameters/ComputeId" }]
+    get:
+      tags: [Computes, History]
+      operationId: listComputeSnapshots
+      x-required-scopes: [agents]
+      summary: List retained discovery reports for a compute
+      parameters:
+        [
+          { $ref: "#/components/parameters/PageAfter" },
+          { $ref: "#/components/parameters/PageSize" },
+          { $ref: "#/components/parameters/FromTime" },
+          { $ref: "#/components/parameters/ToTime" },
+        ]
+      responses:
+        {
+          "200": { $ref: "#/components/responses/DiscoveryReportPageResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+        }
+  /domains/expiring:
+    get:
+      tags: [Domains]
+      operationId: listExpiringDomains
+      x-required-scopes: ["inventory:read"]
+      summary: List domains approaching expiry
+      parameters:
+        - $ref: "#/components/parameters/PageAfter"
+        - $ref: "#/components/parameters/PageSize"
+        - name: within_days
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 365, default: 30 }
+      responses:
+        {
+          "200": { $ref: "#/components/responses/DomainPageResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+        }
+  /dashboard/summary:
+    get:
+      tags: [Dashboard]
+      operationId: getDashboardSummary
+      x-required-scopes: ["inventory:read", "dns:read"]
+      summary: Read dashboard aggregate metrics
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            {
+              application/json:
+                { schema: { $ref: "#/components/schemas/DashboardSummary" } },
+            }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /agents:
+    get:
+      tags: [Agents]
+      operationId: listAgents
+      x-required-scopes: [agents]
+      summary: List discovery agents
+      parameters:
+        [
+          { $ref: "#/components/parameters/PageAfter" },
+          { $ref: "#/components/parameters/PageSize" },
+          { $ref: "#/components/parameters/Search" },
+          { $ref: "#/components/parameters/AgentStatusFilter" },
+        ]
+      responses:
+        {
+          "200":
+            {
+              description: Agent page,
+              content:
+                {
+                  application/json:
+                    { schema: { $ref: "#/components/schemas/AgentPage" } },
+                },
+            },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+        }
+  /agents/{agent_id}:
+    parameters: [{ $ref: "#/components/parameters/AgentId" }]
+    get:
+      tags: [Agents]
+      operationId: getAgent
+      x-required-scopes: [agents]
+      summary: Read an agent
+      responses:
+        {
+          "200": { $ref: "#/components/responses/AgentResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+        }
+  /computes/{compute_id}/enrollment-tokens:
+    parameters: [{ $ref: "#/components/parameters/ComputeId" }]
+    post:
+      tags: [Agents]
+      operationId: createEnrollmentToken
+      x-required-scopes: [agents]
+      summary: Create a single-use enrollment token bound to a compute
+      parameters:
+        [
+          { $ref: "#/components/parameters/IdempotencyKey" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      requestBody:
+        required: true
+        content:
+          {
+            application/json:
+              {
+                schema: { $ref: "#/components/schemas/EnrollmentTokenCreate" },
+              },
+          }
+      responses:
+        {
+          "201":
+            { $ref: "#/components/responses/EnrollmentTokenSecretResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "422": { $ref: "#/components/responses/ValidationFailed" },
+        }
+  /enrollment-tokens/{token_id}:
+    parameters: [{ $ref: "#/components/parameters/TokenId" }]
+    delete:
+      tags: [Agents]
+      operationId: revokeEnrollmentToken
+      x-required-scopes: [agents]
+      summary: Revoke an unconsumed enrollment token
+      parameters: [{ $ref: "#/components/parameters/CsrfToken" }]
+      responses:
+        {
+          "204": { $ref: "#/components/responses/NoContentNoStore" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+        }
+  /agents/{agent_id}/revoke:
+    parameters: [{ $ref: "#/components/parameters/AgentId" }]
+    post:
+      tags: [Agents]
+      operationId: revokeAgent
+      x-required-scopes: [agents]
+      summary: Revoke an agent credential
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      responses:
+        {
+          "200": { $ref: "#/components/responses/AgentResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+        }
+  /agents/{agent_id}/rotate:
+    parameters: [{ $ref: "#/components/parameters/AgentId" }]
+    post:
+      tags: [Agents]
+      operationId: rotateAgentCredential
+      x-required-scopes: [agents]
+      summary: Revoke the agent credential and issue a new enrollment token
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/IdempotencyKey" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      requestBody:
+        required: true
+        content:
+          {
+            application/json:
+              {
+                schema: { $ref: "#/components/schemas/EnrollmentTokenCreate" },
+              },
+          }
+      responses:
+        {
+          "201":
+            { $ref: "#/components/responses/EnrollmentTokenSecretResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+        }
+
+  /agent/v1/enroll:
+    post:
+      tags: [Agent protocol]
+      operationId: enrollAgentV1
+      summary: Exchange a single-use enrollment token for an agent credential
+      security:
+        - enrollmentBearer: []
+      requestBody:
+        required: true
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/AgentEnrollRequest" } },
+          }
+      responses:
+        {
+          "201": { $ref: "#/components/responses/AgentEnrollmentResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "413": { $ref: "#/components/responses/PayloadTooLarge" },
+          "422": { $ref: "#/components/responses/ValidationFailed" },
+          "429": { $ref: "#/components/responses/TooManyRequests" },
+        }
+  /agent/v1/heartbeat:
+    post:
+      tags: [Agent protocol]
+      operationId: submitAgentHeartbeatV1
+      summary: Submit an agent heartbeat
+      security:
+        - agentBearer: []
+      requestBody:
+        required: true
+        content:
+          {
+            application/json:
+              {
+                schema: { $ref: "#/components/schemas/AgentHeartbeatRequest" },
+              },
+          }
+      responses:
+        {
+          "200":
+            {
+              description: Heartbeat accepted,
+              content:
+                {
+                  application/json:
+                    {
+                      schema:
+                        { $ref: "#/components/schemas/AgentProtocolResponse" },
+                    },
+                },
+            },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "413": { $ref: "#/components/responses/PayloadTooLarge" },
+          "422": { $ref: "#/components/responses/ValidationFailed" },
+          "429": { $ref: "#/components/responses/TooManyRequests" },
+        }
+  /agent/v1/snapshots/{report_id}:
+    parameters: [{ $ref: "#/components/parameters/ReportId" }]
+    put:
+      tags: [Agent protocol]
+      operationId: putAgentSnapshotV1
+      summary: Idempotently submit a complete discovery snapshot
+      description: |
+        Repeating the same report ID and equivalent content returns the original
+        acceptance result. The report_id in the request body MUST equal the
+        report_id path parameter; a mismatch returns 409 Conflict with code
+        report_id_mismatch.
+      x-path-body-constraints:
+        - path_parameter: report_id
+          body_property: report_id
+          relation: equal
+      security:
+        - agentBearer: []
+      requestBody:
+        required: true
+        content:
+          {
+            application/json:
+              {
+                schema: { $ref: "#/components/schemas/DiscoverySnapshotWrite" },
+              },
+          }
+      responses:
+        {
+          "200":
+            {
+              description: Previously accepted snapshot,
+              content:
+                {
+                  application/json:
+                    {
+                      schema:
+                        { $ref: "#/components/schemas/SnapshotAcceptance" },
+                    },
+                },
+            },
+          "201":
+            {
+              description: Snapshot accepted,
+              content:
+                {
+                  application/json:
+                    {
+                      schema:
+                        { $ref: "#/components/schemas/SnapshotAcceptance" },
+                    },
+                },
+            },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "409":
+            {
+              description: "The body report_id does not match the report_id path parameter, or the report ID was previously used with different content.",
+              content:
+                {
+                  application/problem+json:
+                    { schema: { $ref: "#/components/schemas/Problem" } },
+                },
+            },
+          "413": { $ref: "#/components/responses/PayloadTooLarge" },
+          "422": { $ref: "#/components/responses/ValidationFailed" },
+          "429": { $ref: "#/components/responses/TooManyRequests" },
+        }
+
+  /agents/{agent_id}/discovery-reports:
+    parameters: [{ $ref: "#/components/parameters/AgentId" }]
+    get:
+      tags: [History]
+      operationId: listAgentDiscoveryReports
+      x-required-scopes: [agents]
+      summary: List retained discovery reports for an agent
+      parameters:
+        [
+          { $ref: "#/components/parameters/PageAfter" },
+          { $ref: "#/components/parameters/PageSize" },
+          { $ref: "#/components/parameters/FromTime" },
+          { $ref: "#/components/parameters/ToTime" },
+          { $ref: "#/components/parameters/ReportResultFilter" },
+        ]
+      responses:
+        {
+          "200": { $ref: "#/components/responses/DiscoveryReportPageResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+        }
+  /discovery-reports/{report_id}:
+    parameters: [{ $ref: "#/components/parameters/ReportId" }]
+    get:
+      tags: [History]
+      operationId: getDiscoveryReport
+      x-required-scopes: [agents]
+      summary: Read discovery report metadata and collector results
+      responses:
+        {
+          "200":
+            {
+              description: Discovery report,
+              content:
+                {
+                  application/json:
+                    {
+                      schema: { $ref: "#/components/schemas/DiscoveryReport" },
+                    },
+                },
+            },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+        }
+  /discovery-reports/{report_id}/snapshot:
+    parameters: [{ $ref: "#/components/parameters/ReportId" }]
+    get:
+      tags: [History]
+      operationId: getDiscoveryReportSnapshot
+      x-required-scopes: [agents]
+      summary: Stream a retained canonical snapshot
+      description: |
+        Streams the stored gzip-compressed canonical JSON without materializing
+        the complete document in memory. The decompressed JSON conforms to
+        CanonicalSnapshot and is bounded by the snapshot ingestion limits.
+      x-streaming: true
+      responses:
+        {
+          "200":
+            {
+              description: Gzip-compressed canonical snapshot JSON stream,
+              headers:
+                {
+                  Content-Disposition:
+                    {
+                      description: Attachment filename for the canonical snapshot.,
+                      required: true,
+                      schema:
+                        {
+                          type: string,
+                          pattern: '^attachment; filename="snapshot-[0-9a-f-]+\.json\.gz"$',
+                        },
+                    },
+                },
+              content:
+                {
+                  application/gzip:
+                    { schema: { type: string, format: binary } },
+                },
+            },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+        }
+  /snapshot-comparisons:
+    get:
+      tags: [History]
+      operationId: compareSnapshots
+      x-required-scopes: [agents]
+      summary: Compare two retained discovery snapshots
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema: { $ref: "#/components/schemas/UuidV7" }
+        - name: to
+          in: query
+          required: true
+          schema: { $ref: "#/components/schemas/UuidV7" }
+      responses:
+        {
+          "200":
+            {
+              description: Structured snapshot comparison,
+              content:
+                {
+                  application/json:
+                    {
+                      schema:
+                        { $ref: "#/components/schemas/SnapshotComparison" },
+                    },
+                },
+            },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "422": { $ref: "#/components/responses/ValidationFailed" },
+        }
+
+  /dns/zones:
+    get:
+      tags: [DNS zones]
+      operationId: listDnsZones
+      x-required-scopes: ["dns:read"]
+      summary: List discovered and managed Cloudflare zones
+      parameters:
+        [
+          { $ref: "#/components/parameters/PageAfter" },
+          { $ref: "#/components/parameters/PageSize" },
+          { $ref: "#/components/parameters/Search" },
+          { $ref: "#/components/parameters/ZoneSelectionFilter" },
+        ]
+      responses:
+        {
+          "200":
+            {
+              description: DNS zone page,
+              content:
+                {
+                  application/json:
+                    { schema: { $ref: "#/components/schemas/DnsZonePage" } },
+                },
+            },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+        }
+  /dns/zones/discover:
+    post:
+      tags: [DNS zones]
+      operationId: discoverDnsZones
+      x-required-scopes: ["dns:write"]
+      summary: Refresh zones visible to the configured Cloudflare token
+      parameters:
+        [
+          { $ref: "#/components/parameters/IdempotencyKey" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      responses:
+        {
+          "200":
+            {
+              description: Refreshed DNS zone page,
+              content:
+                {
+                  application/json:
+                    { schema: { $ref: "#/components/schemas/DnsZonePage" } },
+                },
+            },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "502": { $ref: "#/components/responses/ProviderUnavailable" },
+          "503": { $ref: "#/components/responses/ServiceUnavailable" },
+        }
+  /dns/zones/{zone_id}/select:
+    parameters: [{ $ref: "#/components/parameters/ZoneId" }]
+    post:
+      tags: [DNS zones]
+      operationId: selectDnsZone
+      x-required-scopes: ["dns:write"]
+      summary: Select a zone and link it to matching domain inventory
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/IdempotencyKey" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      requestBody:
+        required: true
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/DnsZoneSelect" } },
+          }
+      responses:
+        {
+          "200": { $ref: "#/components/responses/DnsZoneResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+          "422": { $ref: "#/components/responses/ValidationFailed" },
+        }
+  /dns/zones/{zone_id}/disable:
+    parameters: [{ $ref: "#/components/parameters/ZoneId" }]
+    post:
+      tags: [DNS zones]
+      operationId: disableDnsZone
+      x-required-scopes: ["dns:write"]
+      summary: Disable new desired changes without deleting provider state
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      responses:
+        {
+          "200": { $ref: "#/components/responses/DnsZoneResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+        }
+  /dns/zones/{zone_id}/status:
+    parameters: [{ $ref: "#/components/parameters/ZoneId" }]
+    get:
+      tags: [DNS zones]
+      operationId: getDnsZoneStatus
+      x-required-scopes: ["dns:read"]
+      summary: Read Cloudflare and internal publication status
+      responses:
+        {
+          "200":
+            {
+              description: DNS zone status,
+              content:
+                {
+                  application/json:
+                    { schema: { $ref: "#/components/schemas/DnsZoneStatus" } },
+                },
+            },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+        }
+  /dns/zones/{zone_id}/import-candidates:
+    parameters: [{ $ref: "#/components/parameters/ZoneId" }]
+    get:
+      tags: [DNS imports]
+      operationId: listDnsImportCandidates
+      x-required-scopes: ["dns:read"]
+      summary: List grouped Cloudflare import candidates
+      parameters:
+        [
+          { $ref: "#/components/parameters/PageAfter" },
+          { $ref: "#/components/parameters/PageSize" },
+        ]
+      responses:
+        {
+          "200":
+            {
+              description: Import candidate page,
+              content:
+                {
+                  application/json:
+                    {
+                      schema:
+                        { $ref: "#/components/schemas/DnsImportCandidatePage" },
+                    },
+                },
+            },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "502": { $ref: "#/components/responses/ProviderUnavailable" },
+        }
+  /dns/zones/{zone_id}/imports/preview:
+    parameters: [{ $ref: "#/components/parameters/ZoneId" }]
+    post:
+      tags: [DNS imports]
+      operationId: previewDnsImport
+      x-required-scopes: ["dns:write"]
+      summary: Preview selected provider records for import
+      parameters: [{ $ref: "#/components/parameters/CsrfToken" }]
+      requestBody:
+        required: true
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/DnsImportSelection" } },
+          }
+      responses:
+        {
+          "200":
+            {
+              description: Import preview,
+              content:
+                {
+                  application/json:
+                    {
+                      schema: { $ref: "#/components/schemas/DnsImportPreview" },
+                    },
+                },
+            },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "422": { $ref: "#/components/responses/ValidationFailed" },
+          "502": { $ref: "#/components/responses/ProviderUnavailable" },
+        }
+  /dns/zones/{zone_id}/imports/apply:
+    parameters: [{ $ref: "#/components/parameters/ZoneId" }]
+    post:
+      tags: [DNS imports]
+      operationId: applyDnsImport
+      x-required-scopes: ["dns:write"]
+      summary: Adopt selected provider records as desired state
+      parameters:
+        [
+          { $ref: "#/components/parameters/IdempotencyKeyRequired" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      requestBody:
+        required: true
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/DnsImportApply" } },
+          }
+      responses:
+        {
+          "202":
+            {
+              description: Imported desired names and projection status,
+              content:
+                {
+                  application/json:
+                    {
+                      schema:
+                        { $ref: "#/components/schemas/DnsImportApplyResult" },
+                    },
+                },
+            },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "422": { $ref: "#/components/responses/ValidationFailed" },
+          "502": { $ref: "#/components/responses/ProviderUnavailable" },
+        }
+  /dns/names:
+    get:
+      tags: [DNS names]
+      operationId: listDnsNames
+      x-required-scopes: ["dns:read"]
+      summary: List and search DNS-name aggregates
+      parameters:
+        [
+          { $ref: "#/components/parameters/PageAfter" },
+          { $ref: "#/components/parameters/PageSize" },
+          { $ref: "#/components/parameters/Search" },
+          { $ref: "#/components/parameters/ZoneFilter" },
+          { $ref: "#/components/parameters/Archived" },
+          { $ref: "#/components/parameters/DnsViewFilter" },
+          { $ref: "#/components/parameters/DnsTypeFilter" },
+          { $ref: "#/components/parameters/WildcardFilter" },
+          { $ref: "#/components/parameters/ProxiedFilter" },
+          { $ref: "#/components/parameters/ProjectionStateFilter" },
+        ]
+      responses:
+        {
+          "200":
+            {
+              description: DNS name page,
+              content:
+                {
+                  application/json:
+                    { schema: { $ref: "#/components/schemas/DnsNamePage" } },
+                },
+            },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+        }
+  /dns/names/{name_id}:
+    parameters: [{ $ref: "#/components/parameters/DnsNameId" }]
+    get:
+      tags: [DNS names]
+      operationId: getDnsName
+      x-required-scopes: ["dns:read"]
+      summary: Read desired state and independent projections
+      responses:
+        {
+          "200": { $ref: "#/components/responses/DnsNameResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+        }
+  /dns/drafts:
+    post:
+      tags: [DNS drafts]
+      operationId: createDnsDraft
+      x-required-scopes: ["dns:write"]
+      summary: Create a DNS create, update, or delete draft
+      parameters:
+        [
+          { $ref: "#/components/parameters/IdempotencyKey" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      requestBody:
+        required: true
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/DnsDraftWrite" } },
+          }
+      responses:
+        {
+          "201": { $ref: "#/components/responses/DnsDraftResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "422": { $ref: "#/components/responses/ValidationFailed" },
+        }
+  /dns/drafts/{draft_id}:
+    parameters: [{ $ref: "#/components/parameters/DraftId" }]
+    get:
+      tags: [DNS drafts]
+      operationId: getDnsDraft
+      x-required-scopes: ["dns:read"]
+      summary: Read a draft and its latest preview
+      responses:
+        {
+          "200": { $ref: "#/components/responses/DnsDraftResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+        }
+    put:
+      tags: [DNS drafts]
+      operationId: updateDnsDraft
+      x-required-scopes: ["dns:write"]
+      summary: Replace draft content
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      requestBody:
+        required: true
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/DnsDraftWrite" } },
+          }
+      responses:
+        {
+          "200": { $ref: "#/components/responses/DnsDraftResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+          "422": { $ref: "#/components/responses/ValidationFailed" },
+        }
+    delete:
+      tags: [DNS drafts]
+      operationId: discardDnsDraft
+      x-required-scopes: ["dns:write"]
+      summary: Discard an unapplied draft
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      responses:
+        {
+          "204": { $ref: "#/components/responses/NoContent" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+        }
+  /dns/drafts/{draft_id}/preview:
+    parameters: [{ $ref: "#/components/parameters/DraftId" }]
+    post:
+      tags: [DNS drafts]
+      operationId: previewDnsDraft
+      x-required-scopes: ["dns:write"]
+      summary: Validate a draft and calculate provider diffs
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      responses:
+        {
+          "200":
+            {
+              description: DNS draft preview,
+              content:
+                {
+                  application/json:
+                    { schema: { $ref: "#/components/schemas/DnsPreview" } },
+                },
+            },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+          "422": { $ref: "#/components/responses/ValidationFailed" },
+          "502": { $ref: "#/components/responses/ProviderUnavailable" },
+        }
+  /dns/drafts/{draft_id}/apply:
+    parameters: [{ $ref: "#/components/parameters/DraftId" }]
+    post:
+      tags: [DNS drafts]
+      operationId: applyDnsDraft
+      x-required-scopes: ["dns:write"]
+      summary: Commit desired state and enqueue independent projections
+      parameters:
+        [
+          { $ref: "#/components/parameters/IfMatch" },
+          { $ref: "#/components/parameters/IdempotencyKeyRequired" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      requestBody:
+        required: true
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/DnsDraftApply" } },
+          }
+      responses:
+        {
+          "202":
+            {
+              description: Desired state accepted,
+              headers: { ETag: { $ref: "#/components/headers/ETag" } },
+              content:
+                {
+                  application/json:
+                    { schema: { $ref: "#/components/schemas/DnsApplyResult" } },
+                },
+            },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+          "412": { $ref: "#/components/responses/PreconditionFailed" },
+          "422": { $ref: "#/components/responses/ValidationFailed" },
+        }
+  /dns/names/{name_id}/projections:
+    parameters: [{ $ref: "#/components/parameters/DnsNameId" }]
+    get:
+      tags: [DNS names]
+      operationId: listDnsNameProjections
+      x-required-scopes: ["dns:read"]
+      summary: Read independent projection states
+      responses:
+        {
+          "200":
+            {
+              description: Projection states,
+              content:
+                {
+                  application/json:
+                    {
+                      schema:
+                        {
+                          type: array,
+                          maxItems: 2,
+                          items: { $ref: "#/components/schemas/DnsProjection" },
+                        },
+                    },
+                },
+            },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+        }
+  /dns/names/{name_id}/reconcile:
+    parameters: [{ $ref: "#/components/parameters/DnsNameId" }]
+    post:
+      tags: [DNS names]
+      operationId: reconcileDnsName
+      x-required-scopes: ["dns:write"]
+      summary: Enqueue the current desired revision for repair
+      parameters:
+        [
+          { $ref: "#/components/parameters/IdempotencyKey" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      responses:
+        {
+          "202":
+            {
+              description: Projection repair enqueued,
+              content:
+                {
+                  application/json:
+                    {
+                      schema:
+                        {
+                          type: array,
+                          maxItems: 2,
+                          items: { $ref: "#/components/schemas/DnsProjection" },
+                        },
+                    },
+                },
+            },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+        }
+  /dns/zones/{zone_id}/reconcile:
+    parameters: [{ $ref: "#/components/parameters/ZoneId" }]
+    post:
+      tags: [DNS zones]
+      operationId: reconcileDnsZone
+      x-required-scopes: ["dns:write"]
+      summary: Enqueue repair for all managed names in a zone
+      parameters:
+        [
+          { $ref: "#/components/parameters/IdempotencyKey" },
+          { $ref: "#/components/parameters/CsrfToken" },
+        ]
+      responses:
+        {
+          "202":
+            {
+              description: Zone repair accepted,
+              content:
+                {
+                  application/json:
+                    {
+                      schema:
+                        { $ref: "#/components/schemas/ReconcileAccepted" },
+                    },
+                },
+            },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "409": { $ref: "#/components/responses/Conflict" },
+        }
+  /dns/names/{name_id}/audit-events:
+    parameters: [{ $ref: "#/components/parameters/DnsNameId" }]
+    get:
+      tags: [DNS names, Audit]
+      operationId: listDnsNameAuditEvents
+      x-required-scopes: ["dns:read", "audit:read"]
+      summary: List audit history for a DNS name
+      parameters:
+        [
+          { $ref: "#/components/parameters/PageAfter" },
+          { $ref: "#/components/parameters/PageSize" },
+          { $ref: "#/components/parameters/FromTime" },
+          { $ref: "#/components/parameters/ToTime" },
+        ]
+      responses:
+        {
+          "200": { $ref: "#/components/responses/AuditEventPageResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+        }
+
+  /audit-events:
+    get:
+      tags: [Audit]
+      operationId: listAuditEvents
+      x-required-scopes: ["audit:read"]
+      summary: List immutable audit events
+      parameters:
+        [
+          { $ref: "#/components/parameters/PageAfter" },
+          { $ref: "#/components/parameters/PageSize" },
+          { $ref: "#/components/parameters/FromTime" },
+          { $ref: "#/components/parameters/ToTime" },
+          { $ref: "#/components/parameters/ActorTypeFilter" },
+          { $ref: "#/components/parameters/ActorIdFilter" },
+          { $ref: "#/components/parameters/ActionFilter" },
+          { $ref: "#/components/parameters/ResourceTypeFilter" },
+          { $ref: "#/components/parameters/ResourceIdFilter" },
+        ]
+      responses:
+        {
+          "200": { $ref: "#/components/responses/AuditEventPageResponse" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+        }
+  /health/live:
+    get:
+      tags: [Health]
+      operationId: getLiveness
+      summary: Check process liveness
+      security: []
+      responses:
+        {
+          "200":
+            {
+              description: Process is live,
+              content:
+                {
+                  application/json:
+                    { schema: { $ref: "#/components/schemas/HealthStatus" } },
+                },
+            },
+        }
+  /health/ready:
+    get:
+      tags: [Health]
+      operationId: getReadiness
+      summary: Check local mandatory dependencies
+      description: External Cloudflare availability does not affect readiness.
+      security: []
+      responses:
+        {
+          "200":
+            {
+              description: Server is ready,
+              content:
+                {
+                  application/json:
+                    {
+                      schema: { $ref: "#/components/schemas/ReadinessStatus" },
+                    },
+                },
+            },
+          "503":
+            {
+              description: Server is not ready,
+              content:
+                {
+                  application/problem+json:
+                    { schema: { $ref: "#/components/schemas/Problem" } },
+                },
+            },
+        }
+
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: portinaia_session
+      description: Server-side administrator browser session. Mutations also require X-CSRF-Token.
+    personalAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: Portinaia PAT
+      description: |
+        Named personal access token. The server enforces inventory:read,
+        inventory:write, dns:read, dns:write, agents, audit:read, and admin
+        scopes per operation. Each operation's x-required-scopes array lists
+        every scope a personal access token must possess. Administrator browser
+        sessions satisfy these scope requirements implicitly.
+    enrollmentBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: Portinaia Enrollment Token
+      description: Single-use, compute-bound token valid only for agent enrollment.
+    agentBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: Portinaia Agent Credential
+      description: Long-lived credential bound to exactly one enrolled agent.
+
+  parameters:
+    PageAfter:
+      name: page[after]
+      in: query
+      description: Opaque cursor returned by the previous page.
+      schema: { type: string, minLength: 1, maxLength: 512 }
+    PageSize:
+      name: page[size]
+      in: query
+      description: Maximum number of items to return.
+      schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+    Search:
+      name: q
+      in: query
+      description: Case-insensitive text search using the collection's stable default ordering.
+      schema: { type: string, minLength: 1, maxLength: 200 }
+    Archived:
+      name: archived
+      in: query
+      description: Archived resources are excluded by default.
+      schema: { type: string, enum: [exclude, include, only], default: exclude }
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      description: Strong ETag from the latest representation.
+      schema: { $ref: "#/components/schemas/EntityTag" }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      description: |
+        Caller-generated key scoped to the authenticated actor and operation.
+        Reuse with a different request returns 409.
+      schema:
+        { type: string, minLength: 16, maxLength: 128, pattern: "^[!-~]+$" }
+    IdempotencyKeyRequired:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: Required caller-generated key scoped to the authenticated actor and apply operation.
+      schema:
+        { type: string, minLength: 16, maxLength: 128, pattern: "^[!-~]+$" }
+    CsrfToken:
+      name: X-CSRF-Token
+      in: header
+      required: false
+      description: Required for mutations authenticated by sessionCookie; omitted for bearer authentication.
+      schema:
+        {
+          type: string,
+          minLength: 32,
+          maxLength: 256,
+          pattern: "^[A-Za-z0-9_-]+$",
+        }
+    ProviderId:
+      {
+        name: provider_id,
+        in: path,
+        required: true,
+        schema: { $ref: "#/components/schemas/UuidV7" },
+      }
+    LocationId:
+      {
+        name: location_id,
+        in: path,
+        required: true,
+        schema: { $ref: "#/components/schemas/UuidV7" },
+      }
+    ComputeId:
+      {
+        name: compute_id,
+        in: path,
+        required: true,
+        schema: { $ref: "#/components/schemas/UuidV7" },
+      }
+    ContainerId:
+      {
+        name: container_id,
+        in: path,
+        required: true,
+        schema: { $ref: "#/components/schemas/UuidV7" },
+      }
+    IpAssignmentId:
+      {
+        name: ip_assignment_id,
+        in: path,
+        required: true,
+        schema: { $ref: "#/components/schemas/UuidV7" },
+      }
+    DomainId:
+      {
+        name: domain_id,
+        in: path,
+        required: true,
+        schema: { $ref: "#/components/schemas/UuidV7" },
+      }
+    CostId:
+      {
+        name: cost_id,
+        in: path,
+        required: true,
+        schema: { $ref: "#/components/schemas/UuidV7" },
+      }
+    TagId:
+      {
+        name: tag_id,
+        in: path,
+        required: true,
+        schema: { $ref: "#/components/schemas/UuidV7" },
+      }
+    AgentId:
+      {
+        name: agent_id,
+        in: path,
+        required: true,
+        schema: { $ref: "#/components/schemas/UuidV7" },
+      }
+    TokenId:
+      {
+        name: token_id,
+        in: path,
+        required: true,
+        schema: { $ref: "#/components/schemas/UuidV7" },
+      }
+    ReportId:
+      {
+        name: report_id,
+        in: path,
+        required: true,
+        schema: { $ref: "#/components/schemas/UuidV7" },
+      }
+    ZoneId:
+      {
+        name: zone_id,
+        in: path,
+        required: true,
+        schema: { $ref: "#/components/schemas/UuidV7" },
+      }
+    DnsNameId:
+      {
+        name: name_id,
+        in: path,
+        required: true,
+        schema: { $ref: "#/components/schemas/UuidV7" },
+      }
+    DraftId:
+      {
+        name: draft_id,
+        in: path,
+        required: true,
+        schema: { $ref: "#/components/schemas/UuidV7" },
+      }
+    ProviderFilter:
+      {
+        name: provider_id,
+        in: query,
+        schema: { $ref: "#/components/schemas/UuidV7" },
+      }
+    RegistrarFilter:
+      {
+        name: registrar_provider_id,
+        in: query,
+        schema: { $ref: "#/components/schemas/UuidV7" },
+      }
+    LocationFilter:
+      {
+        name: location_id,
+        in: query,
+        schema: { $ref: "#/components/schemas/UuidV7" },
+      }
+    ComputeFilter:
+      {
+        name: compute_id,
+        in: query,
+        schema: { $ref: "#/components/schemas/UuidV7" },
+      }
+    ContainerFilter:
+      {
+        name: container_id,
+        in: query,
+        schema: { $ref: "#/components/schemas/UuidV7" },
+      }
+    DomainFilter:
+      {
+        name: domain_id,
+        in: query,
+        schema: { $ref: "#/components/schemas/UuidV7" },
+      }
+    ZoneFilter:
+      {
+        name: zone_id,
+        in: query,
+        schema: { $ref: "#/components/schemas/UuidV7" },
+      }
+    CurrencyFilter:
+      {
+        name: currency,
+        in: query,
+        schema: { $ref: "#/components/schemas/CurrencyCode" },
+      }
+    FreshnessFilter:
+      {
+        name: freshness,
+        in: query,
+        schema: { type: string, enum: [online, offline, unenrolled] },
+      }
+    StaleFilter: { name: stale, in: query, schema: { type: boolean } }
+    SourceFilter:
+      {
+        name: source,
+        in: query,
+        schema: { $ref: "#/components/schemas/IpAssignmentSource" },
+      }
+    AgentStatusFilter:
+      {
+        name: status,
+        in: query,
+        schema: { $ref: "#/components/schemas/AgentStatus" },
+      }
+    ReportResultFilter:
+      {
+        name: result,
+        in: query,
+        schema: { $ref: "#/components/schemas/DiscoveryReportResult" },
+      }
+    ZoneSelectionFilter:
+      {
+        name: selection,
+        in: query,
+        schema: { $ref: "#/components/schemas/DnsZoneSelection" },
+      }
+    DnsViewFilter:
+      {
+        name: view,
+        in: query,
+        schema: { $ref: "#/components/schemas/DnsViewName" },
+      }
+    DnsTypeFilter:
+      {
+        name: type,
+        in: query,
+        schema: { $ref: "#/components/schemas/DnsRecordType" },
+      }
+    WildcardFilter: { name: wildcard, in: query, schema: { type: boolean } }
+    ProxiedFilter: { name: proxied, in: query, schema: { type: boolean } }
+    ProjectionStateFilter:
+      {
+        name: projection_state,
+        in: query,
+        schema: { $ref: "#/components/schemas/DnsProjectionState" },
+      }
+    FromTime:
+      {
+        name: from_time,
+        in: query,
+        schema: { $ref: "#/components/schemas/Timestamp" },
+      }
+    ToTime:
+      {
+        name: to_time,
+        in: query,
+        schema: { $ref: "#/components/schemas/Timestamp" },
+      }
+    ActorTypeFilter:
+      {
+        name: actor_type,
+        in: query,
+        schema: { $ref: "#/components/schemas/AuditActorType" },
+      }
+    ActorIdFilter:
+      {
+        name: actor_id,
+        in: query,
+        schema: { $ref: "#/components/schemas/UuidV7" },
+      }
+    ActionFilter:
+      {
+        name: action,
+        in: query,
+        schema: { type: string, minLength: 1, maxLength: 100 },
+      }
+    ResourceTypeFilter:
+      {
+        name: resource_type,
+        in: query,
+        schema: { type: string, minLength: 1, maxLength: 100 },
+      }
+    ResourceIdFilter:
+      {
+        name: resource_id,
+        in: query,
+        schema: { $ref: "#/components/schemas/UuidV7" },
+      }
+
+  headers:
+    ETag:
+      description: Strong ETag corresponding to the resource revision.
+      required: true
+      schema: { $ref: "#/components/schemas/EntityTag" }
+    Location:
+      description: URI of the created resource.
+      required: true
+      schema: { type: string, maxLength: 1024 }
+    CacheControlNoStore:
+      description: Prevents storage of authentication or plaintext-secret responses.
+      required: true
+      schema: { type: string, enum: [no-store] }
+    SetCookie:
+      description: Sets or clears the HttpOnly administrator session cookie.
+      required: true
+      schema: { type: string, maxLength: 4096 }
+    RetryAfter:
+      description: Seconds until a retry should be attempted.
+      schema: { type: integer, minimum: 1, maximum: 86400 }
+
+  responses:
+    BadRequest:
+      {
+        description: Malformed request,
+        content:
+          {
+            application/problem+json:
+              { schema: { $ref: "#/components/schemas/Problem" } },
+          },
+      }
+    Unauthorized:
+      description: "Authentication is missing, invalid, expired, or revoked"
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    Forbidden:
+      {
+        description: Authenticated actor lacks the required scope or CSRF token,
+        content:
+          {
+            application/problem+json:
+              { schema: { $ref: "#/components/schemas/Problem" } },
+          },
+      }
+    NotFound:
+      {
+        description: Resource not found,
+        content:
+          {
+            application/problem+json:
+              { schema: { $ref: "#/components/schemas/Problem" } },
+          },
+      }
+    Conflict:
+      description: "State, dependency, uniqueness, idempotency, or unmanaged-provider conflict"
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    PreconditionFailed:
+      {
+        description: If-Match does not match the current revision,
+        content:
+          {
+            application/problem+json:
+              { schema: { $ref: "#/components/schemas/Problem" } },
+          },
+      }
+    ValidationFailed:
+      {
+        description: Semantic validation failed,
+        content:
+          {
+            application/problem+json:
+              { schema: { $ref: "#/components/schemas/Problem" } },
+          },
+      }
+    PayloadTooLarge:
+      {
+        description: Request exceeds the configured body limit,
+        content:
+          {
+            application/problem+json:
+              { schema: { $ref: "#/components/schemas/Problem" } },
+          },
+      }
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers: { Retry-After: { $ref: "#/components/headers/RetryAfter" } }
+      content:
+        {
+          application/problem+json:
+            { schema: { $ref: "#/components/schemas/Problem" } },
+        }
+    ProviderUnavailable:
+      {
+        description: Required sanitized provider observation is unavailable,
+        content:
+          {
+            application/problem+json:
+              { schema: { $ref: "#/components/schemas/Problem" } },
+          },
+      }
+    ServiceUnavailable:
+      {
+        description: A required local service is temporarily unavailable,
+        content:
+          {
+            application/problem+json:
+              { schema: { $ref: "#/components/schemas/Problem" } },
+          },
+      }
+    NoContent: { description: Operation completed; no response body }
+    NoContentNoStore:
+      description: Operation completed; no response body
+      headers:
+        { Cache-Control: { $ref: "#/components/headers/CacheControlNoStore" } }
+    LogoutNoContent:
+      description: Session revoked and cookie cleared; no response body
+      headers:
+        {
+          Cache-Control: { $ref: "#/components/headers/CacheControlNoStore" },
+          Set-Cookie: { $ref: "#/components/headers/SetCookie" },
+        }
+    LoginResponse:
+      description: Session created
+      headers:
+        {
+          Cache-Control: { $ref: "#/components/headers/CacheControlNoStore" },
+          Set-Cookie: { $ref: "#/components/headers/SetCookie" },
+        }
+      content:
+        {
+          application/json:
+            { schema: { $ref: "#/components/schemas/Session" } },
+        }
+    SessionResponse:
+      description: Current session
+      headers:
+        { Cache-Control: { $ref: "#/components/headers/CacheControlNoStore" } }
+      content:
+        {
+          application/json:
+            { schema: { $ref: "#/components/schemas/Session" } },
+        }
+    PersonalAccessTokenSecretResponse:
+      description: Token created; plaintext is returned only in this response
+      headers:
+        {
+          Location: { $ref: "#/components/headers/Location" },
+          Cache-Control: { $ref: "#/components/headers/CacheControlNoStore" },
+        }
+      content:
+        {
+          application/json:
+            {
+              schema:
+                { $ref: "#/components/schemas/PersonalAccessTokenSecret" },
+            },
+        }
+    EnrollmentTokenSecretResponse:
+      description: Enrollment token created; plaintext is returned only in this response
+      headers:
+        {
+          Location: { $ref: "#/components/headers/Location" },
+          Cache-Control: { $ref: "#/components/headers/CacheControlNoStore" },
+        }
+      content:
+        {
+          application/json:
+            { schema: { $ref: "#/components/schemas/EnrollmentTokenSecret" } },
+        }
+    AgentEnrollmentResponse:
+      description: Agent enrolled; plaintext credential is returned only in this response
+      headers:
+        { Cache-Control: { $ref: "#/components/headers/CacheControlNoStore" } }
+      content:
+        {
+          application/json:
+            { schema: { $ref: "#/components/schemas/AgentEnrollment" } },
+        }
+    ProviderResponse:
+      {
+        description: Provider,
+        headers: { ETag: { $ref: "#/components/headers/ETag" } },
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/Provider" } },
+          },
+      }
+    LocationResponse:
+      {
+        description: Location,
+        headers: { ETag: { $ref: "#/components/headers/ETag" } },
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/Location" } },
+          },
+      }
+    ComputeResponse:
+      {
+        description: Compute,
+        headers: { ETag: { $ref: "#/components/headers/ETag" } },
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/Compute" } },
+          },
+      }
+    ContainerResponse:
+      {
+        description: Container,
+        headers: { ETag: { $ref: "#/components/headers/ETag" } },
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/Container" } },
+          },
+      }
+    IpAssignmentResponse:
+      {
+        description: IP assignment,
+        headers: { ETag: { $ref: "#/components/headers/ETag" } },
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/IpAssignment" } },
+          },
+      }
+    DomainResponse:
+      {
+        description: Domain,
+        headers: { ETag: { $ref: "#/components/headers/ETag" } },
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/Domain" } },
+          },
+      }
+    CostResponse:
+      {
+        description: Cost,
+        headers: { ETag: { $ref: "#/components/headers/ETag" } },
+        content:
+          {
+            application/json: { schema: { $ref: "#/components/schemas/Cost" } },
+          },
+      }
+    TagResponse:
+      {
+        description: Tag,
+        headers: { ETag: { $ref: "#/components/headers/ETag" } },
+        content:
+          {
+            application/json: { schema: { $ref: "#/components/schemas/Tag" } },
+          },
+      }
+    AgentResponse:
+      {
+        description: Agent,
+        headers: { ETag: { $ref: "#/components/headers/ETag" } },
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/Agent" } },
+          },
+      }
+    DnsZoneResponse:
+      {
+        description: DNS zone,
+        headers: { ETag: { $ref: "#/components/headers/ETag" } },
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/DnsZone" } },
+          },
+      }
+    DnsNameResponse:
+      {
+        description: DNS name aggregate,
+        headers: { ETag: { $ref: "#/components/headers/ETag" } },
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/DnsName" } },
+          },
+      }
+    DnsDraftResponse:
+      {
+        description: DNS draft,
+        headers: { ETag: { $ref: "#/components/headers/ETag" } },
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/DnsDraft" } },
+          },
+      }
+    ProviderPageResponse:
+      {
+        description: Provider page,
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/ProviderPage" } },
+          },
+      }
+    LocationPageResponse:
+      {
+        description: Location page,
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/LocationPage" } },
+          },
+      }
+    ComputePageResponse:
+      {
+        description: Compute page,
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/ComputePage" } },
+          },
+      }
+    ContainerPageResponse:
+      {
+        description: Container page,
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/ContainerPage" } },
+          },
+      }
+    IpAssignmentPageResponse:
+      {
+        description: IP assignment page,
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/IpAssignmentPage" } },
+          },
+      }
+    DomainPageResponse:
+      {
+        description: Domain page,
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/DomainPage" } },
+          },
+      }
+    CostPageResponse:
+      {
+        description: Cost page,
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/CostPage" } },
+          },
+      }
+    TagPageResponse:
+      {
+        description: Tag page,
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/TagPage" } },
+          },
+      }
+    DiscoveryReportPageResponse:
+      {
+        description: Discovery report page,
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/DiscoveryReportPage" } },
+          },
+      }
+    AuditEventPageResponse:
+      {
+        description: Audit event page,
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/AuditEventPage" } },
+          },
+      }
+
+  requestBodies:
+    ProviderWrite:
+      {
+        required: true,
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/ProviderWrite" } },
+          },
+      }
+    LocationWrite:
+      {
+        required: true,
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/LocationWrite" } },
+          },
+      }
+    ComputeWrite:
+      {
+        required: true,
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/ComputeWrite" } },
+          },
+      }
+    ContainerWrite:
+      {
+        required: true,
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/ContainerWrite" } },
+          },
+      }
+    IpAssignmentWrite:
+      {
+        required: true,
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/IpAssignmentWrite" } },
+          },
+      }
+    DomainWrite:
+      {
+        required: true,
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/DomainWrite" } },
+          },
+      }
+    CostWrite:
+      {
+        required: true,
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/CostWrite" } },
+          },
+      }
+    TagWrite:
+      {
+        required: true,
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/TagWrite" } },
+          },
+      }
+
+  schemas:
+    UuidV7:
+      type: string
+      format: uuid
+      pattern: "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+      example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+    Timestamp:
+      type: string
+      format: date-time
+      pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?Z$'
+      example: "2026-08-04T12:00:00Z"
+    Date: { type: string, format: date, pattern: '^\d{4}-\d{2}-\d{2}$' }
+    Revision: { type: integer, format: int64, minimum: 1 }
+    EntityTag:
+      {
+        type: string,
+        pattern: '^"revision-[1-9][0-9]*"$',
+        example: '"revision-7"',
+      }
+    CurrencyCode: { type: string, pattern: "^[A-Z]{3}$", example: EUR }
+    Money:
+      type: object
+      additionalProperties: false
+      required: [amount_minor, currency]
+      properties:
+        amount_minor:
+          {
+            type: integer,
+            format: int64,
+            minimum: 0,
+            maximum: 9007199254740991,
+          }
+        currency: { $ref: "#/components/schemas/CurrencyCode" }
+        currency_exponent:
+          { type: integer, minimum: 0, maximum: 4, readOnly: true }
+    PageInfo:
+      type: object
+      additionalProperties: false
+      required: [size, has_more]
+      properties:
+        size: { type: integer, minimum: 0, maximum: 200 }
+        has_more: { type: boolean }
+        next_cursor:
+          { type: string, minLength: 1, maxLength: 512, nullable: true }
+    ResourceMetadata:
+      type: object
+      required: [id, revision, created_at, updated_at]
+      properties:
+        id: { $ref: "#/components/schemas/UuidV7" }
+        revision: { $ref: "#/components/schemas/Revision" }
+        created_at: { $ref: "#/components/schemas/Timestamp" }
+        updated_at: { $ref: "#/components/schemas/Timestamp" }
+        archived_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+    Violation:
+      type: object
+      additionalProperties: false
+      required: [field, code, message]
+      properties:
+        field: { type: string, minLength: 1, maxLength: 200 }
+        code:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 100,
+            pattern: "^[a-z0-9_]+$",
+          }
+        message: { type: string, minLength: 1, maxLength: 1000 }
+    Problem:
+      type: object
+      additionalProperties: false
+      required: [type, title, status, code, request_id]
+      properties:
+        type: { type: string, format: uri, maxLength: 1024 }
+        title: { type: string, minLength: 1, maxLength: 200 }
+        status: { type: integer, minimum: 400, maximum: 599 }
+        detail: { type: string, maxLength: 2000 }
+        instance: { type: string, format: uri-reference, maxLength: 1024 }
+        code:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 100,
+            pattern: "^[a-z0-9_]+$",
+          }
+        request_id: { type: string, minLength: 1, maxLength: 128 }
+        violations:
+          {
+            type: array,
+            maxItems: 100,
+            items: { $ref: "#/components/schemas/Violation" },
+          }
+      example:
+        type: https://portinaia.invalid/problems/validation_failed
+        title: Request validation failed
+        status: 422
+        code: validation_failed
+        request_id: req_01J4ABCDEF
+        violations:
+          [{ field: name, code: required, message: Name is required. }]
+
+    LoginRequest:
+      type: object
+      additionalProperties: false
+      required: [username, password]
+      properties:
+        username: { type: string, minLength: 1, maxLength: 128 }
+        password:
+          { type: string, minLength: 1, maxLength: 1024, writeOnly: true }
+    Session:
+      type: object
+      additionalProperties: false
+      required: [administrator_id, username, created_at, expires_at, csrf_token]
+      properties:
+        administrator_id: { $ref: "#/components/schemas/UuidV7" }
+        username: { type: string, minLength: 1, maxLength: 128 }
+        created_at: { $ref: "#/components/schemas/Timestamp" }
+        expires_at: { $ref: "#/components/schemas/Timestamp" }
+        last_seen_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+        csrf_token:
+          { type: string, minLength: 32, maxLength: 256, readOnly: true }
+    PersonalAccessTokenScope:
+      type: string
+      enum:
+        [
+          "inventory:read",
+          "inventory:write",
+          "dns:read",
+          "dns:write",
+          agents,
+          "audit:read",
+          admin,
+        ]
+    PersonalAccessTokenCreate:
+      type: object
+      additionalProperties: false
+      required: [name, scopes]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 200 }
+        scopes:
+          {
+            type: array,
+            minItems: 1,
+            maxItems: 7,
+            uniqueItems: true,
+            items: { $ref: "#/components/schemas/PersonalAccessTokenScope" },
+          }
+        expires_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+    PersonalAccessToken:
+      type: object
+      required: [id, name, scopes, created_at]
+      properties:
+        id: { $ref: "#/components/schemas/UuidV7" }
+        name: { type: string, minLength: 1, maxLength: 200 }
+        scopes:
+          {
+            type: array,
+            minItems: 1,
+            maxItems: 7,
+            uniqueItems: true,
+            items: { $ref: "#/components/schemas/PersonalAccessTokenScope" },
+          }
+        created_at: { $ref: "#/components/schemas/Timestamp" }
+        expires_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+        last_used_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+        revoked_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+    PersonalAccessTokenSecret:
+      allOf:
+        - $ref: "#/components/schemas/PersonalAccessToken"
+        - type: object
+          required: [token]
+          properties:
+            {
+              token:
+                { type: string, minLength: 32, maxLength: 512, readOnly: true },
+            }
+    PersonalAccessTokenPage:
+      type: object
+      additionalProperties: false
+      required: [items, page]
+      properties:
+        items:
+          {
+            type: array,
+            maxItems: 200,
+            items: { $ref: "#/components/schemas/PersonalAccessToken" },
+          }
+        page: { $ref: "#/components/schemas/PageInfo" }
+
+    ProviderRole:
+      {
+        type: string,
+        enum: [hosting_provider, registrar, hardware_vendor, other],
+      }
+    ProviderWrite:
+      type: object
+      required: [name, roles, tag_ids]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 200 }
+        website: { type: string, format: uri, maxLength: 2048, nullable: true }
+        roles:
+          {
+            type: array,
+            minItems: 1,
+            maxItems: 4,
+            uniqueItems: true,
+            items: { $ref: "#/components/schemas/ProviderRole" },
+          }
+        external_account_reference:
+          { type: string, maxLength: 200, nullable: true }
+        description: { type: string, maxLength: 2000 }
+        notes: { type: string, maxLength: 10000 }
+        tag_ids:
+          {
+            type: array,
+            maxItems: 100,
+            uniqueItems: true,
+            items: { $ref: "#/components/schemas/UuidV7" },
+          }
+    Provider:
+      allOf:
+        - $ref: "#/components/schemas/ResourceMetadata"
+        - $ref: "#/components/schemas/ProviderWrite"
+    ProviderPage:
+      type: object
+      additionalProperties: false
+      required: [items, page]
+      properties:
+        {
+          items:
+            {
+              type: array,
+              maxItems: 200,
+              items: { $ref: "#/components/schemas/Provider" },
+            },
+          page: { $ref: "#/components/schemas/PageInfo" },
+        }
+
+    LocationType: { type: string, enum: [site, provider_region] }
+    LocationWrite:
+      type: object
+      required: [type, name, tag_ids]
+      properties:
+        type: { $ref: "#/components/schemas/LocationType" }
+        name: { type: string, minLength: 1, maxLength: 200 }
+        provider_id: { $ref: "#/components/schemas/UuidV7" }
+        parent_id: { $ref: "#/components/schemas/UuidV7" }
+        description: { type: string, maxLength: 2000 }
+        notes: { type: string, maxLength: 10000 }
+        tag_ids:
+          {
+            type: array,
+            maxItems: 100,
+            uniqueItems: true,
+            items: { $ref: "#/components/schemas/UuidV7" },
+          }
+    Location:
+      allOf:
+        [
+          { $ref: "#/components/schemas/ResourceMetadata" },
+          { $ref: "#/components/schemas/LocationWrite" },
+        ]
+    LocationPage:
+      type: object
+      additionalProperties: false
+      required: [items, page]
+      properties:
+        {
+          items:
+            {
+              type: array,
+              maxItems: 200,
+              items: { $ref: "#/components/schemas/Location" },
+            },
+          page: { $ref: "#/components/schemas/PageInfo" },
+        }
+
+    ComputeKind: { type: string, enum: [physical, vps, vm] }
+    ComputeOwnership: { type: string, enum: [owned, rented, other] }
+    ComputeWrite:
+      type: object
+      required: [kind, display_name, ownership, tag_ids]
+      properties:
+        kind: { $ref: "#/components/schemas/ComputeKind" }
+        display_name: { type: string, minLength: 1, maxLength: 200 }
+        ownership: { $ref: "#/components/schemas/ComputeOwnership" }
+        provider_id: { $ref: "#/components/schemas/UuidV7" }
+        provider_resource_id: { type: string, maxLength: 500, nullable: true }
+        location_id: { $ref: "#/components/schemas/UuidV7" }
+        parent_compute_id: { $ref: "#/components/schemas/UuidV7" }
+        description: { type: string, maxLength: 2000 }
+        notes: { type: string, maxLength: 10000 }
+        tag_ids:
+          {
+            type: array,
+            maxItems: 100,
+            uniqueItems: true,
+            items: { $ref: "#/components/schemas/UuidV7" },
+          }
+    DiskObservation:
+      type: object
+      additionalProperties: false
+      required: [name, size_bytes]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 255 }
+        model: { type: string, maxLength: 500 }
+        filesystem: { type: string, maxLength: 100 }
+        mount_point: { type: string, maxLength: 4096 }
+        size_bytes: { type: integer, format: int64, minimum: 0 }
+        available_bytes: { type: integer, format: int64, minimum: 0 }
+    InterfaceAddress:
+      type: object
+      additionalProperties: false
+      required: [address, prefix_length]
+      properties:
+        address: { type: string, format: ip, maxLength: 45 }
+        prefix_length: { type: integer, minimum: 0, maximum: 128 }
+        scope: { $ref: "#/components/schemas/IpScope" }
+    NetworkInterfaceObservation:
+      type: object
+      additionalProperties: false
+      required: [name, addresses]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 255 }
+        mac_address: { type: string, maxLength: 64 }
+        mtu: { type: integer, minimum: 68, maximum: 1000000 }
+        up: { type: boolean }
+        addresses:
+          {
+            type: array,
+            maxItems: 128,
+            items: { $ref: "#/components/schemas/InterfaceAddress" },
+          }
+    ComputeObservation:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          observed_at,
+          hostname,
+          architecture,
+          logical_cpu_count,
+          memory_bytes,
+          interfaces,
+          disks,
+        ]
+      properties:
+        observed_at: { $ref: "#/components/schemas/Timestamp" }
+        machine_id: { type: string, maxLength: 255 }
+        hostname: { type: string, minLength: 1, maxLength: 253 }
+        os_name: { type: string, maxLength: 255 }
+        os_version: { type: string, maxLength: 255 }
+        kernel_version: { type: string, maxLength: 255 }
+        architecture: { type: string, minLength: 1, maxLength: 64 }
+        cpu_model: { type: string, maxLength: 500 }
+        logical_cpu_count: { type: integer, minimum: 1, maximum: 65536 }
+        memory_bytes: { type: integer, format: int64, minimum: 0 }
+        boot_id: { type: string, maxLength: 255 }
+        booted_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+        uptime_seconds: { type: integer, format: int64, minimum: 0 }
+        virtualization_role:
+          { type: string, enum: [none, host, guest, unknown] }
+        interfaces:
+          {
+            type: array,
+            maxItems: 1024,
+            items: { $ref: "#/components/schemas/NetworkInterfaceObservation" },
+          }
+        disks:
+          {
+            type: array,
+            maxItems: 1024,
+            items: { $ref: "#/components/schemas/DiskObservation" },
+          }
+    AgentStatus: { type: string, enum: [online, offline, revoked] }
+    ComputeAgentStatus:
+      { type: string, enum: [unenrolled, online, offline, revoked] }
+    Compute:
+      allOf:
+        - $ref: "#/components/schemas/ResourceMetadata"
+        - $ref: "#/components/schemas/ComputeWrite"
+        - type: object
+          required: [agent_status]
+          properties:
+            observation:
+              {
+                allOf: [{ $ref: "#/components/schemas/ComputeObservation" }],
+                readOnly: true,
+              }
+            agent_id:
+              {
+                allOf: [{ $ref: "#/components/schemas/UuidV7" }],
+                readOnly: true,
+              }
+            agent_status: { $ref: "#/components/schemas/ComputeAgentStatus" }
+    ComputePage:
+      type: object
+      additionalProperties: false
+      required: [items, page]
+      properties:
+        {
+          items:
+            {
+              type: array,
+              maxItems: 200,
+              items: { $ref: "#/components/schemas/Compute" },
+            },
+          page: { $ref: "#/components/schemas/PageInfo" },
+        }
+
+    ContainerWrite:
+      type: object
+      additionalProperties: false
+      required: [tag_ids]
+      properties:
+        description: { type: string, maxLength: 2000 }
+        notes: { type: string, maxLength: 10000 }
+        tag_ids:
+          {
+            type: array,
+            maxItems: 100,
+            uniqueItems: true,
+            items: { $ref: "#/components/schemas/UuidV7" },
+          }
+    ContainerPort:
+      type: object
+      additionalProperties: false
+      required: [container_port, protocol]
+      properties:
+        host_ip: { type: string, format: ip, maxLength: 45 }
+        host_port: { type: integer, minimum: 1, maximum: 65535 }
+        container_port: { type: integer, minimum: 1, maximum: 65535 }
+        protocol: { type: string, enum: [tcp, udp, sctp] }
+    ContainerNetwork:
+      type: object
+      additionalProperties: false
+      required: [name, addresses]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 255 }
+        network_id: { type: string, maxLength: 255 }
+        addresses:
+          {
+            type: array,
+            maxItems: 64,
+            items: { type: string, format: ip, maxLength: 45 },
+          }
+    ContainerMount:
+      type: object
+      additionalProperties: false
+      required: [type, source, destination, read_only]
+      properties:
+        type: { type: string, enum: [bind, volume, tmpfs, other] }
+        source: { type: string, maxLength: 4096 }
+        destination: { type: string, minLength: 1, maxLength: 4096 }
+        read_only: { type: boolean }
+    ContainerLabel:
+      type: object
+      additionalProperties: false
+      required: [key, value]
+      properties:
+        key: { type: string, minLength: 1, maxLength: 255 }
+        value: { type: string, maxLength: 4096 }
+    ContainerObservation:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          runtime_id,
+          image_name,
+          state,
+          health,
+          restart_policy,
+          ports,
+          networks,
+          mounts,
+          labels,
+          first_observed_at,
+          last_observed_at,
+        ]
+      properties:
+        runtime_id: { type: string, minLength: 1, maxLength: 255 }
+        image_name: { type: string, minLength: 1, maxLength: 1024 }
+        image_id: { type: string, maxLength: 255 }
+        image_digest: { type: string, maxLength: 255 }
+        state:
+          {
+            type: string,
+            enum: [created, running, paused, exited, stopped, unknown],
+          }
+        health:
+          { type: string, enum: [none, starting, healthy, unhealthy, unknown] }
+        created_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+        started_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+        restart_policy:
+          {
+            type: string,
+            enum: [no, always, on_failure, unless_stopped, unknown],
+          }
+        restart_maximum_retry_count:
+          { type: integer, minimum: 0, maximum: 2147483647 }
+        ports:
+          {
+            type: array,
+            maxItems: 2048,
+            items: { $ref: "#/components/schemas/ContainerPort" },
+          }
+        networks:
+          {
+            type: array,
+            maxItems: 256,
+            items: { $ref: "#/components/schemas/ContainerNetwork" },
+          }
+        mounts:
+          {
+            type: array,
+            maxItems: 2048,
+            items: { $ref: "#/components/schemas/ContainerMount" },
+          }
+        labels:
+          {
+            type: array,
+            maxItems: 512,
+            items: { $ref: "#/components/schemas/ContainerLabel" },
+          }
+        first_observed_at: { $ref: "#/components/schemas/Timestamp" }
+        last_observed_at: { $ref: "#/components/schemas/Timestamp" }
+        stale_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+    Container:
+      allOf:
+        - $ref: "#/components/schemas/ResourceMetadata"
+        - type: object
+          required: [compute_id, podman_owner, name, tag_ids]
+          properties:
+            compute_id: { $ref: "#/components/schemas/UuidV7" }
+            podman_connection: { type: string, minLength: 1, maxLength: 200 }
+            podman_owner: { type: string, minLength: 1, maxLength: 200 }
+            name: { type: string, minLength: 1, maxLength: 255 }
+            description: { type: string, maxLength: 2000 }
+            notes: { type: string, maxLength: 10000 }
+            tag_ids:
+              {
+                type: array,
+                maxItems: 100,
+                uniqueItems: true,
+                items: { $ref: "#/components/schemas/UuidV7" },
+              }
+            observation:
+              {
+                allOf: [{ $ref: "#/components/schemas/ContainerObservation" }],
+                readOnly: true,
+              }
+    ContainerPage:
+      type: object
+      additionalProperties: false
+      required: [items, page]
+      properties:
+        {
+          items:
+            {
+              type: array,
+              maxItems: 200,
+              items: { $ref: "#/components/schemas/Container" },
+            },
+          page: { $ref: "#/components/schemas/PageInfo" },
+        }
+
+    IpScope:
+      { type: string, enum: [public, private, loopback, link_local, other] }
+    IpAssignmentSource: { type: string, enum: [manual, discovered] }
+    IpAssignmentWrite:
+      type: object
+      required: [address, scope, primary]
+      properties:
+        address: { type: string, format: ip, maxLength: 45 }
+        prefix_length:
+          { type: integer, minimum: 0, maximum: 128, nullable: true }
+        compute_id: { $ref: "#/components/schemas/UuidV7" }
+        container_id: { $ref: "#/components/schemas/UuidV7" }
+        interface_or_network: { type: string, maxLength: 255 }
+        scope: { $ref: "#/components/schemas/IpScope" }
+        role: { type: string, maxLength: 100 }
+        primary: { type: boolean }
+        description: { type: string, maxLength: 2000 }
+    IpAssignmentObservation:
+      type: object
+      additionalProperties: false
+      required: [first_observed_at, last_observed_at]
+      properties:
+        first_observed_at: { $ref: "#/components/schemas/Timestamp" }
+        last_observed_at: { $ref: "#/components/schemas/Timestamp" }
+        stale_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+    IpAssignment:
+      allOf:
+        - $ref: "#/components/schemas/ResourceMetadata"
+        - $ref: "#/components/schemas/IpAssignmentWrite"
+        - type: object
+          required: [source]
+          properties:
+            source: { $ref: "#/components/schemas/IpAssignmentSource" }
+            observation:
+              {
+                allOf:
+                  [{ $ref: "#/components/schemas/IpAssignmentObservation" }],
+                readOnly: true,
+              }
+    IpAssignmentPage:
+      type: object
+      additionalProperties: false
+      required: [items, page]
+      properties:
+        {
+          items:
+            {
+              type: array,
+              maxItems: 200,
+              items: { $ref: "#/components/schemas/IpAssignment" },
+            },
+          page: { $ref: "#/components/schemas/PageInfo" },
+        }
+
+    DomainWrite:
+      type: object
+      required: [name, nameservers, tag_ids]
+      properties:
+        name:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 253,
+            pattern: "^[a-z0-9.-]+$",
+          }
+        registrar_provider_id: { $ref: "#/components/schemas/UuidV7" }
+        registered_on: { $ref: "#/components/schemas/Date" }
+        expires_on: { $ref: "#/components/schemas/Date" }
+        auto_renew: { type: boolean, nullable: true }
+        nameservers:
+          {
+            type: array,
+            maxItems: 32,
+            uniqueItems: true,
+            items:
+              {
+                type: string,
+                minLength: 1,
+                maxLength: 253,
+                pattern: "^[a-z0-9.-]+$",
+              },
+          }
+        description: { type: string, maxLength: 2000 }
+        notes: { type: string, maxLength: 10000 }
+        tag_ids:
+          {
+            type: array,
+            maxItems: 100,
+            uniqueItems: true,
+            items: { $ref: "#/components/schemas/UuidV7" },
+          }
+    Domain:
+      allOf:
+        - $ref: "#/components/schemas/ResourceMetadata"
+        - $ref: "#/components/schemas/DomainWrite"
+        - type: object
+          required: [expiry_state]
+          properties:
+            expiry_state:
+              { type: string, enum: [unknown, current, expiring, expired] }
+            dns_zone_id: { allOf: [{ $ref: "#/components/schemas/UuidV7" }] }
+    DomainPage:
+      type: object
+      additionalProperties: false
+      required: [items, page]
+      properties:
+        {
+          items:
+            {
+              type: array,
+              maxItems: 200,
+              items: { $ref: "#/components/schemas/Domain" },
+            },
+          page: { $ref: "#/components/schemas/PageInfo" },
+        }
+
+    CostType: { type: string, enum: [recurring, one_time] }
+    RecurringCostWrite:
+      type: object
+      required:
+        [owner_type, owner_id, type, amount, billing_interval, effective_from]
+      not: { required: [charged_on] }
+      properties:
+        owner_type: { type: string, enum: [compute, domain] }
+        owner_id: { $ref: "#/components/schemas/UuidV7" }
+        type: { type: string, enum: [recurring] }
+        amount: { $ref: "#/components/schemas/Money" }
+        billing_interval:
+          type: string
+          enum: [P1M, P3M, P6M, P1Y]
+          description: >-
+            Recurring interval; maps to monthly, quarterly, semiannual, and annual in storage.
+        effective_from: { $ref: "#/components/schemas/Date" }
+        effective_to: { $ref: "#/components/schemas/Date" }
+        description: { type: string, maxLength: 2000 }
+        provider_reference: { type: string, maxLength: 500 }
+    OneTimeCostWrite:
+      type: object
+      required: [owner_type, owner_id, type, amount, charged_on]
+      not:
+        anyOf:
+          - { required: [billing_interval] }
+          - { required: [effective_from] }
+          - { required: [effective_to] }
+      properties:
+        owner_type: { type: string, enum: [compute, domain] }
+        owner_id: { $ref: "#/components/schemas/UuidV7" }
+        type: { type: string, enum: [one_time] }
+        amount: { $ref: "#/components/schemas/Money" }
+        charged_on: { $ref: "#/components/schemas/Date" }
+        description: { type: string, maxLength: 2000 }
+        provider_reference: { type: string, maxLength: 500 }
+    CostWrite:
+      oneOf:
+        - $ref: "#/components/schemas/RecurringCostWrite"
+        - $ref: "#/components/schemas/OneTimeCostWrite"
+      discriminator:
+        propertyName: type
+        mapping:
+          recurring: "#/components/schemas/RecurringCostWrite"
+          one_time: "#/components/schemas/OneTimeCostWrite"
+    Cost:
+      {
+        allOf:
+          [
+            { $ref: "#/components/schemas/ResourceMetadata" },
+            { $ref: "#/components/schemas/CostWrite" },
+          ],
+      }
+    CostPage:
+      type: object
+      additionalProperties: false
+      required: [items, page]
+      properties:
+        {
+          items:
+            {
+              type: array,
+              maxItems: 200,
+              items: { $ref: "#/components/schemas/Cost" },
+            },
+          page: { $ref: "#/components/schemas/PageInfo" },
+        }
+
+    TagWrite:
+      type: object
+      required: [name, display_name]
+      properties:
+        name:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 100,
+            pattern: "^[a-z0-9][a-z0-9_-]*$",
+          }
+        display_name: { type: string, minLength: 1, maxLength: 100 }
+    Tag:
+      {
+        allOf:
+          [
+            { $ref: "#/components/schemas/ResourceMetadata" },
+            { $ref: "#/components/schemas/TagWrite" },
+          ],
+      }
+    TagPage:
+      type: object
+      additionalProperties: false
+      required: [items, page]
+      properties:
+        {
+          items:
+            {
+              type: array,
+              maxItems: 200,
+              items: { $ref: "#/components/schemas/Tag" },
+            },
+          page: { $ref: "#/components/schemas/PageInfo" },
+        }
+
+    InventoryTreeNode:
+      type: object
+      additionalProperties: false
+      required: [id, kind, name, archived, children]
+      properties:
+        id: { $ref: "#/components/schemas/UuidV7" }
+        kind: { type: string, enum: [location, compute, container] }
+        name: { type: string, minLength: 1, maxLength: 255 }
+        archived: { type: boolean }
+        children:
+          {
+            type: array,
+            maxItems: 1000,
+            items: { $ref: "#/components/schemas/InventoryTreeNode" },
+          }
+    InventoryTree:
+      type: object
+      additionalProperties: false
+      required: [roots, truncated]
+      properties:
+        roots:
+          {
+            type: array,
+            maxItems: 5000,
+            items: { $ref: "#/components/schemas/InventoryTreeNode" },
+          }
+        truncated: { type: boolean }
+    ComputeSummary:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          compute,
+          container_count,
+          stale_container_count,
+          ip_assignment_count,
+          cost_count,
+          dns_link_count,
+          snapshot_count,
+        ]
+      properties:
+        compute: { $ref: "#/components/schemas/Compute" }
+        container_count: { type: integer, minimum: 0 }
+        stale_container_count: { type: integer, minimum: 0 }
+        ip_assignment_count: { type: integer, minimum: 0 }
+        cost_count: { type: integer, minimum: 0 }
+        dns_link_count: { type: integer, minimum: 0 }
+        snapshot_count: { type: integer, minimum: 0 }
+    CurrencyTotal:
+      type: object
+      description: >-
+        A monthly-equivalent estimate of active recurring costs in this currency.
+        Entries are summed exactly and rounded half-up once to the currency's
+        minor unit. One-time costs are excluded; this is not a bill or cash-flow total.
+      additionalProperties: false
+      required: [currency, amount_minor, currency_exponent]
+      properties:
+        currency: { $ref: "#/components/schemas/CurrencyCode" }
+        amount_minor:
+          type: string
+          pattern: "^(0|[1-9][0-9]*)$"
+          description: >-
+            Exact non-negative integer minor units, encoded as a decimal string
+            to avoid aggregate overflow and JavaScript precision loss.
+        currency_exponent: { type: integer, minimum: 0, maximum: 4 }
+    DashboardSummary:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          generated_at,
+          offline_compute_count,
+          stale_resource_count,
+          expiring_domain_count,
+          dns_pending_count,
+          dns_failed_count,
+          recurring_costs,
+        ]
+      properties:
+        generated_at: { $ref: "#/components/schemas/Timestamp" }
+        offline_compute_count: { type: integer, minimum: 0 }
+        stale_resource_count: { type: integer, minimum: 0 }
+        expiring_domain_count: { type: integer, minimum: 0 }
+        dns_pending_count: { type: integer, minimum: 0 }
+        dns_failed_count: { type: integer, minimum: 0 }
+        recurring_costs:
+          type: array
+          maxItems: 64
+          description: >-
+            Monthly-equivalent estimates grouped by currency, using active recurring
+            costs whose inclusive effective dates contain the current UTC date and
+            whose owner is active. One-time costs are excluded.
+          items: { $ref: "#/components/schemas/CurrencyTotal" }
+
+    EnrollmentTokenCreate:
+      type: object
+      additionalProperties: false
+      properties:
+        expires_in_seconds:
+          { type: integer, minimum: 60, maximum: 86400, default: 3600 }
+    EnrollmentToken:
+      type: object
+      required: [id, compute_id, created_at, expires_at]
+      properties:
+        id: { $ref: "#/components/schemas/UuidV7" }
+        compute_id: { $ref: "#/components/schemas/UuidV7" }
+        created_at: { $ref: "#/components/schemas/Timestamp" }
+        expires_at: { $ref: "#/components/schemas/Timestamp" }
+        consumed_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+        revoked_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+    EnrollmentTokenSecret:
+      allOf:
+        - $ref: "#/components/schemas/EnrollmentToken"
+        - type: object
+          required: [token]
+          properties:
+            {
+              token:
+                { type: string, minLength: 32, maxLength: 512, readOnly: true },
+            }
+    ProtocolCompatibility:
+      { type: string, enum: [compatible, upgrade_recommended, unsupported] }
+    Agent:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          id,
+          compute_id,
+          credential_generation,
+          protocol_version,
+          client_version,
+          status,
+          compatibility,
+          enrolled_at,
+          revision,
+        ]
+      properties:
+        id: { $ref: "#/components/schemas/UuidV7" }
+        compute_id: { $ref: "#/components/schemas/UuidV7" }
+        credential_generation: { type: integer, minimum: 1 }
+        protocol_version: { type: integer, minimum: 1, maximum: 2147483647 }
+        client_version: { type: string, minLength: 1, maxLength: 100 }
+        status: { $ref: "#/components/schemas/AgentStatus" }
+        compatibility: { $ref: "#/components/schemas/ProtocolCompatibility" }
+        enrolled_at: { $ref: "#/components/schemas/Timestamp" }
+        last_heartbeat_at:
+          { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+        last_successful_snapshot_at:
+          { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+        last_error: { type: string, maxLength: 2000, nullable: true }
+        revoked_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+        revision: { $ref: "#/components/schemas/Revision" }
+    AgentPage:
+      type: object
+      additionalProperties: false
+      required: [items, page]
+      properties:
+        {
+          items:
+            {
+              type: array,
+              maxItems: 200,
+              items: { $ref: "#/components/schemas/Agent" },
+            },
+          page: { $ref: "#/components/schemas/PageInfo" },
+        }
+    AgentEnrollRequest:
+      type: object
+      additionalProperties: false
+      required: [protocol_version, client_version]
+      properties:
+        protocol_version: { type: integer, minimum: 1, maximum: 2147483647 }
+        client_version: { type: string, minLength: 1, maxLength: 100 }
+    AgentEnrollment:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          agent_id,
+          compute_id,
+          credential,
+          credential_generation,
+          server_time,
+          accepted_protocol,
+          schedule,
+        ]
+      properties:
+        agent_id: { $ref: "#/components/schemas/UuidV7" }
+        compute_id: { $ref: "#/components/schemas/UuidV7" }
+        credential:
+          { type: string, minLength: 32, maxLength: 512, readOnly: true }
+        credential_generation: { type: integer, minimum: 1 }
+        server_time: { $ref: "#/components/schemas/Timestamp" }
+        accepted_protocol: { $ref: "#/components/schemas/ProtocolRange" }
+        schedule: { $ref: "#/components/schemas/AgentSchedule" }
+    AgentHeartbeatRequest:
+      type: object
+      additionalProperties: false
+      required: [protocol_version, client_version, sent_at]
+      properties:
+        protocol_version: { type: integer, minimum: 1, maximum: 2147483647 }
+        client_version: { type: string, minLength: 1, maxLength: 100 }
+        sent_at: { $ref: "#/components/schemas/Timestamp" }
+        last_collection_error: { type: string, maxLength: 2000, nullable: true }
+    ProtocolRange:
+      type: object
+      additionalProperties: false
+      required: [minimum, maximum]
+      properties:
+        minimum: { type: integer, minimum: 1 }
+        maximum: { type: integer, minimum: 1 }
+    AgentSchedule:
+      type: object
+      additionalProperties: false
+      required: [heartbeat_interval_seconds, snapshot_interval_seconds]
+      properties:
+        heartbeat_interval_seconds:
+          { type: integer, minimum: 10, maximum: 86400 }
+        snapshot_interval_seconds:
+          { type: integer, minimum: 60, maximum: 604800 }
+    AgentProtocolWarning:
+      type: object
+      additionalProperties: false
+      required: [code, message]
+      properties:
+        code:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 100,
+            pattern: "^[a-z0-9_]+$",
+          }
+        message: { type: string, minLength: 1, maxLength: 1000 }
+    AgentProtocolResponse:
+      type: object
+      additionalProperties: false
+      required: [server_time, accepted_protocol, schedule, warnings]
+      properties:
+        server_time: { $ref: "#/components/schemas/Timestamp" }
+        accepted_protocol: { $ref: "#/components/schemas/ProtocolRange" }
+        schedule: { $ref: "#/components/schemas/AgentSchedule" }
+        warnings:
+          {
+            type: array,
+            maxItems: 20,
+            items: { $ref: "#/components/schemas/AgentProtocolWarning" },
+          }
+
+    CollectionError:
+      type: object
+      additionalProperties: false
+      required: [collector, code, message]
+      properties:
+        collector: { type: string, minLength: 1, maxLength: 200 }
+        code:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 100,
+            pattern: "^[a-z0-9_]+$",
+          }
+        message: { type: string, minLength: 1, maxLength: 2000 }
+    HostSnapshot:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          machine_id,
+          hostname,
+          os_name,
+          os_version,
+          kernel_version,
+          architecture,
+          logical_cpu_count,
+          memory_bytes,
+        ]
+      properties:
+        machine_id: { type: string, minLength: 1, maxLength: 255 }
+        hostname: { type: string, minLength: 1, maxLength: 253 }
+        os_name: { type: string, minLength: 1, maxLength: 255 }
+        os_version: { type: string, maxLength: 255 }
+        kernel_version: { type: string, minLength: 1, maxLength: 255 }
+        architecture: { type: string, minLength: 1, maxLength: 64 }
+        cpu_model: { type: string, maxLength: 500 }
+        logical_cpu_count: { type: integer, minimum: 1, maximum: 65536 }
+        memory_bytes: { type: integer, format: int64, minimum: 0 }
+        boot_id: { type: string, maxLength: 255 }
+        booted_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+        uptime_seconds: { type: integer, format: int64, minimum: 0 }
+        virtualization_role:
+          { type: string, enum: [none, host, guest, unknown] }
+    DiskSnapshot:
+      type: object
+      additionalProperties: false
+      required: [name, size_bytes]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 255 }
+        model: { type: string, maxLength: 500 }
+        size_bytes: { type: integer, format: int64, minimum: 0 }
+    FilesystemSnapshot:
+      type: object
+      additionalProperties: false
+      required: [device, filesystem, mount_point, total_bytes, available_bytes]
+      properties:
+        device: { type: string, minLength: 1, maxLength: 4096 }
+        filesystem: { type: string, minLength: 1, maxLength: 100 }
+        mount_point: { type: string, minLength: 1, maxLength: 4096 }
+        total_bytes: { type: integer, format: int64, minimum: 0 }
+        available_bytes: { type: integer, format: int64, minimum: 0 }
+    SnapshotContainer:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          name,
+          runtime_id,
+          image_name,
+          state,
+          health,
+          restart_policy,
+          ports,
+          networks,
+          mounts,
+          labels,
+        ]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 255 }
+        runtime_id: { type: string, minLength: 1, maxLength: 255 }
+        image_name: { type: string, minLength: 1, maxLength: 1024 }
+        image_id: { type: string, maxLength: 255 }
+        image_digest: { type: string, maxLength: 255 }
+        state:
+          {
+            type: string,
+            enum: [created, running, paused, exited, stopped, unknown],
+          }
+        health:
+          { type: string, enum: [none, starting, healthy, unhealthy, unknown] }
+        created_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+        started_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+        restart_policy:
+          {
+            type: string,
+            enum: [no, always, on_failure, unless_stopped, unknown],
+          }
+        restart_maximum_retry_count:
+          { type: integer, minimum: 0, maximum: 2147483647 }
+        ports:
+          {
+            type: array,
+            maxItems: 2048,
+            items: { $ref: "#/components/schemas/ContainerPort" },
+          }
+        networks:
+          {
+            type: array,
+            maxItems: 256,
+            items: { $ref: "#/components/schemas/ContainerNetwork" },
+          }
+        mounts:
+          {
+            type: array,
+            maxItems: 2048,
+            items: { $ref: "#/components/schemas/ContainerMount" },
+          }
+        labels:
+          {
+            type: array,
+            maxItems: 512,
+            items: { $ref: "#/components/schemas/ContainerLabel" },
+          }
+    PodmanCollectionSuccess:
+      type: object
+      additionalProperties: false
+      required: [connection, owner, status, containers]
+      properties:
+        connection: { type: string, minLength: 1, maxLength: 200 }
+        owner: { type: string, minLength: 1, maxLength: 200 }
+        status: { type: string, enum: [success] }
+        containers:
+          {
+            type: array,
+            maxItems: 10000,
+            items: { $ref: "#/components/schemas/SnapshotContainer" },
+          }
+    PodmanCollectionFailed:
+      type: object
+      additionalProperties: false
+      required: [connection, owner, status, error]
+      properties:
+        connection: { type: string, minLength: 1, maxLength: 200 }
+        owner: { type: string, minLength: 1, maxLength: 200 }
+        status: { type: string, enum: [failed] }
+        error: { type: string, minLength: 1, maxLength: 2000 }
+    PodmanCollection:
+      oneOf:
+        - $ref: "#/components/schemas/PodmanCollectionSuccess"
+        - $ref: "#/components/schemas/PodmanCollectionFailed"
+      discriminator:
+        propertyName: status
+        mapping:
+          success: "#/components/schemas/PodmanCollectionSuccess"
+          failed: "#/components/schemas/PodmanCollectionFailed"
+    DiscoverySnapshotWrite:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          report_id,
+          protocol_version,
+          client_version,
+          collection_started_at,
+          collection_finished_at,
+          host,
+          disks,
+          interfaces,
+          filesystems,
+          podman,
+          errors,
+        ]
+      properties:
+        report_id: { $ref: "#/components/schemas/UuidV7" }
+        protocol_version: { type: integer, minimum: 1, maximum: 2147483647 }
+        client_version: { type: string, minLength: 1, maxLength: 100 }
+        collection_started_at: { $ref: "#/components/schemas/Timestamp" }
+        collection_finished_at: { $ref: "#/components/schemas/Timestamp" }
+        host: { $ref: "#/components/schemas/HostSnapshot" }
+        disks:
+          {
+            type: array,
+            maxItems: 1024,
+            items: { $ref: "#/components/schemas/DiskSnapshot" },
+          }
+        interfaces:
+          {
+            type: array,
+            maxItems: 1024,
+            items: { $ref: "#/components/schemas/NetworkInterfaceObservation" },
+          }
+        filesystems:
+          {
+            type: array,
+            maxItems: 4096,
+            items: { $ref: "#/components/schemas/FilesystemSnapshot" },
+          }
+        podman:
+          {
+            type: array,
+            maxItems: 64,
+            items: { $ref: "#/components/schemas/PodmanCollection" },
+          }
+        errors:
+          {
+            type: array,
+            maxItems: 256,
+            items: { $ref: "#/components/schemas/CollectionError" },
+          }
+    SnapshotAcceptance:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          report_id,
+          result,
+          received_at,
+          content_reused,
+          server_time,
+          accepted_protocol,
+          schedule,
+        ]
+      properties:
+        report_id: { $ref: "#/components/schemas/UuidV7" }
+        result: { type: string, enum: [accepted, accepted_with_errors] }
+        received_at: { $ref: "#/components/schemas/Timestamp" }
+        content_reused: { type: boolean }
+        server_time: { $ref: "#/components/schemas/Timestamp" }
+        accepted_protocol: { $ref: "#/components/schemas/ProtocolRange" }
+        schedule: { $ref: "#/components/schemas/AgentSchedule" }
+
+    DiscoveryReportResult:
+      { type: string, enum: [accepted, accepted_with_errors, rejected] }
+    CollectorResult:
+      type: object
+      additionalProperties: false
+      required: [collector, status]
+      properties:
+        collector: { type: string, minLength: 1, maxLength: 200 }
+        status: { type: string, enum: [success, failed] }
+        error: { type: string, maxLength: 2000, nullable: true }
+    DiscoveryReport:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          id,
+          agent_id,
+          compute_id,
+          protocol_version,
+          client_version,
+          received_at,
+          collection_started_at,
+          collection_finished_at,
+          result,
+          content_id,
+          content_reused,
+          collector_results,
+        ]
+      properties:
+        id: { $ref: "#/components/schemas/UuidV7" }
+        agent_id: { $ref: "#/components/schemas/UuidV7" }
+        compute_id: { $ref: "#/components/schemas/UuidV7" }
+        protocol_version: { type: integer, minimum: 1 }
+        client_version: { type: string, minLength: 1, maxLength: 100 }
+        received_at: { $ref: "#/components/schemas/Timestamp" }
+        collection_started_at: { $ref: "#/components/schemas/Timestamp" }
+        collection_finished_at: { $ref: "#/components/schemas/Timestamp" }
+        result: { $ref: "#/components/schemas/DiscoveryReportResult" }
+        content_id: { $ref: "#/components/schemas/UuidV7" }
+        content_reused: { type: boolean }
+        collector_results:
+          {
+            type: array,
+            maxItems: 256,
+            items: { $ref: "#/components/schemas/CollectorResult" },
+          }
+    DiscoveryReportPage:
+      type: object
+      additionalProperties: false
+      required: [items, page]
+      properties:
+        {
+          items:
+            {
+              type: array,
+              maxItems: 200,
+              items: { $ref: "#/components/schemas/DiscoveryReport" },
+            },
+          page: { $ref: "#/components/schemas/PageInfo" },
+        }
+    CanonicalSnapshot:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          report_id,
+          format_version,
+          sha256,
+          host,
+          disks,
+          interfaces,
+          filesystems,
+          podman,
+          errors,
+        ]
+      properties:
+        report_id:
+          allOf: [{ $ref: "#/components/schemas/UuidV7" }]
+          description: Report identity retained in the canonical document but excluded from infrastructure-state content hashing.
+        format_version: { type: integer, minimum: 1 }
+        sha256: { type: string, pattern: "^[0-9a-f]{64}$" }
+        host: { $ref: "#/components/schemas/HostSnapshot" }
+        disks:
+          {
+            type: array,
+            maxItems: 1024,
+            items: { $ref: "#/components/schemas/DiskSnapshot" },
+          }
+        interfaces:
+          {
+            type: array,
+            maxItems: 1024,
+            items: { $ref: "#/components/schemas/NetworkInterfaceObservation" },
+          }
+        filesystems:
+          {
+            type: array,
+            maxItems: 4096,
+            items: { $ref: "#/components/schemas/FilesystemSnapshot" },
+          }
+        podman:
+          {
+            type: array,
+            maxItems: 64,
+            items: { $ref: "#/components/schemas/PodmanCollection" },
+          }
+        errors:
+          {
+            type: array,
+            maxItems: 256,
+            items: { $ref: "#/components/schemas/CollectionError" },
+          }
+    ScalarValue:
+      oneOf:
+        - { type: string, maxLength: 10000, nullable: true }
+        - { type: integer, format: int64 }
+        - { type: number, format: double }
+        - { type: boolean }
+    FieldChange:
+      type: object
+      additionalProperties: false
+      required: [path, change, before, after]
+      properties:
+        path: { type: string, minLength: 1, maxLength: 1000 }
+        change: { type: string, enum: [added, removed, changed] }
+        before: { $ref: "#/components/schemas/ScalarValue" }
+        after: { $ref: "#/components/schemas/ScalarValue" }
+    InterfaceChange:
+      type: object
+      additionalProperties: false
+      required: [key, change]
+      properties:
+        key: { type: string, minLength: 1, maxLength: 255 }
+        change: { type: string, enum: [added, removed, changed] }
+        before:
+          {
+            allOf:
+              [{ $ref: "#/components/schemas/NetworkInterfaceObservation" }],
+          }
+        after:
+          {
+            allOf:
+              [{ $ref: "#/components/schemas/NetworkInterfaceObservation" }],
+          }
+        fields:
+          {
+            type: array,
+            maxItems: 256,
+            items: { $ref: "#/components/schemas/FieldChange" },
+          }
+    FilesystemChange:
+      type: object
+      additionalProperties: false
+      required: [key, change]
+      properties:
+        key: { type: string, minLength: 1, maxLength: 4096 }
+        change: { type: string, enum: [added, removed, changed] }
+        before: { allOf: [{ $ref: "#/components/schemas/FilesystemSnapshot" }] }
+        after: { allOf: [{ $ref: "#/components/schemas/FilesystemSnapshot" }] }
+        fields:
+          {
+            type: array,
+            maxItems: 256,
+            items: { $ref: "#/components/schemas/FieldChange" },
+          }
+    ContainerChange:
+      type: object
+      additionalProperties: false
+      required: [connection, owner, name, change]
+      properties:
+        connection: { type: string, minLength: 1, maxLength: 200 }
+        owner: { type: string, minLength: 1, maxLength: 200 }
+        name: { type: string, minLength: 1, maxLength: 255 }
+        change: { type: string, enum: [added, removed, changed] }
+        before: { allOf: [{ $ref: "#/components/schemas/SnapshotContainer" }] }
+        after: { allOf: [{ $ref: "#/components/schemas/SnapshotContainer" }] }
+        fields:
+          {
+            type: array,
+            maxItems: 2048,
+            items: { $ref: "#/components/schemas/FieldChange" },
+          }
+    CollectorStatusChange:
+      type: object
+      additionalProperties: false
+      required: [collector, before, after]
+      properties:
+        collector: { type: string, minLength: 1, maxLength: 200 }
+        before: { type: string, enum: [success, failed, absent] }
+        after: { type: string, enum: [success, failed, absent] }
+    SnapshotComparison:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          from_report_id,
+          to_report_id,
+          host,
+          interfaces,
+          filesystems,
+          containers,
+          collectors,
+          truncated,
+        ]
+      properties:
+        from_report_id: { $ref: "#/components/schemas/UuidV7" }
+        to_report_id: { $ref: "#/components/schemas/UuidV7" }
+        host:
+          {
+            type: array,
+            maxItems: 256,
+            items: { $ref: "#/components/schemas/FieldChange" },
+          }
+        interfaces:
+          {
+            type: array,
+            maxItems: 2048,
+            items: { $ref: "#/components/schemas/InterfaceChange" },
+          }
+        filesystems:
+          {
+            type: array,
+            maxItems: 8192,
+            items: { $ref: "#/components/schemas/FilesystemChange" },
+          }
+        containers:
+          {
+            type: array,
+            maxItems: 20000,
+            items: { $ref: "#/components/schemas/ContainerChange" },
+          }
+        collectors:
+          {
+            type: array,
+            maxItems: 256,
+            items: { $ref: "#/components/schemas/CollectorStatusChange" },
+          }
+        truncated: { type: boolean }
+
+    DnsZoneSelection: { type: string, enum: [available, managed, disabled] }
+    DnsZone:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          id,
+          cloudflare_zone_id,
+          name,
+          cloudflare_status,
+          selection,
+          discovered_at,
+          refreshed_at,
+          revision,
+        ]
+      properties:
+        id: { $ref: "#/components/schemas/UuidV7" }
+        cloudflare_zone_id: { type: string, minLength: 1, maxLength: 128 }
+        name:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 253,
+            pattern: "^[a-z0-9.-]+$",
+          }
+        cloudflare_status: { type: string, minLength: 1, maxLength: 100 }
+        selection: { $ref: "#/components/schemas/DnsZoneSelection" }
+        domain_id: { $ref: "#/components/schemas/UuidV7" }
+        discovered_at: { $ref: "#/components/schemas/Timestamp" }
+        refreshed_at: { $ref: "#/components/schemas/Timestamp" }
+        visibility: { type: string, enum: [visible, degraded] }
+        last_drift_scan_at:
+          { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+        revision: { $ref: "#/components/schemas/Revision" }
+    DnsZonePage:
+      type: object
+      additionalProperties: false
+      required: [items, page]
+      properties:
+        {
+          items:
+            {
+              type: array,
+              maxItems: 200,
+              items: { $ref: "#/components/schemas/DnsZone" },
+            },
+          page: { $ref: "#/components/schemas/PageInfo" },
+        }
+    DnsZoneSelect:
+      type: object
+      additionalProperties: false
+      required: [domain_id]
+      properties: { domain_id: { $ref: "#/components/schemas/UuidV7" } }
+    DnsProviderStatus:
+      type: object
+      additionalProperties: false
+      required: [available, status]
+      properties:
+        available: { type: boolean }
+        status:
+          { type: string, enum: [healthy, degraded, unavailable, disabled] }
+        observed_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+        error_code: { type: string, maxLength: 100, nullable: true }
+        error_message: { type: string, maxLength: 2000, nullable: true }
+    DnsPublicationStatus:
+      type: object
+      additionalProperties: false
+      required: [state]
+      properties:
+        state:
+          {
+            type: string,
+            enum: [not_applicable, pending, synchronized, failed],
+          }
+        desired_revision: { type: integer, format: int64, minimum: 0 }
+        applied_revision: { type: integer, format: int64, minimum: 0 }
+        serial: { type: integer, format: int64, minimum: 0 }
+        checksum: { type: string, pattern: "^[0-9a-f]{64}$", nullable: true }
+        published_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+        error_code: { type: string, maxLength: 100, nullable: true }
+        error_message: { type: string, maxLength: 2000, nullable: true }
+    DnsZoneStatus:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          zone,
+          cloudflare,
+          internal_publication,
+          name_count,
+          pending_projection_count,
+          failed_projection_count,
+          drift_count,
+        ]
+      properties:
+        zone: { $ref: "#/components/schemas/DnsZone" }
+        cloudflare: { $ref: "#/components/schemas/DnsProviderStatus" }
+        internal_publication:
+          { $ref: "#/components/schemas/DnsPublicationStatus" }
+        name_count: { type: integer, minimum: 0 }
+        pending_projection_count: { type: integer, minimum: 0 }
+        failed_projection_count: { type: integer, minimum: 0 }
+        drift_count: { type: integer, minimum: 0 }
+
+    DnsViewName: { type: string, enum: [public, internal] }
+    DnsRecordType: { type: string, enum: [A, AAAA, CNAME] }
+    DnsPublicARecordSet:
+      type: object
+      additionalProperties: false
+      required: [type, ttl, values, proxied]
+      properties:
+        type: { type: string, enum: [A] }
+        ttl: { type: integer, minimum: 60, maximum: 86400, default: 60 }
+        values:
+          {
+            type: array,
+            minItems: 1,
+            maxItems: 100,
+            uniqueItems: true,
+            items: { type: string, format: ipv4, maxLength: 15 },
+          }
+        proxied: { type: boolean, default: false }
+    DnsPublicAaaaRecordSet:
+      type: object
+      additionalProperties: false
+      required: [type, ttl, values, proxied]
+      properties:
+        type: { type: string, enum: [AAAA] }
+        ttl: { type: integer, minimum: 60, maximum: 86400, default: 60 }
+        values:
+          {
+            type: array,
+            minItems: 1,
+            maxItems: 100,
+            uniqueItems: true,
+            items: { type: string, format: ipv6, maxLength: 45 },
+          }
+        proxied: { type: boolean, default: false }
+    DnsPublicCnameRecordSet:
+      type: object
+      additionalProperties: false
+      required: [type, ttl, values, proxied]
+      properties:
+        type: { type: string, enum: [CNAME] }
+        ttl: { type: integer, minimum: 60, maximum: 86400, default: 60 }
+        values:
+          {
+            type: array,
+            minItems: 1,
+            maxItems: 1,
+            items:
+              {
+                type: string,
+                minLength: 1,
+                maxLength: 253,
+                pattern: '^[a-z0-9.-]+\.?$',
+              },
+          }
+        proxied: { type: boolean, default: false }
+    DnsInternalARecordSet:
+      type: object
+      additionalProperties: false
+      required: [type, ttl, values]
+      properties:
+        type: { type: string, enum: [A] }
+        ttl: { type: integer, minimum: 60, maximum: 86400, default: 60 }
+        values:
+          {
+            type: array,
+            minItems: 1,
+            maxItems: 100,
+            uniqueItems: true,
+            items: { type: string, format: ipv4, maxLength: 15 },
+          }
+    DnsInternalAaaaRecordSet:
+      type: object
+      additionalProperties: false
+      required: [type, ttl, values]
+      properties:
+        type: { type: string, enum: [AAAA] }
+        ttl: { type: integer, minimum: 60, maximum: 86400, default: 60 }
+        values:
+          {
+            type: array,
+            minItems: 1,
+            maxItems: 100,
+            uniqueItems: true,
+            items: { type: string, format: ipv6, maxLength: 45 },
+          }
+    DnsInternalCnameRecordSet:
+      type: object
+      additionalProperties: false
+      required: [type, ttl, values]
+      properties:
+        type: { type: string, enum: [CNAME] }
+        ttl: { type: integer, minimum: 60, maximum: 86400, default: 60 }
+        values:
+          {
+            type: array,
+            minItems: 1,
+            maxItems: 1,
+            items:
+              {
+                type: string,
+                minLength: 1,
+                maxLength: 253,
+                pattern: '^[a-z0-9.-]+\.?$',
+              },
+          }
+    DnsRecordSet:
+      oneOf:
+        - $ref: "#/components/schemas/DnsPublicARecordSet"
+        - $ref: "#/components/schemas/DnsPublicAaaaRecordSet"
+        - $ref: "#/components/schemas/DnsPublicCnameRecordSet"
+      discriminator:
+        propertyName: type
+        mapping:
+          A: "#/components/schemas/DnsPublicARecordSet"
+          AAAA: "#/components/schemas/DnsPublicAaaaRecordSet"
+          CNAME: "#/components/schemas/DnsPublicCnameRecordSet"
+    DnsInternalRecordSet:
+      oneOf:
+        - $ref: "#/components/schemas/DnsInternalARecordSet"
+        - $ref: "#/components/schemas/DnsInternalAaaaRecordSet"
+        - $ref: "#/components/schemas/DnsInternalCnameRecordSet"
+      discriminator:
+        propertyName: type
+        mapping:
+          A: "#/components/schemas/DnsInternalARecordSet"
+          AAAA: "#/components/schemas/DnsInternalAaaaRecordSet"
+          CNAME: "#/components/schemas/DnsInternalCnameRecordSet"
+    DnsPublicView:
+      type: object
+      additionalProperties: false
+      required: [record_sets]
+      description: Record-set types must be unique. CNAME is exclusive and cannot coexist with A or AAAA in this view.
+      properties:
+        {
+          record_sets:
+            {
+              type: array,
+              maxItems: 3,
+              items: { $ref: "#/components/schemas/DnsRecordSet" },
+            },
+        }
+    DnsInternalView:
+      type: object
+      additionalProperties: false
+      required: [record_sets]
+      description: Record-set types must be unique. CNAME is exclusive and cannot coexist with A or AAAA in this view.
+      properties:
+        {
+          record_sets:
+            {
+              type: array,
+              maxItems: 3,
+              items: { $ref: "#/components/schemas/DnsInternalRecordSet" },
+            },
+        }
+    DnsInventoryLink:
+      type: object
+      additionalProperties: false
+      required: [kind, id]
+      properties:
+        kind: { type: string, enum: [compute, container, ip_assignment] }
+        id: { $ref: "#/components/schemas/UuidV7" }
+        archived: { type: boolean, readOnly: true }
+    DnsNameWrite:
+      type: object
+      required: [zone_id, name, wildcard, description, links, public, internal]
+      properties:
+        zone_id: { $ref: "#/components/schemas/UuidV7" }
+        name:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 253,
+            pattern: '^(?:\*\.)?[a-z0-9.-]+\.?$',
+          }
+        wildcard: { type: boolean }
+        description: { type: string, maxLength: 2000 }
+        links:
+          {
+            type: array,
+            maxItems: 100,
+            uniqueItems: true,
+            items: { $ref: "#/components/schemas/DnsInventoryLink" },
+          }
+        public: { $ref: "#/components/schemas/DnsPublicView" }
+        internal: { $ref: "#/components/schemas/DnsInternalView" }
+    DnsProjectionProvider: { type: string, enum: [cloudflare, internal] }
+    DnsProjectionState:
+      {
+        type: string,
+        enum: [not_applicable, pending, synchronized, failed, deleting],
+      }
+    DnsProjection:
+      type: object
+      additionalProperties: false
+      required:
+        [provider, desired_revision, applied_revision, state, attempt_count]
+      properties:
+        provider: { $ref: "#/components/schemas/DnsProjectionProvider" }
+        desired_revision: { type: integer, format: int64, minimum: 0 }
+        applied_revision: { type: integer, format: int64, minimum: 0 }
+        state: { $ref: "#/components/schemas/DnsProjectionState" }
+        attempt_count: { type: integer, minimum: 0 }
+        next_retry_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+        last_attempt_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+        last_success_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+        error_code: { type: string, maxLength: 100, nullable: true }
+        error_message: { type: string, maxLength: 2000, nullable: true }
+        observed_checksum:
+          { type: string, pattern: "^[0-9a-f]{64}$", nullable: true }
+        drift_detected: { type: boolean }
+    DnsNameLifecycle: { type: string, enum: [active, deleting, archived] }
+    DnsName:
+      allOf:
+        - $ref: "#/components/schemas/DnsNameWrite"
+        - type: object
+          required:
+            [id, revision, lifecycle, created_at, updated_at, projections]
+          properties:
+            id: { $ref: "#/components/schemas/UuidV7" }
+            revision: { $ref: "#/components/schemas/Revision" }
+            lifecycle: { $ref: "#/components/schemas/DnsNameLifecycle" }
+            created_at: { $ref: "#/components/schemas/Timestamp" }
+            updated_at: { $ref: "#/components/schemas/Timestamp" }
+            archived_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+            deletion_requested_at:
+              { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+            projections:
+              {
+                type: array,
+                maxItems: 2,
+                items: { $ref: "#/components/schemas/DnsProjection" },
+              }
+    DnsNamePage:
+      type: object
+      additionalProperties: false
+      required: [items, page]
+      properties:
+        {
+          items:
+            {
+              type: array,
+              maxItems: 200,
+              items: { $ref: "#/components/schemas/DnsName" },
+            },
+          page: { $ref: "#/components/schemas/PageInfo" },
+        }
+
+    DnsImportCandidateStatus:
+      {
+        type: string,
+        enum:
+          [importable, unsupported, malformed, conflicting, already_managed],
+      }
+    DnsImportCandidate:
+      type: object
+      additionalProperties: false
+      required: [id, name, type, ttl, values, proxied, status]
+      properties:
+        id:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 256,
+            description: Opaque refresh-scoped candidate identifier.,
+          }
+        name: { type: string, minLength: 1, maxLength: 253 }
+        type: { $ref: "#/components/schemas/DnsRecordType" }
+        ttl: { type: integer, minimum: 60, maximum: 86400 }
+        values:
+          {
+            type: array,
+            minItems: 1,
+            maxItems: 100,
+            uniqueItems: true,
+            items: { type: string, minLength: 1, maxLength: 253 },
+          }
+        proxied: { type: boolean }
+        status: { $ref: "#/components/schemas/DnsImportCandidateStatus" }
+        reason_code: { type: string, maxLength: 100, nullable: true }
+        reason: { type: string, maxLength: 2000, nullable: true }
+    DnsImportCandidatePage:
+      type: object
+      additionalProperties: false
+      required: [provider_observed_at, observation_fingerprint, items, page]
+      properties:
+        provider_observed_at: { $ref: "#/components/schemas/Timestamp" }
+        observation_fingerprint: { type: string, pattern: "^[0-9a-f]{64}$" }
+        items:
+          {
+            type: array,
+            maxItems: 200,
+            items: { $ref: "#/components/schemas/DnsImportCandidate" },
+          }
+        page: { $ref: "#/components/schemas/PageInfo" }
+    DnsImportSelection:
+      type: object
+      additionalProperties: false
+      required: [candidate_ids, observation_fingerprint]
+      properties:
+        candidate_ids:
+          {
+            type: array,
+            minItems: 1,
+            maxItems: 1000,
+            uniqueItems: true,
+            items: { type: string, minLength: 1, maxLength: 256 },
+          }
+        observation_fingerprint: { type: string, pattern: "^[0-9a-f]{64}$" }
+    DnsValidationIssue:
+      type: object
+      additionalProperties: false
+      required: [severity, code, message]
+      properties:
+        severity: { type: string, enum: [error, warning] }
+        field: { type: string, maxLength: 500 }
+        code:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 100,
+            pattern: "^[a-z0-9_]+$",
+          }
+        message: { type: string, minLength: 1, maxLength: 2000 }
+    DnsPreviewAction:
+      { type: string, enum: [create, update, unchanged, delete] }
+    DnsPreviewChange:
+      type: object
+      additionalProperties: false
+      required: [provider, view, name, type, value, action]
+      properties:
+        provider: { $ref: "#/components/schemas/DnsProjectionProvider" }
+        view: { $ref: "#/components/schemas/DnsViewName" }
+        name: { type: string, minLength: 1, maxLength: 253 }
+        type: { $ref: "#/components/schemas/DnsRecordType" }
+        value: { type: string, minLength: 1, maxLength: 253 }
+        action: { $ref: "#/components/schemas/DnsPreviewAction" }
+        before_ttl:
+          { type: integer, minimum: 60, maximum: 86400, nullable: true }
+        after_ttl:
+          { type: integer, minimum: 60, maximum: 86400, nullable: true }
+        before_proxied: { type: boolean, nullable: true }
+        after_proxied: { type: boolean, nullable: true }
+    DnsUnmanagedConflict:
+      type: object
+      additionalProperties: false
+      required: [name, type, code, message]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 253 }
+        type: { type: string, minLength: 1, maxLength: 32 }
+        code: { type: string, minLength: 1, maxLength: 100 }
+        message: { type: string, minLength: 1, maxLength: 2000 }
+    DnsPreview:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          fingerprint,
+          draft_revision,
+          current_base_revision,
+          provider_observed_at,
+          provider_state_changed,
+          valid,
+          issues,
+          changes,
+          unmanaged_conflicts,
+        ]
+      properties:
+        fingerprint: { type: string, pattern: "^[0-9a-f]{64}$" }
+        draft_revision: { $ref: "#/components/schemas/Revision" }
+        current_base_revision: { type: integer, format: int64, minimum: 0 }
+        provider_observed_at: { $ref: "#/components/schemas/Timestamp" }
+        provider_state_changed: { type: boolean }
+        valid: { type: boolean }
+        issues:
+          {
+            type: array,
+            maxItems: 200,
+            items: { $ref: "#/components/schemas/DnsValidationIssue" },
+          }
+        changes:
+          {
+            type: array,
+            maxItems: 1000,
+            items: { $ref: "#/components/schemas/DnsPreviewChange" },
+          }
+        unmanaged_conflicts:
+          {
+            type: array,
+            maxItems: 200,
+            items: { $ref: "#/components/schemas/DnsUnmanagedConflict" },
+          }
+    DnsImportPreview:
+      type: object
+      additionalProperties: false
+      required: [selection, preview]
+      properties:
+        selection: { $ref: "#/components/schemas/DnsImportSelection" }
+        preview: { $ref: "#/components/schemas/DnsPreview" }
+    DnsImportApply:
+      type: object
+      additionalProperties: false
+      required: [candidate_ids, observation_fingerprint, preview_fingerprint]
+      properties:
+        candidate_ids:
+          {
+            type: array,
+            minItems: 1,
+            maxItems: 1000,
+            uniqueItems: true,
+            items: { type: string, minLength: 1, maxLength: 256 },
+          }
+        observation_fingerprint: { type: string, pattern: "^[0-9a-f]{64}$" }
+        preview_fingerprint: { type: string, pattern: "^[0-9a-f]{64}$" }
+    DnsImportApplyResult:
+      type: object
+      additionalProperties: false
+      required: [names]
+      properties:
+        {
+          names:
+            {
+              type: array,
+              maxItems: 1000,
+              items: { $ref: "#/components/schemas/DnsName" },
+            },
+        }
+
+    DnsDraftOperation: { type: string, enum: [create, update, delete] }
+    DnsCreateDraftWrite:
+      type: object
+      additionalProperties: false
+      required: [operation, proposed]
+      properties:
+        operation: { type: string, enum: [create] }
+        proposed: { $ref: "#/components/schemas/DnsNameWrite" }
+    DnsUpdateDraftWrite:
+      type: object
+      additionalProperties: false
+      required: [operation, target_name_id, base_revision, proposed]
+      properties:
+        operation: { type: string, enum: [update] }
+        target_name_id: { $ref: "#/components/schemas/UuidV7" }
+        base_revision: { $ref: "#/components/schemas/Revision" }
+        proposed: { $ref: "#/components/schemas/DnsNameWrite" }
+    DnsDeleteDraftWrite:
+      type: object
+      additionalProperties: false
+      required: [operation, target_name_id, base_revision]
+      properties:
+        operation: { type: string, enum: [delete] }
+        target_name_id: { $ref: "#/components/schemas/UuidV7" }
+        base_revision: { $ref: "#/components/schemas/Revision" }
+    DnsDraftWrite:
+      oneOf:
+        - $ref: "#/components/schemas/DnsCreateDraftWrite"
+        - $ref: "#/components/schemas/DnsUpdateDraftWrite"
+        - $ref: "#/components/schemas/DnsDeleteDraftWrite"
+      discriminator:
+        propertyName: operation
+        mapping:
+          create: "#/components/schemas/DnsCreateDraftWrite"
+          update: "#/components/schemas/DnsUpdateDraftWrite"
+          delete: "#/components/schemas/DnsDeleteDraftWrite"
+    DnsDraftStatus: { type: string, enum: [active, applied, discarded] }
+    DnsDraftValidation: { type: string, enum: [unvalidated, valid, invalid] }
+    DnsDraft:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          id,
+          revision,
+          operation,
+          status,
+          validation,
+          content_hash,
+          actor_id,
+          created_at,
+          updated_at,
+        ]
+      properties:
+        id: { $ref: "#/components/schemas/UuidV7" }
+        revision: { $ref: "#/components/schemas/Revision" }
+        operation: { $ref: "#/components/schemas/DnsDraftOperation" }
+        target_name_id: { $ref: "#/components/schemas/UuidV7" }
+        base_revision:
+          { type: integer, format: int64, minimum: 1, nullable: true }
+        proposed: { allOf: [{ $ref: "#/components/schemas/DnsNameWrite" }] }
+        status: { $ref: "#/components/schemas/DnsDraftStatus" }
+        validation: { $ref: "#/components/schemas/DnsDraftValidation" }
+        content_hash: { type: string, pattern: "^[0-9a-f]{64}$" }
+        actor_id: { $ref: "#/components/schemas/UuidV7" }
+        created_at: { $ref: "#/components/schemas/Timestamp" }
+        updated_at: { $ref: "#/components/schemas/Timestamp" }
+        applied_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+        discarded_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+        latest_preview: { allOf: [{ $ref: "#/components/schemas/DnsPreview" }] }
+    DnsDraftApply:
+      type: object
+      additionalProperties: false
+      required: [expected_base_revision, preview_fingerprint]
+      properties:
+        expected_base_revision: { type: integer, format: int64, minimum: 0 }
+        preview_fingerprint: { type: string, pattern: "^[0-9a-f]{64}$" }
+    DnsApplyResult:
+      type: object
+      additionalProperties: false
+      required: [draft_id, name, projections]
+      properties:
+        draft_id: { $ref: "#/components/schemas/UuidV7" }
+        name: { $ref: "#/components/schemas/DnsName" }
+        projections:
+          {
+            type: array,
+            maxItems: 2,
+            items: { $ref: "#/components/schemas/DnsProjection" },
+          }
+    ReconcileAccepted:
+      type: object
+      additionalProperties: false
+      required: [accepted_at, aggregate_count]
+      properties:
+        accepted_at: { $ref: "#/components/schemas/Timestamp" }
+        aggregate_count: { type: integer, minimum: 0 }
+
+    AuditActorType:
+      {
+        type: string,
+        enum: [administrator, personal_access_token, agent, system],
+      }
+    AuditResult: { type: string, enum: [success, rejected] }
+    AuditField:
+      type: object
+      additionalProperties: false
+      required: [path, redacted]
+      properties:
+        path: { type: string, minLength: 1, maxLength: 500 }
+        before: { type: string, maxLength: 10000, nullable: true }
+        after: { type: string, maxLength: 10000, nullable: true }
+        redacted: { type: boolean }
+    AuditEvent:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          id,
+          sequence,
+          occurred_at,
+          actor_type,
+          action,
+          resource_type,
+          request_id,
+          result,
+          changes,
+        ]
+      properties:
+        id: { $ref: "#/components/schemas/UuidV7" }
+        sequence: { type: integer, format: int64, minimum: 1 }
+        occurred_at: { $ref: "#/components/schemas/Timestamp" }
+        actor_type: { $ref: "#/components/schemas/AuditActorType" }
+        actor_id: { $ref: "#/components/schemas/UuidV7" }
+        action: { type: string, minLength: 1, maxLength: 100 }
+        resource_type: { type: string, minLength: 1, maxLength: 100 }
+        resource_id: { $ref: "#/components/schemas/UuidV7" }
+        request_id: { type: string, minLength: 1, maxLength: 128 }
+        result: { $ref: "#/components/schemas/AuditResult" }
+        changes:
+          {
+            type: array,
+            maxItems: 500,
+            items: { $ref: "#/components/schemas/AuditField" },
+          }
+    AuditEventPage:
+      type: object
+      additionalProperties: false
+      required: [items, page]
+      properties:
+        {
+          items:
+            {
+              type: array,
+              maxItems: 200,
+              items: { $ref: "#/components/schemas/AuditEvent" },
+            },
+          page: { $ref: "#/components/schemas/PageInfo" },
+        }
+
+    HealthStatus:
+      type: object
+      additionalProperties: false
+      required: [status, time]
+      properties:
+        status: { type: string, enum: [live] }
+        time: { $ref: "#/components/schemas/Timestamp" }
+    ReadinessCheck:
+      type: object
+      additionalProperties: false
+      required: [name, status]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
+        status: { type: string, enum: [ready, not_ready] }
+        message: { type: string, maxLength: 1000 }
+    ReadinessStatus:
+      type: object
+      additionalProperties: false
+      required: [status, time, checks]
+      properties:
+        status: { type: string, enum: [ready] }
+        time: { $ref: "#/components/schemas/Timestamp" }
+        checks:
+          {
+            type: array,
+            maxItems: 32,
+            items: { $ref: "#/components/schemas/ReadinessCheck" },
+          }
