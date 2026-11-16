@@ -4,8 +4,16 @@ info:
   version: 1.0.0
   description: |
     Versioned API for Portinaia inventory, discovery, history, DNS control,
-    authentication, audit, and operations. UUID identifiers are canonical
-    lower-case UUIDv7 strings and timestamps are RFC 3339 UTC values.
+    authentication, audit, and operations. Newly generated UUID identifiers are
+    canonical lower-case UUIDv7 strings. Existing UUIDv4 resource identifiers and
+    references remain accepted for backward compatibility and are never re-keyed.
+    Timestamps are RFC 3339 UTC values; fractional
+    timestamp input is normalized to whole seconds for storage, while Date values
+    are calendar dates without timezone conversion. Unknown JSON object properties
+    are rejected. Explicit null is accepted only on nullable properties and means
+    unknown/unset. For full-replacement PUTs, omitted writable optional fields are
+    cleared/unknown; for creates, omission uses the documented default or unknown.
+x-unknown-json-properties: reject
 servers:
   - url: /api/v1
     description: Product API version 1
@@ -71,6 +79,7 @@ paths:
         "200": { $ref: "#/components/responses/LoginResponse" }
         "400": { $ref: "#/components/responses/BadRequest" }
         "401": { $ref: "#/components/responses/Unauthorized" }
+        "413": { $ref: "#/components/responses/PayloadTooLarge" }
         "429": { $ref: "#/components/responses/TooManyRequests" }
   /auth/logout:
     post:
@@ -117,8 +126,10 @@ paths:
       operationId: createPersonalAccessToken
       x-required-scopes: [admin]
       summary: Create a personal access token
+      description: >-
+        The plaintext token is returned once and is never replayed. If the response
+        is lost, locate and revoke the newly created token, then create a replacement.
       parameters:
-        - $ref: "#/components/parameters/IdempotencyKey"
         - $ref: "#/components/parameters/CsrfToken"
       requestBody:
         required: true
@@ -132,6 +143,7 @@ paths:
         "401": { $ref: "#/components/responses/Unauthorized" }
         "403": { $ref: "#/components/responses/Forbidden" }
         "409": { $ref: "#/components/responses/Conflict" }
+        "413": { $ref: "#/components/responses/PayloadTooLarge" }
         "422": { $ref: "#/components/responses/ValidationFailed" }
   /personal-access-tokens/{token_id}:
     parameters:
@@ -179,6 +191,7 @@ paths:
         "401": { $ref: "#/components/responses/Unauthorized" }
         "403": { $ref: "#/components/responses/Forbidden" }
         "409": { $ref: "#/components/responses/Conflict" }
+        "413": { $ref: "#/components/responses/PayloadTooLarge" }
         "422": { $ref: "#/components/responses/ValidationFailed" }
   /providers/{provider_id}:
     parameters: [{ $ref: "#/components/parameters/ProviderId" }]
@@ -208,6 +221,7 @@ paths:
         "403": { $ref: "#/components/responses/Forbidden" }
         "404": { $ref: "#/components/responses/NotFound" }
         "412": { $ref: "#/components/responses/PreconditionFailed" }
+        "413": { $ref: "#/components/responses/PayloadTooLarge" }
         "422": { $ref: "#/components/responses/ValidationFailed" }
   /providers/{provider_id}/archive:
     parameters: [{ $ref: "#/components/parameters/ProviderId" }]
@@ -224,11 +238,14 @@ paths:
       responses:
         {
           "200": { $ref: "#/components/responses/ProviderResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
           "409": { $ref: "#/components/responses/Conflict" },
           "412": { $ref: "#/components/responses/PreconditionFailed" },
+          "413": { $ref: "#/components/responses/PayloadTooLarge" },
+          "422": { $ref: "#/components/responses/ValidationFailed" },
         }
   /providers/{provider_id}/restore:
     parameters: [{ $ref: "#/components/parameters/ProviderId" }]
@@ -245,18 +262,21 @@ paths:
       responses:
         {
           "200": { $ref: "#/components/responses/ProviderResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
           "409": { $ref: "#/components/responses/Conflict" },
           "412": { $ref: "#/components/responses/PreconditionFailed" },
+          "413": { $ref: "#/components/responses/PayloadTooLarge" },
+          "422": { $ref: "#/components/responses/ValidationFailed" },
         }
   /providers/{provider_id}/purge:
     parameters: [{ $ref: "#/components/parameters/ProviderId" }]
     delete:
       tags: [Providers]
       operationId: purgeProvider
-      x-required-scopes: ["inventory:write"]
+      x-required-scopes: [admin, "inventory:write"]
       summary: Permanently purge an archived provider
       parameters:
         [
@@ -266,10 +286,11 @@ paths:
       responses:
         {
           "204": { $ref: "#/components/responses/NoContent" },
+          "400": { $ref: "#/components/responses/BadRequest" },
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
-          "409": { $ref: "#/components/responses/Conflict" },
+          "409": { $ref: "#/components/responses/PurgeConflict" },
           "412": { $ref: "#/components/responses/PreconditionFailed" },
         }
 
@@ -311,6 +332,7 @@ paths:
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "409": { $ref: "#/components/responses/Conflict" },
+          "413": { $ref: "#/components/responses/PayloadTooLarge" },
           "422": { $ref: "#/components/responses/ValidationFailed" },
         }
   /locations/{location_id}:
@@ -347,6 +369,7 @@ paths:
           "404": { $ref: "#/components/responses/NotFound" },
           "409": { $ref: "#/components/responses/Conflict" },
           "412": { $ref: "#/components/responses/PreconditionFailed" },
+          "413": { $ref: "#/components/responses/PayloadTooLarge" },
           "422": { $ref: "#/components/responses/ValidationFailed" },
         }
   /locations/{location_id}/archive:
@@ -364,6 +387,7 @@ paths:
       responses:
         {
           "200": { $ref: "#/components/responses/LocationResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
@@ -385,6 +409,7 @@ paths:
       responses:
         {
           "200": { $ref: "#/components/responses/LocationResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
@@ -396,7 +421,7 @@ paths:
     delete:
       tags: [Locations]
       operationId: purgeLocation
-      x-required-scopes: ["inventory:write"]
+      x-required-scopes: [admin, "inventory:write"]
       summary: Permanently purge an archived location
       parameters:
         [
@@ -406,10 +431,11 @@ paths:
       responses:
         {
           "204": { $ref: "#/components/responses/NoContent" },
+          "400": { $ref: "#/components/responses/BadRequest" },
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
-          "409": { $ref: "#/components/responses/Conflict" },
+          "409": { $ref: "#/components/responses/PurgeConflict" },
           "412": { $ref: "#/components/responses/PreconditionFailed" },
         }
 
@@ -453,6 +479,7 @@ paths:
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "409": { $ref: "#/components/responses/Conflict" },
+          "413": { $ref: "#/components/responses/PayloadTooLarge" },
           "422": { $ref: "#/components/responses/ValidationFailed" },
         }
   /computes/{compute_id}:
@@ -489,6 +516,7 @@ paths:
           "404": { $ref: "#/components/responses/NotFound" },
           "409": { $ref: "#/components/responses/Conflict" },
           "412": { $ref: "#/components/responses/PreconditionFailed" },
+          "413": { $ref: "#/components/responses/PayloadTooLarge" },
           "422": { $ref: "#/components/responses/ValidationFailed" },
         }
   /computes/{compute_id}/archive:
@@ -506,6 +534,7 @@ paths:
       responses:
         {
           "200": { $ref: "#/components/responses/ComputeResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
@@ -527,6 +556,7 @@ paths:
       responses:
         {
           "200": { $ref: "#/components/responses/ComputeResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
@@ -538,7 +568,7 @@ paths:
     delete:
       tags: [Computes]
       operationId: purgeCompute
-      x-required-scopes: ["inventory:write"]
+      x-required-scopes: [admin, "inventory:write"]
       summary: Permanently purge an archived compute
       parameters:
         [
@@ -548,10 +578,11 @@ paths:
       responses:
         {
           "204": { $ref: "#/components/responses/NoContent" },
+          "400": { $ref: "#/components/responses/BadRequest" },
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
-          "409": { $ref: "#/components/responses/Conflict" },
+          "409": { $ref: "#/components/responses/PurgeConflict" },
           "412": { $ref: "#/components/responses/PreconditionFailed" },
         }
 
@@ -610,8 +641,32 @@ paths:
           "404": { $ref: "#/components/responses/NotFound" },
           "409": { $ref: "#/components/responses/Conflict" },
           "412": { $ref: "#/components/responses/PreconditionFailed" },
+          "413": { $ref: "#/components/responses/PayloadTooLarge" },
           "422": { $ref: "#/components/responses/ValidationFailed" },
         }
+  /containers/{container_id}/discovery-reports:
+    parameters: [{ $ref: "#/components/parameters/ContainerId" }]
+    get:
+      tags: [Containers, History]
+      operationId: listContainerDiscoveryReports
+      x-required-scopes: [agents]
+      summary: List retained report history for a logical container
+      description: >-
+        Lists reports for this container's compute, verified Podman owner, and
+        exact name. Each entry reports whether it was present, authoritatively
+        absent, or unavailable because the relevant collector failed. Results
+        use receipt-descending order with a server history ID tie-breaker.
+      parameters:
+        - $ref: "#/components/parameters/PageAfter"
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/FromTime"
+        - $ref: "#/components/parameters/ToTime"
+      responses:
+        "200": { $ref: "#/components/responses/ContainerHistoryPageResponse" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
   /containers/{container_id}/archive:
     parameters: [{ $ref: "#/components/parameters/ContainerId" }]
     post:
@@ -627,6 +682,7 @@ paths:
       responses:
         {
           "200": { $ref: "#/components/responses/ContainerResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
@@ -648,6 +704,7 @@ paths:
       responses:
         {
           "200": { $ref: "#/components/responses/ContainerResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
@@ -659,7 +716,7 @@ paths:
     delete:
       tags: [Containers]
       operationId: purgeContainer
-      x-required-scopes: ["inventory:write"]
+      x-required-scopes: [admin, "inventory:write"]
       summary: Permanently purge an archived container
       parameters:
         [
@@ -669,10 +726,11 @@ paths:
       responses:
         {
           "204": { $ref: "#/components/responses/NoContent" },
+          "400": { $ref: "#/components/responses/BadRequest" },
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
-          "409": { $ref: "#/components/responses/Conflict" },
+          "409": { $ref: "#/components/responses/PurgeConflict" },
           "412": { $ref: "#/components/responses/PreconditionFailed" },
         }
 
@@ -717,6 +775,7 @@ paths:
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "409": { $ref: "#/components/responses/Conflict" },
+          "413": { $ref: "#/components/responses/PayloadTooLarge" },
           "422": { $ref: "#/components/responses/ValidationFailed" },
         }
   /ip-assignments/{ip_assignment_id}:
@@ -754,6 +813,7 @@ paths:
           "404": { $ref: "#/components/responses/NotFound" },
           "409": { $ref: "#/components/responses/Conflict" },
           "412": { $ref: "#/components/responses/PreconditionFailed" },
+          "413": { $ref: "#/components/responses/PayloadTooLarge" },
           "422": { $ref: "#/components/responses/ValidationFailed" },
         }
   /ip-assignments/{ip_assignment_id}/archive:
@@ -771,6 +831,7 @@ paths:
       responses:
         {
           "200": { $ref: "#/components/responses/IpAssignmentResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
@@ -792,6 +853,7 @@ paths:
       responses:
         {
           "200": { $ref: "#/components/responses/IpAssignmentResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
@@ -803,7 +865,7 @@ paths:
     delete:
       tags: [IP assignments]
       operationId: purgeIpAssignment
-      x-required-scopes: ["inventory:write"]
+      x-required-scopes: [admin, "inventory:write"]
       summary: Permanently purge an archived IP assignment
       parameters:
         [
@@ -813,10 +875,11 @@ paths:
       responses:
         {
           "204": { $ref: "#/components/responses/NoContent" },
+          "400": { $ref: "#/components/responses/BadRequest" },
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
-          "409": { $ref: "#/components/responses/Conflict" },
+          "409": { $ref: "#/components/responses/PurgeConflict" },
           "412": { $ref: "#/components/responses/PreconditionFailed" },
         }
 
@@ -833,6 +896,7 @@ paths:
           { $ref: "#/components/parameters/Search" },
           { $ref: "#/components/parameters/Archived" },
           { $ref: "#/components/parameters/RegistrarFilter" },
+          { $ref: "#/components/parameters/DomainExpiryStateFilter" },
         ]
       responses:
         {
@@ -858,6 +922,7 @@ paths:
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "409": { $ref: "#/components/responses/Conflict" },
+          "413": { $ref: "#/components/responses/PayloadTooLarge" },
           "422": { $ref: "#/components/responses/ValidationFailed" },
         }
   /domains/{domain_id}:
@@ -894,6 +959,7 @@ paths:
           "404": { $ref: "#/components/responses/NotFound" },
           "409": { $ref: "#/components/responses/Conflict" },
           "412": { $ref: "#/components/responses/PreconditionFailed" },
+          "413": { $ref: "#/components/responses/PayloadTooLarge" },
           "422": { $ref: "#/components/responses/ValidationFailed" },
         }
   /domains/{domain_id}/archive:
@@ -911,6 +977,7 @@ paths:
       responses:
         {
           "200": { $ref: "#/components/responses/DomainResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
@@ -932,6 +999,7 @@ paths:
       responses:
         {
           "200": { $ref: "#/components/responses/DomainResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
@@ -943,7 +1011,7 @@ paths:
     delete:
       tags: [Domains]
       operationId: purgeDomain
-      x-required-scopes: ["inventory:write"]
+      x-required-scopes: [admin, "inventory:write"]
       summary: Permanently purge an archived domain
       parameters:
         [
@@ -953,10 +1021,11 @@ paths:
       responses:
         {
           "204": { $ref: "#/components/responses/NoContent" },
+          "400": { $ref: "#/components/responses/BadRequest" },
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
-          "409": { $ref: "#/components/responses/Conflict" },
+          "409": { $ref: "#/components/responses/PurgeConflict" },
           "412": { $ref: "#/components/responses/PreconditionFailed" },
         }
 
@@ -1000,6 +1069,7 @@ paths:
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "409": { $ref: "#/components/responses/Conflict" },
+          "413": { $ref: "#/components/responses/PayloadTooLarge" },
           "422": { $ref: "#/components/responses/ValidationFailed" },
         }
   /costs/{cost_id}:
@@ -1036,6 +1106,7 @@ paths:
           "404": { $ref: "#/components/responses/NotFound" },
           "409": { $ref: "#/components/responses/Conflict" },
           "412": { $ref: "#/components/responses/PreconditionFailed" },
+          "413": { $ref: "#/components/responses/PayloadTooLarge" },
           "422": { $ref: "#/components/responses/ValidationFailed" },
         }
   /costs/{cost_id}/archive:
@@ -1053,6 +1124,7 @@ paths:
       responses:
         {
           "200": { $ref: "#/components/responses/CostResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
@@ -1074,6 +1146,7 @@ paths:
       responses:
         {
           "200": { $ref: "#/components/responses/CostResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
@@ -1085,7 +1158,7 @@ paths:
     delete:
       tags: [Costs]
       operationId: purgeCost
-      x-required-scopes: ["inventory:write"]
+      x-required-scopes: [admin, "inventory:write"]
       summary: Permanently purge an archived cost
       parameters:
         [
@@ -1095,10 +1168,11 @@ paths:
       responses:
         {
           "204": { $ref: "#/components/responses/NoContent" },
+          "400": { $ref: "#/components/responses/BadRequest" },
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
-          "409": { $ref: "#/components/responses/Conflict" },
+          "409": { $ref: "#/components/responses/PurgeConflict" },
           "412": { $ref: "#/components/responses/PreconditionFailed" },
         }
 
@@ -1126,6 +1200,7 @@ paths:
       operationId: createTag
       x-required-scopes: ["inventory:write"]
       summary: Create a tag
+      description: Creates an active tag with revision 1.
       parameters:
         [
           { $ref: "#/components/parameters/IdempotencyKey" },
@@ -1139,6 +1214,7 @@ paths:
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "409": { $ref: "#/components/responses/Conflict" },
+          "413": { $ref: "#/components/responses/PayloadTooLarge" },
           "422": { $ref: "#/components/responses/ValidationFailed" },
         }
   /tags/{tag_id}:
@@ -1160,6 +1236,7 @@ paths:
       operationId: updateTag
       x-required-scopes: ["inventory:write"]
       summary: Replace writable tag fields
+      description: Replaces the tag name and display name. The tag revision advances by one.
       parameters:
         [
           { $ref: "#/components/parameters/IfMatch" },
@@ -1175,6 +1252,7 @@ paths:
           "404": { $ref: "#/components/responses/NotFound" },
           "409": { $ref: "#/components/responses/Conflict" },
           "412": { $ref: "#/components/responses/PreconditionFailed" },
+          "413": { $ref: "#/components/responses/PayloadTooLarge" },
           "422": { $ref: "#/components/responses/ValidationFailed" },
         }
   /tags/{tag_id}/archive:
@@ -1184,6 +1262,7 @@ paths:
       operationId: archiveTag
       x-required-scopes: ["inventory:write"]
       summary: Archive a tag
+      description: Archives the tag without detaching it from resources. The tag revision advances by one.
       parameters:
         [
           { $ref: "#/components/parameters/IfMatch" },
@@ -1192,6 +1271,7 @@ paths:
       responses:
         {
           "200": { $ref: "#/components/responses/TagResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
@@ -1205,6 +1285,7 @@ paths:
       operationId: restoreTag
       x-required-scopes: ["inventory:write"]
       summary: Restore an archived tag
+      description: Restores an archived tag. The tag revision advances by one.
       parameters:
         [
           { $ref: "#/components/parameters/IfMatch" },
@@ -1213,6 +1294,7 @@ paths:
       responses:
         {
           "200": { $ref: "#/components/responses/TagResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
@@ -1224,8 +1306,12 @@ paths:
     delete:
       tags: [Tags]
       operationId: purgeTag
-      x-required-scopes: ["inventory:write"]
+      x-required-scopes: [admin, "inventory:write"]
       summary: Permanently purge an archived tag
+      description: >-
+        Permanently removes an archived tag only after it has been detached from
+        every resource. An active or attached tag returns 409. This administrative
+        purge is irreversible.
       parameters:
         [
           { $ref: "#/components/parameters/IfMatch" },
@@ -1234,10 +1320,11 @@ paths:
       responses:
         {
           "204": { $ref: "#/components/responses/NoContent" },
+          "400": { $ref: "#/components/responses/BadRequest" },
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
-          "409": { $ref: "#/components/responses/Conflict" },
+          "409": { $ref: "#/components/responses/PurgeConflict" },
           "412": { $ref: "#/components/responses/PreconditionFailed" },
         }
 
@@ -1246,21 +1333,60 @@ paths:
       tags: [Inventory]
       operationId: getInventoryTree
       x-required-scopes: ["inventory:read"]
-      summary: Read the bounded typed inventory hierarchy
+      summary: List root nodes of the typed inventory hierarchy
+      description: >-
+        Returns only root locations and root computes. Child nodes are fetched
+        lazily through /inventory/tree/{parent_id}/children; this avoids returning
+        a truncated hierarchy without a way to continue. Containment is limited to
+        location -> location/compute and compute -> VM compute/container.
       parameters:
         - $ref: "#/components/parameters/Archived"
-        - name: max_depth
-          in: query
-          description: Maximum returned hierarchy depth.
-          schema: { type: integer, minimum: 1, maximum: 16, default: 8 }
+        - $ref: "#/components/parameters/PageAfter"
+        - $ref: "#/components/parameters/PageSize"
       responses:
         "200":
-          description: Inventory hierarchy
+          description: Paged inventory root nodes
           content:
             {
               application/json:
                 { schema: { $ref: "#/components/schemas/InventoryTree" } },
             }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /inventory/tree/{parent_id}/children:
+    parameters: [{ $ref: "#/components/parameters/InventoryTreeParentId" }]
+    get:
+      tags: [Inventory]
+      operationId: listInventoryTreeChildren
+      x-required-scopes: ["inventory:read"]
+      summary: List a typed inventory node's children
+      description: >-
+        Returns one bounded child page for a location or compute. Only the
+        product's typed containment edges are returned; arbitrary relationships
+        are not part of the inventory tree.
+      parameters:
+        - $ref: "#/components/parameters/Archived"
+        - $ref: "#/components/parameters/PageAfter"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200": { $ref: "#/components/responses/InventoryTreePageResponse" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+  /inventory/summary:
+    get:
+      tags: [Inventory]
+      operationId: getInventorySummary
+      x-required-scopes: ["inventory:read"]
+      summary: Read inventory compute and observed-container counts
+      responses:
+        "200":
+          description: Current inventory counts
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/InventorySummary" }
         "401": { $ref: "#/components/responses/Unauthorized" }
         "403": { $ref: "#/components/responses/Forbidden" }
   /computes/{compute_id}/summary:
@@ -1285,6 +1411,22 @@ paths:
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
         }
+  /computes/{compute_id}/collector-status:
+    parameters: [{ $ref: "#/components/parameters/ComputeId" }]
+    get:
+      tags: [Computes, Agents]
+      operationId: listComputeCollectorStatus
+      x-required-scopes: ["inventory:read"]
+      summary: Read independent discovery collector status for a compute
+      responses:
+        "200":
+          description: Collector receipt and failure state
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ComputeCollectorStatus" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
   /computes/{compute_id}/containers:
     parameters: [{ $ref: "#/components/parameters/ComputeId" }]
     get:
@@ -1352,6 +1494,12 @@ paths:
       operationId: getDashboardSummary
       x-required-scopes: ["inventory:read", "dns:read"]
       summary: Read dashboard aggregate metrics
+      description: >-
+        Dashboard source filters: offline computes use /computes?freshness=offline;
+        stale resources use /containers?stale=true and /ip-assignments?stale=true;
+        expiring domains use /domains?expiry_state=expiring; DNS pending counts use
+        /dns/names?projection_state=pending and DNS failures use
+        /dns/names?projection_state=failed; recurring costs use /costs?currency={currency}.
       responses:
         "200":
           description: Dashboard summary
@@ -1411,11 +1559,12 @@ paths:
       operationId: createEnrollmentToken
       x-required-scopes: [agents]
       summary: Create a single-use enrollment token bound to a compute
+      description: >-
+        The plaintext token is returned once and is never replayed. If the response
+        is lost, issue a replacement token for the same compute; the replacement
+        revokes the prior outstanding token.
       parameters:
-        [
-          { $ref: "#/components/parameters/IdempotencyKey" },
-          { $ref: "#/components/parameters/CsrfToken" },
-        ]
+        - $ref: "#/components/parameters/CsrfToken"
       requestBody:
         required: true
         content:
@@ -1434,6 +1583,7 @@ paths:
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
           "409": { $ref: "#/components/responses/Conflict" },
+          "413": { $ref: "#/components/responses/PayloadTooLarge" },
           "422": { $ref: "#/components/responses/ValidationFailed" },
         }
   /enrollment-tokens/{token_id}:
@@ -1467,6 +1617,7 @@ paths:
       responses:
         {
           "200": { $ref: "#/components/responses/AgentResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
@@ -1480,10 +1631,13 @@ paths:
       operationId: rotateAgentCredential
       x-required-scopes: [agents]
       summary: Revoke the agent credential and issue a new enrollment token
+      description: >-
+        Rotation immediately revokes the current agent credential and returns a
+        one-time enrollment token. The token is never replayed; if the response is
+        lost, issue a replacement enrollment token for the bound compute and enroll again.
       parameters:
         [
           { $ref: "#/components/parameters/IfMatch" },
-          { $ref: "#/components/parameters/IdempotencyKey" },
           { $ref: "#/components/parameters/CsrfToken" },
         ]
       requestBody:
@@ -1505,6 +1659,8 @@ paths:
           "404": { $ref: "#/components/responses/NotFound" },
           "409": { $ref: "#/components/responses/Conflict" },
           "412": { $ref: "#/components/responses/PreconditionFailed" },
+          "413": { $ref: "#/components/responses/PayloadTooLarge" },
+          "422": { $ref: "#/components/responses/ValidationFailed" },
         }
 
   /agent/v1/enroll:
@@ -1512,6 +1668,12 @@ paths:
       tags: [Agent protocol]
       operationId: enrollAgentV1
       summary: Exchange a single-use enrollment token for an agent credential
+      description: >-
+        Enrollment consumes the token exactly once and returns the agent credential
+        only in this no-store response. A lost response cannot be replayed; issue a
+        fresh credential by explicitly rotating the agent, then enroll with the
+        returned one-time token. If the rotation response is also lost, replace
+        its outstanding token for the bound compute.
       security:
         - enrollmentBearer: []
       requestBody:
@@ -1659,7 +1821,7 @@ paths:
           "404": { $ref: "#/components/responses/NotFound" },
         }
   /discovery-reports/{report_id}:
-    parameters: [{ $ref: "#/components/parameters/ReportId" }]
+    parameters: [{ $ref: "#/components/parameters/HistoryReportId" }]
     get:
       tags: [History]
       operationId: getDiscoveryReport
@@ -1683,7 +1845,7 @@ paths:
           "404": { $ref: "#/components/responses/NotFound" },
         }
   /discovery-reports/{report_id}/snapshot:
-    parameters: [{ $ref: "#/components/parameters/ReportId" }]
+    parameters: [{ $ref: "#/components/parameters/HistoryReportId" }]
     get:
       tags: [History]
       operationId: getDiscoveryReportSnapshot
@@ -1692,7 +1854,9 @@ paths:
       description: |
         Streams the stored gzip-compressed canonical JSON without materializing
         the complete document in memory. The decompressed JSON conforms to
-        CanonicalSnapshot and is bounded by the snapshot ingestion limits.
+        SnapshotDownload and is bounded by the snapshot ingestion limits. It
+        combines the requested report envelope and volatile measurements with
+        shared structural content. structural_sha256 hashes only structural bytes.
       x-streaming: true
       responses:
         {
@@ -1728,14 +1892,22 @@ paths:
       operationId: compareSnapshots
       x-required-scopes: [agents]
       summary: Compare two retained discovery snapshots
+      description: >-
+        Returns one bounded page of structured differences. Results are ordered
+        by change kind and stable resource key; continue with page[after] until
+        page.has_more is false. All pages refer to the same two retained reports.
       parameters:
+        - $ref: "#/components/parameters/PageAfter"
+        - $ref: "#/components/parameters/PageSize"
         - name: from
           in: query
           required: true
+          description: Server-assigned history id of the earlier retained report.
           schema: { $ref: "#/components/schemas/UuidV7" }
         - name: to
           in: query
           required: true
+          description: Server-assigned history id of the later retained report.
           schema: { $ref: "#/components/schemas/UuidV7" }
       responses:
         {
@@ -1841,6 +2013,7 @@ paths:
           "404": { $ref: "#/components/responses/NotFound" },
           "409": { $ref: "#/components/responses/Conflict" },
           "412": { $ref: "#/components/responses/PreconditionFailed" },
+          "413": { $ref: "#/components/responses/PayloadTooLarge" },
           "422": { $ref: "#/components/responses/ValidationFailed" },
         }
   /dns/zones/{zone_id}/disable:
@@ -1858,6 +2031,7 @@ paths:
       responses:
         {
           "200": { $ref: "#/components/responses/DnsZoneResponse" },
+          "400": { $ref: "#/components/responses/BadRequest" },
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
@@ -1893,6 +2067,10 @@ paths:
       operationId: listDnsImportCandidates
       x-required-scopes: ["dns:read"]
       summary: List grouped Cloudflare import candidates
+      description: >-
+        Returns importable records as supported sets and all unsupported,
+        malformed, conflicting, or already-managed records as rejected summaries.
+        Only the importable discriminator variant may be selected for preview.
       parameters:
         [
           { $ref: "#/components/parameters/PageAfter" },
@@ -1924,6 +2102,10 @@ paths:
       operationId: previewDnsImport
       x-required-scopes: ["dns:write"]
       summary: Preview selected provider records for import
+      description: >-
+        Only importable candidate IDs from the current observation are accepted.
+        At most 10 candidates may be selected so every proposed provider change
+        fits in the complete preview response; oversized selections return 422.
       parameters: [{ $ref: "#/components/parameters/CsrfToken" }]
       requestBody:
         required: true
@@ -1950,6 +2132,7 @@ paths:
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
           "409": { $ref: "#/components/responses/Conflict" },
+          "413": { $ref: "#/components/responses/PayloadTooLarge" },
           "422": { $ref: "#/components/responses/ValidationFailed" },
           "502": { $ref: "#/components/responses/ProviderUnavailable" },
         }
@@ -1960,6 +2143,7 @@ paths:
       operationId: applyDnsImport
       x-required-scopes: ["dns:write"]
       summary: Adopt selected provider records as desired state
+      description: Applies exactly the candidate IDs and preview fingerprint returned by a complete, non-truncated preview; the selection is limited to 10 candidates.
       parameters:
         [
           { $ref: "#/components/parameters/IdempotencyKeyRequired" },
@@ -1991,6 +2175,7 @@ paths:
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
           "409": { $ref: "#/components/responses/Conflict" },
+          "413": { $ref: "#/components/responses/PayloadTooLarge" },
           "422": { $ref: "#/components/responses/ValidationFailed" },
           "502": { $ref: "#/components/responses/ProviderUnavailable" },
         }
@@ -2000,6 +2185,12 @@ paths:
       operationId: listDnsNames
       x-required-scopes: ["dns:read"]
       summary: List and search DNS-name aggregates
+      description: >-
+        link_target_type and link_target_id are an all-or-none exact-target filter.
+        Supported target types are compute, container, and ip_assignment only.
+      x-query-constraints:
+        - parameters: [link_target_type, link_target_id]
+          relation: both_or_neither
       parameters:
         [
           { $ref: "#/components/parameters/PageAfter" },
@@ -2012,6 +2203,8 @@ paths:
           { $ref: "#/components/parameters/WildcardFilter" },
           { $ref: "#/components/parameters/ProxiedFilter" },
           { $ref: "#/components/parameters/ProjectionStateFilter" },
+          { $ref: "#/components/parameters/DnsLinkTargetTypeFilter" },
+          { $ref: "#/components/parameters/DnsLinkTargetIdFilter" },
         ]
       responses:
         {
@@ -2066,6 +2259,7 @@ paths:
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "409": { $ref: "#/components/responses/Conflict" },
+          "413": { $ref: "#/components/responses/PayloadTooLarge" },
           "422": { $ref: "#/components/responses/ValidationFailed" },
         }
   /dns/drafts/{draft_id}:
@@ -2087,6 +2281,7 @@ paths:
       operationId: updateDnsDraft
       x-required-scopes: ["dns:write"]
       summary: Replace draft content
+      description: Requires If-Match with the current draft revision. This does not use the target DNS name's base revision.
       parameters:
         [
           { $ref: "#/components/parameters/IfMatch" },
@@ -2108,6 +2303,7 @@ paths:
           "404": { $ref: "#/components/responses/NotFound" },
           "409": { $ref: "#/components/responses/Conflict" },
           "412": { $ref: "#/components/responses/PreconditionFailed" },
+          "413": { $ref: "#/components/responses/PayloadTooLarge" },
           "422": { $ref: "#/components/responses/ValidationFailed" },
         }
     delete:
@@ -2115,6 +2311,7 @@ paths:
       operationId: discardDnsDraft
       x-required-scopes: ["dns:write"]
       summary: Discard an unapplied draft
+      description: Requires If-Match with the current draft revision; discarding does not change the target DNS name.
       parameters:
         [
           { $ref: "#/components/parameters/IfMatch" },
@@ -2123,6 +2320,7 @@ paths:
       responses:
         {
           "204": { $ref: "#/components/responses/NoContent" },
+          "400": { $ref: "#/components/responses/BadRequest" },
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
@@ -2136,6 +2334,7 @@ paths:
       operationId: previewDnsDraft
       x-required-scopes: ["dns:write"]
       summary: Validate a draft and calculate provider diffs
+      description: Requires If-Match with the current draft revision. The preview is tied to the draft content and target-name base revision.
       parameters:
         [
           { $ref: "#/components/parameters/IfMatch" },
@@ -2152,11 +2351,13 @@ paths:
                     { schema: { $ref: "#/components/schemas/DnsPreview" } },
                 },
             },
+          "400": { $ref: "#/components/responses/BadRequest" },
           "401": { $ref: "#/components/responses/Unauthorized" },
           "403": { $ref: "#/components/responses/Forbidden" },
           "404": { $ref: "#/components/responses/NotFound" },
           "409": { $ref: "#/components/responses/Conflict" },
           "412": { $ref: "#/components/responses/PreconditionFailed" },
+          "413": { $ref: "#/components/responses/PayloadTooLarge" },
           "422": { $ref: "#/components/responses/ValidationFailed" },
           "502": { $ref: "#/components/responses/ProviderUnavailable" },
         }
@@ -2167,6 +2368,7 @@ paths:
       operationId: applyDnsDraft
       x-required-scopes: ["dns:write"]
       summary: Commit desired state and enqueue independent projections
+      description: Requires If-Match with the current draft revision. The request body's expected_base_revision is the target DNS name revision (zero for create).
       parameters:
         [
           { $ref: "#/components/parameters/IfMatch" },
@@ -2198,6 +2400,7 @@ paths:
           "404": { $ref: "#/components/responses/NotFound" },
           "409": { $ref: "#/components/responses/Conflict" },
           "412": { $ref: "#/components/responses/PreconditionFailed" },
+          "413": { $ref: "#/components/responses/PayloadTooLarge" },
           "422": { $ref: "#/components/responses/ValidationFailed" },
         }
   /dns/names/{name_id}/projections:
@@ -2381,7 +2584,7 @@ paths:
             },
           "503":
             {
-              description: Server is not ready,
+              description: "Server is not ready; the Problem body includes a readiness object with time and failed checks.",
               content:
                 {
                   application/problem+json:
@@ -2494,6 +2697,12 @@ components:
         required: true,
         schema: { $ref: "#/components/schemas/UuidV7" },
       }
+    InventoryTreeParentId:
+      name: parent_id
+      in: path
+      required: true
+      description: ID of a location or compute node whose typed containment children are requested.
+      schema: { $ref: "#/components/schemas/UuidV7" }
     ContainerId:
       {
         name: container_id,
@@ -2550,6 +2759,12 @@ components:
         required: true,
         schema: { $ref: "#/components/schemas/UuidV7" },
       }
+    HistoryReportId:
+      name: report_id
+      in: path
+      required: true
+      description: Server-assigned immutable history id (DiscoveryReport.id), not the client-supplied report_id.
+      schema: { $ref: "#/components/schemas/UuidV7" }
     ZoneId:
       {
         name: zone_id,
@@ -2601,6 +2816,11 @@ components:
         in: query,
         schema: { $ref: "#/components/schemas/UuidV7" },
       }
+    DomainExpiryStateFilter:
+      name: expiry_state
+      in: query
+      description: Filter domains by the server-computed expiry state.
+      schema: { $ref: "#/components/schemas/DomainExpiryState" }
     DomainFilter:
       {
         name: domain_id,
@@ -2670,6 +2890,16 @@ components:
         in: query,
         schema: { $ref: "#/components/schemas/DnsProjectionState" },
       }
+    DnsLinkTargetTypeFilter:
+      name: link_target_type
+      in: query
+      description: Must be supplied together with link_target_id.
+      schema: { $ref: "#/components/schemas/DnsLinkTargetType" }
+    DnsLinkTargetIdFilter:
+      name: link_target_id
+      in: query
+      description: Must be supplied together with link_target_type.
+      schema: { $ref: "#/components/schemas/UuidV7" }
     FromTime:
       {
         name: from_time,
@@ -2769,6 +2999,14 @@ components:
       }
     Conflict:
       description: "State, dependency, uniqueness, idempotency, or unmanaged-provider conflict"
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    PurgeConflict:
+      description: >-
+        Purge requires an archived target with all dependent resources, DNS links,
+        retained reports, and other blocking references explicitly removed. A
+        dependency_conflict problem includes bounded typed counts and navigable references.
       content:
         application/problem+json:
           schema: { $ref: "#/components/schemas/Problem" }
@@ -3093,6 +3331,16 @@ components:
               { schema: { $ref: "#/components/schemas/DiscoveryReportPage" } },
           },
       }
+    InventoryTreePageResponse:
+      description: Paged typed inventory tree children.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/InventoryTree" }
+    ContainerHistoryPageResponse:
+      description: Paged retained history for one logical container.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ContainerHistoryPage" }
     AuditEventPageResponse:
       {
         description: Audit event page,
@@ -3181,14 +3429,25 @@ components:
     UuidV7:
       type: string
       format: uuid
-      pattern: "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+      pattern: "^[0-9a-f]{8}-[0-9a-f]{4}-[47][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+      description: >-
+        New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and
+        references remain accepted for backward compatibility; records are not
+        re-keyed during migration or update.
       example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
     Timestamp:
       type: string
       format: date-time
       pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?Z$'
+      description: >-
+        RFC 3339 UTC; fractional seconds may be sent and are normalized to whole
+        seconds before persistence. Responses may serialize whole seconds.
       example: "2026-08-04T12:00:00Z"
-    Date: { type: string, format: date, pattern: '^\d{4}-\d{2}-\d{2}$' }
+    Date:
+      type: string
+      format: date
+      pattern: '^\d{4}-\d{2}-\d{2}$'
+      description: Calendar date in YYYY-MM-DD form with no timezone conversion.
     Revision: { type: integer, format: int64, minimum: 1 }
     EntityTag:
       {
@@ -3196,7 +3455,181 @@ components:
         pattern: '^"revision-[1-9][0-9]*"$',
         example: '"revision-7"',
       }
-    CurrencyCode: { type: string, pattern: "^[A-Z]{3}$", example: EUR }
+    CurrencyCode:
+      type: string
+      pattern: "^[A-Z]{3}$"
+      description: >-
+        Supported ISO 4217 currency codes from the pinned SIX List One catalog
+        published 2026-09-17. The server derives currency_exponent; unsupported
+        codes are rejected rather than assigned a guessed exponent.
+      enum:
+        [
+          AED,
+          AFN,
+          ALL,
+          AMD,
+          AOA,
+          ARS,
+          AUD,
+          AWG,
+          AZN,
+          BAM,
+          BBD,
+          BDT,
+          BHD,
+          BIF,
+          BMD,
+          BND,
+          BOB,
+          BOV,
+          BRL,
+          BSD,
+          BTN,
+          BWP,
+          BYN,
+          BZD,
+          CAD,
+          CDF,
+          CHE,
+          CHF,
+          CHW,
+          CLF,
+          CLP,
+          CNY,
+          COP,
+          COU,
+          CRC,
+          CUP,
+          CVE,
+          CZK,
+          DJF,
+          DKK,
+          DOP,
+          DZD,
+          EGP,
+          ERN,
+          ETB,
+          EUR,
+          FJD,
+          FKP,
+          GBP,
+          GEL,
+          GHS,
+          GIP,
+          GMD,
+          GNF,
+          GTQ,
+          GYD,
+          HKD,
+          HNL,
+          HTG,
+          HUF,
+          IDR,
+          ILS,
+          INR,
+          IQD,
+          IRR,
+          ISK,
+          JMD,
+          JOD,
+          JPY,
+          KES,
+          KGS,
+          KHR,
+          KMF,
+          KPW,
+          KRW,
+          KWD,
+          KYD,
+          KZT,
+          LAK,
+          LBP,
+          LKR,
+          LRD,
+          LSL,
+          LYD,
+          MAD,
+          MDL,
+          MGA,
+          MKD,
+          MMK,
+          MNT,
+          MOP,
+          MRU,
+          MUR,
+          MVR,
+          MWK,
+          MXN,
+          MXV,
+          MYR,
+          MZN,
+          NAD,
+          NGN,
+          NIO,
+          NOK,
+          NPR,
+          NZD,
+          OMR,
+          PAB,
+          PEN,
+          PGK,
+          PHP,
+          PKR,
+          PLN,
+          PYG,
+          QAR,
+          RON,
+          RSD,
+          RUB,
+          RWF,
+          SAR,
+          SBD,
+          SCR,
+          SDG,
+          SEK,
+          SGD,
+          SHP,
+          SLE,
+          SOS,
+          SRD,
+          SSP,
+          STN,
+          SVC,
+          SYP,
+          SZL,
+          THB,
+          TJS,
+          TMT,
+          TND,
+          TOP,
+          TRY,
+          TTD,
+          TWD,
+          TZS,
+          UAH,
+          UGX,
+          USD,
+          USN,
+          UYI,
+          UYU,
+          UYW,
+          UZS,
+          VED,
+          VES,
+          VND,
+          VUV,
+          WST,
+          XAD,
+          XAF,
+          XCD,
+          XCG,
+          XOF,
+          XPF,
+          YER,
+          ZAR,
+          ZMW,
+          ZWG,
+        ]
     Money:
       type: object
       additionalProperties: false
@@ -3211,7 +3644,13 @@ components:
           }
         currency: { $ref: "#/components/schemas/CurrencyCode" }
         currency_exponent:
-          { type: integer, minimum: 0, maximum: 4, readOnly: true }
+          {
+            type: integer,
+            minimum: 0,
+            maximum: 4,
+            readOnly: true,
+            description: Server-derived ISO 4217 minor-unit exponent; never supplied by clients.,
+          }
     PageInfo:
       type: object
       additionalProperties: false
@@ -3268,6 +3707,12 @@ components:
             maxItems: 100,
             items: { $ref: "#/components/schemas/Violation" },
           }
+        dependency_details:
+          allOf: [{ $ref: "#/components/schemas/PurgeDependencyDetails" }]
+          description: Present on dependency_conflict responses from permanent purge operations.
+        readiness:
+          allOf: [{ $ref: "#/components/schemas/ReadinessStatus" }]
+          description: Readiness time and checks included with a 503 from /health/ready.
       example:
         type: https://portinaia.invalid/problems/validation_failed
         title: Request validation failed
@@ -3366,12 +3811,14 @@ components:
         page: { $ref: "#/components/schemas/PageInfo" }
 
     ProviderRole:
-      {
-        type: string,
-        enum: [hosting_provider, registrar, hardware_vendor, other],
-      }
+      type: string
+      enum: [hosting_provider, registrar, hardware_vendor, other]
+      description: hosting_provider is persisted as SQL role hosting.
+      x-sql-enum-mapping:
+        hosting_provider: hosting
     ProviderWrite:
       type: object
+      additionalProperties: false
       required: [name, roles, tag_ids]
       properties:
         name: { type: string, minLength: 1, maxLength: 200 }
@@ -3396,9 +3843,40 @@ components:
             items: { $ref: "#/components/schemas/UuidV7" },
           }
     Provider:
-      allOf:
-        - $ref: "#/components/schemas/ResourceMetadata"
-        - $ref: "#/components/schemas/ProviderWrite"
+      type: object
+      additionalProperties: false
+      required: [id, created_at, updated_at, revision, name, roles, tag_ids]
+      properties:
+        id: { $ref: "#/components/schemas/UuidV7" }
+        created_at: { $ref: "#/components/schemas/Timestamp" }
+        updated_at: { $ref: "#/components/schemas/Timestamp" }
+        revision: { type: integer, minimum: 1 }
+        archived_at:
+          {
+            allOf: [{ $ref: "#/components/schemas/Timestamp" }],
+            nullable: true,
+          }
+        name: { type: string, minLength: 1, maxLength: 200 }
+        website: { type: string, format: uri, maxLength: 2048, nullable: true }
+        roles:
+          {
+            type: array,
+            minItems: 1,
+            maxItems: 4,
+            uniqueItems: true,
+            items: { $ref: "#/components/schemas/ProviderRole" },
+          }
+        external_account_reference:
+          { type: string, maxLength: 200, nullable: true }
+        description: { type: string, maxLength: 2000 }
+        notes: { type: string, maxLength: 10000 }
+        tag_ids:
+          {
+            type: array,
+            maxItems: 100,
+            uniqueItems: true,
+            items: { $ref: "#/components/schemas/UuidV7" },
+          }
     ProviderPage:
       type: object
       additionalProperties: false
@@ -3417,6 +3895,7 @@ components:
     LocationType: { type: string, enum: [site, provider_region] }
     LocationWrite:
       type: object
+      additionalProperties: false
       required: [type, name, tag_ids]
       properties:
         type: { $ref: "#/components/schemas/LocationType" }
@@ -3457,6 +3936,7 @@ components:
     ComputeOwnership: { type: string, enum: [owned, rented, other] }
     ComputeWrite:
       type: object
+      additionalProperties: false
       required: [kind, display_name, ownership, tag_ids]
       properties:
         kind: { $ref: "#/components/schemas/ComputeKind" }
@@ -3489,10 +3969,15 @@ components:
     InterfaceAddress:
       type: object
       additionalProperties: false
-      required: [address, prefix_length]
+      required: [address]
       properties:
         address: { type: string, format: ip, maxLength: 45 }
-        prefix_length: { type: integer, minimum: 0, maximum: 128 }
+        prefix_length:
+          type: integer
+          minimum: 0
+          maximum: 128
+          nullable: true
+          description: Unknown prefix remains null; the server does not fabricate a network prefix.
         scope: { $ref: "#/components/schemas/IpScope" }
     NetworkInterfaceObservation:
       type: object
@@ -3551,6 +4036,38 @@ components:
             items: { $ref: "#/components/schemas/DiskObservation" },
           }
     AgentStatus: { type: string, enum: [online, offline, revoked] }
+    CollectorObservation:
+      type: object
+      additionalProperties: false
+      required: [collector_key, collector, last_status, last_received_at]
+      properties:
+        collector_key: { type: string, minLength: 1, maxLength: 64 }
+        collector:
+          { type: string, enum: [host, interfaces, disks, filesystems, podman] }
+        owner_uid:
+          { type: integer, minimum: 0, maximum: 4294967295, nullable: true }
+        connection_name: { type: string, maxLength: 200, nullable: true }
+        last_status: { type: string, enum: [success, failed] }
+        last_received_at: { $ref: "#/components/schemas/Timestamp" }
+        last_report_id: { allOf: [{ $ref: "#/components/schemas/UuidV7" }] }
+        last_successful_at:
+          { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+        last_successful_report_id:
+          { allOf: [{ $ref: "#/components/schemas/UuidV7" }] }
+        last_failed_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+        last_failed_report_id:
+          { allOf: [{ $ref: "#/components/schemas/UuidV7" }] }
+        last_error_code: { type: string, maxLength: 100 }
+        last_error_message: { type: string, maxLength: 2000 }
+    ComputeCollectorStatus:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items:
+          type: array
+          maxItems: 68
+          items: { $ref: "#/components/schemas/CollectorObservation" }
     ComputeAgentStatus:
       { type: string, enum: [unenrolled, online, offline, revoked] }
     Compute:
@@ -3620,8 +4137,20 @@ components:
           {
             type: array,
             maxItems: 64,
-            items: { type: string, format: ip, maxLength: 45 },
+            items: { $ref: "#/components/schemas/ContainerAddress" },
           }
+    ContainerAddress:
+      type: object
+      additionalProperties: false
+      required: [address]
+      properties:
+        address: { type: string, format: ip, maxLength: 45 }
+        prefix_length:
+          type: integer
+          minimum: 0
+          maximum: 128
+          nullable: true
+          description: Unknown prefix remains null; the server does not fabricate a network prefix.
     ContainerMount:
       type: object
       additionalProperties: false
@@ -3638,6 +4167,13 @@ components:
       properties:
         key: { type: string, minLength: 1, maxLength: 255 }
         value: { type: string, maxLength: 4096 }
+    ContainerRestartPolicy:
+      type: string
+      enum: [no, always, on_failure, unless_stopped, unknown]
+      description: API on_failure and unless_stopped map to persisted SQL on-failure and unless-stopped; unknown is preserved.
+      x-sql-enum-mapping:
+        on_failure: on-failure
+        unless_stopped: unless-stopped
     ContainerObservation:
       type: object
       additionalProperties: false
@@ -3669,11 +4205,7 @@ components:
           { type: string, enum: [none, starting, healthy, unhealthy, unknown] }
         created_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
         started_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
-        restart_policy:
-          {
-            type: string,
-            enum: [no, always, on_failure, unless_stopped, unknown],
-          }
+        restart_policy: { $ref: "#/components/schemas/ContainerRestartPolicy" }
         restart_maximum_retry_count:
           { type: integer, minimum: 0, maximum: 2147483647 }
         ports:
@@ -3707,11 +4239,12 @@ components:
       allOf:
         - $ref: "#/components/schemas/ResourceMetadata"
         - type: object
-          required: [compute_id, podman_owner, name, tag_ids]
+          required: [compute_id, podman_owner_uid, name, tag_ids]
           properties:
             compute_id: { $ref: "#/components/schemas/UuidV7" }
             podman_connection: { type: string, minLength: 1, maxLength: 200 }
-            podman_owner: { type: string, minLength: 1, maxLength: 200 }
+            podman_owner_uid:
+              { type: integer, format: int64, minimum: 0, maximum: 4294967295 }
             name: { type: string, minLength: 1, maxLength: 255 }
             description: { type: string, maxLength: 2000 }
             notes: { type: string, maxLength: 10000 }
@@ -3747,6 +4280,7 @@ components:
     IpAssignmentSource: { type: string, enum: [manual, discovered] }
     IpAssignmentWrite:
       type: object
+      additionalProperties: false
       required: [address, scope, primary]
       properties:
         address: { type: string, format: ip, maxLength: 45 }
@@ -3798,14 +4332,15 @@ components:
 
     DomainWrite:
       type: object
+      additionalProperties: false
       required: [name, nameservers, tag_ids]
       properties:
         name:
           {
             type: string,
             minLength: 1,
-            maxLength: 253,
-            pattern: "^[a-z0-9.-]+$",
+            maxLength: 254,
+            description: Unicode or ASCII domain input; the server removes a trailing dot and stores lowercase IDNA ASCII.,
           }
         registrar_provider_id: { $ref: "#/components/schemas/UuidV7" }
         registered_on: { $ref: "#/components/schemas/Date" }
@@ -3820,8 +4355,8 @@ components:
               {
                 type: string,
                 minLength: 1,
-                maxLength: 253,
-                pattern: "^[a-z0-9.-]+$",
+                maxLength: 254,
+                description: Unicode or ASCII hostname; the server normalizes to lowercase IDNA ASCII.,
               },
           }
         description: { type: string, maxLength: 2000 }
@@ -3833,6 +4368,8 @@ components:
             uniqueItems: true,
             items: { $ref: "#/components/schemas/UuidV7" },
           }
+    DomainExpiryState:
+      { type: string, enum: [unknown, current, expiring, expired] }
     Domain:
       allOf:
         - $ref: "#/components/schemas/ResourceMetadata"
@@ -3840,8 +4377,7 @@ components:
         - type: object
           required: [expiry_state]
           properties:
-            expiry_state:
-              { type: string, enum: [unknown, current, expiring, expired] }
+            expiry_state: { $ref: "#/components/schemas/DomainExpiryState" }
             dns_zone_id: { allOf: [{ $ref: "#/components/schemas/UuidV7" }] }
     DomainPage:
       type: object
@@ -3861,6 +4397,7 @@ components:
     CostType: { type: string, enum: [recurring, one_time] }
     RecurringCostWrite:
       type: object
+      additionalProperties: false
       required:
         [owner_type, owner_id, type, amount, billing_interval, effective_from]
       not: { required: [charged_on] }
@@ -3880,6 +4417,7 @@ components:
         provider_reference: { type: string, maxLength: 500 }
     OneTimeCostWrite:
       type: object
+      additionalProperties: false
       required: [owner_type, owner_id, type, amount, charged_on]
       not:
         anyOf:
@@ -3928,6 +4466,7 @@ components:
 
     TagWrite:
       type: object
+      additionalProperties: false
       required: [name, display_name]
       properties:
         name:
@@ -3939,13 +4478,13 @@ components:
           }
         display_name: { type: string, minLength: 1, maxLength: 100 }
     Tag:
-      {
-        allOf:
-          [
-            { $ref: "#/components/schemas/ResourceMetadata" },
-            { $ref: "#/components/schemas/TagWrite" },
-          ],
-      }
+      description: >-
+        A mutable tag. revision is the tag's own monotonic revision; archived_at
+        is null while active. Purging requires administrative scope, archival,
+        and detachment from all tagged resources.
+      allOf:
+        - $ref: "#/components/schemas/ResourceMetadata"
+        - $ref: "#/components/schemas/TagWrite"
     TagPage:
       type: object
       additionalProperties: false
@@ -3964,30 +4503,42 @@ components:
     InventoryTreeNode:
       type: object
       additionalProperties: false
-      required: [id, kind, name, archived, children]
+      required: [id, kind, name, archived, has_children]
       properties:
         id: { $ref: "#/components/schemas/UuidV7" }
         kind: { type: string, enum: [location, compute, container] }
         name: { type: string, minLength: 1, maxLength: 255 }
         archived: { type: boolean }
-        children:
-          {
-            type: array,
-            maxItems: 1000,
-            items: { $ref: "#/components/schemas/InventoryTreeNode" },
-          }
+        has_children: { type: boolean }
     InventoryTree:
       type: object
       additionalProperties: false
-      required: [roots, truncated]
+      required: [items, page]
       properties:
-        roots:
-          {
-            type: array,
-            maxItems: 5000,
-            items: { $ref: "#/components/schemas/InventoryTreeNode" },
-          }
-        truncated: { type: boolean }
+        items:
+          type: array
+          maxItems: 200
+          items: { $ref: "#/components/schemas/InventoryTreeNode" }
+        page: { $ref: "#/components/schemas/PageInfo" }
+    InventorySummary:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          compute_count,
+          physical_compute_count,
+          vps_count,
+          vm_count,
+          observed_container_count,
+          stale_container_count,
+        ]
+      properties:
+        compute_count: { type: integer, minimum: 0 }
+        physical_compute_count: { type: integer, minimum: 0 }
+        vps_count: { type: integer, minimum: 0 }
+        vm_count: { type: integer, minimum: 0 }
+        observed_container_count: { type: integer, minimum: 0 }
+        stale_container_count: { type: integer, minimum: 0 }
     ComputeSummary:
       type: object
       additionalProperties: false
@@ -4253,6 +4804,37 @@ components:
         uptime_seconds: { type: integer, format: int64, minimum: 0 }
         virtualization_role:
           { type: string, enum: [none, host, guest, unknown] }
+    HostCollectionWriteSuccess:
+      type: object
+      description: A complete authoritative host fact result; missing optional scalars remain unknown.
+      additionalProperties: false
+      required: [status, host]
+      properties:
+        status: { type: string, enum: [success] }
+        host: { $ref: "#/components/schemas/HostSnapshot" }
+    HostCollectionWriteFailed:
+      type: object
+      description: Failed host collection; contains no authoritative host facts.
+      additionalProperties: false
+      required: [status, error]
+      properties:
+        status: { type: string, enum: [failed] }
+        error:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 2000,
+            description: Sanitized collector error.,
+          }
+    HostCollectionWrite:
+      oneOf:
+        - $ref: "#/components/schemas/HostCollectionWriteSuccess"
+        - $ref: "#/components/schemas/HostCollectionWriteFailed"
+      discriminator:
+        propertyName: status
+        mapping:
+          success: "#/components/schemas/HostCollectionWriteSuccess"
+          failed: "#/components/schemas/HostCollectionWriteFailed"
     DiskSnapshot:
       type: object
       additionalProperties: false
@@ -4261,6 +4843,40 @@ components:
         name: { type: string, minLength: 1, maxLength: 255 }
         model: { type: string, maxLength: 500 }
         size_bytes: { type: integer, format: int64, minimum: 0 }
+    DiskCollectionWriteSuccess:
+      type: object
+      description: A complete authoritative disk inventory; an empty array means no disks were observed.
+      additionalProperties: false
+      required: [status, disks]
+      properties:
+        status: { type: string, enum: [success] }
+        disks:
+          type: array
+          maxItems: 1024
+          items: { $ref: "#/components/schemas/DiskSnapshot" }
+    DiskCollectionWriteFailed:
+      type: object
+      description: Failed disk collection; contains no authoritative disk inventory.
+      additionalProperties: false
+      required: [status, error]
+      properties:
+        status: { type: string, enum: [failed] }
+        error:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 2000,
+            description: Sanitized collector error.,
+          }
+    DiskCollectionWrite:
+      oneOf:
+        - $ref: "#/components/schemas/DiskCollectionWriteSuccess"
+        - $ref: "#/components/schemas/DiskCollectionWriteFailed"
+      discriminator:
+        propertyName: status
+        mapping:
+          success: "#/components/schemas/DiskCollectionWriteSuccess"
+          failed: "#/components/schemas/DiskCollectionWriteFailed"
     FilesystemSnapshot:
       type: object
       additionalProperties: false
@@ -4271,6 +4887,40 @@ components:
         mount_point: { type: string, minLength: 1, maxLength: 4096 }
         total_bytes: { type: integer, format: int64, minimum: 0 }
         available_bytes: { type: integer, format: int64, minimum: 0 }
+    FilesystemCollectionWriteSuccess:
+      type: object
+      description: A complete authoritative filesystem inventory; an empty array means no filesystems were observed.
+      additionalProperties: false
+      required: [status, filesystems]
+      properties:
+        status: { type: string, enum: [success] }
+        filesystems:
+          type: array
+          maxItems: 4096
+          items: { $ref: "#/components/schemas/FilesystemSnapshot" }
+    FilesystemCollectionWriteFailed:
+      type: object
+      description: Failed filesystem collection; contains no authoritative filesystem inventory.
+      additionalProperties: false
+      required: [status, error]
+      properties:
+        status: { type: string, enum: [failed] }
+        error:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 2000,
+            description: Sanitized collector error.,
+          }
+    FilesystemCollectionWrite:
+      oneOf:
+        - $ref: "#/components/schemas/FilesystemCollectionWriteSuccess"
+        - $ref: "#/components/schemas/FilesystemCollectionWriteFailed"
+      discriminator:
+        propertyName: status
+        mapping:
+          success: "#/components/schemas/FilesystemCollectionWriteSuccess"
+          failed: "#/components/schemas/FilesystemCollectionWriteFailed"
     SnapshotContainer:
       type: object
       additionalProperties: false
@@ -4302,11 +4952,7 @@ components:
           { type: string, enum: [none, starting, healthy, unhealthy, unknown] }
         created_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
         started_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
-        restart_policy:
-          {
-            type: string,
-            enum: [no, always, on_failure, unless_stopped, unknown],
-          }
+        restart_policy: { $ref: "#/components/schemas/ContainerRestartPolicy" }
         restart_maximum_retry_count:
           { type: integer, minimum: 0, maximum: 2147483647 }
         ports:
@@ -4333,13 +4979,15 @@ components:
             maxItems: 512,
             items: { $ref: "#/components/schemas/ContainerLabel" },
           }
-    PodmanCollectionSuccess:
+    PodmanCollectionWriteSuccess:
       type: object
+      description: A complete authoritative container inventory for this connection and numeric owner UID.
       additionalProperties: false
-      required: [connection, owner, status, containers]
+      required: [connection, owner_uid, status, containers]
       properties:
         connection: { type: string, minLength: 1, maxLength: 200 }
-        owner: { type: string, minLength: 1, maxLength: 200 }
+        owner_uid:
+          { type: integer, format: int64, minimum: 0, maximum: 4294967295 }
         status: { type: string, enum: [success] }
         containers:
           {
@@ -4347,27 +4995,251 @@ components:
             maxItems: 10000,
             items: { $ref: "#/components/schemas/SnapshotContainer" },
           }
-    PodmanCollectionFailed:
+    PodmanCollectionWriteFailed:
       type: object
+      description: Failed Podman collection for a numeric owner UID; partial container inventories are discarded.
       additionalProperties: false
-      required: [connection, owner, status, error]
+      required: [connection, owner_uid, status, error]
       properties:
         connection: { type: string, minLength: 1, maxLength: 200 }
-        owner: { type: string, minLength: 1, maxLength: 200 }
+        owner_uid:
+          { type: integer, format: int64, minimum: 0, maximum: 4294967295 }
         status: { type: string, enum: [failed] }
-        error: { type: string, minLength: 1, maxLength: 2000 }
-    PodmanCollection:
+        error:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 2000,
+            description: Sanitized collector error.,
+          }
+    PodmanCollectionWrite:
       oneOf:
-        - $ref: "#/components/schemas/PodmanCollectionSuccess"
-        - $ref: "#/components/schemas/PodmanCollectionFailed"
+        - $ref: "#/components/schemas/PodmanCollectionWriteSuccess"
+        - $ref: "#/components/schemas/PodmanCollectionWriteFailed"
       discriminator:
         propertyName: status
         mapping:
-          success: "#/components/schemas/PodmanCollectionSuccess"
-          failed: "#/components/schemas/PodmanCollectionFailed"
+          success: "#/components/schemas/PodmanCollectionWriteSuccess"
+          failed: "#/components/schemas/PodmanCollectionWriteFailed"
+    InterfaceCollectionWriteSuccess:
+      type: object
+      description: A complete authoritative interface inventory; an empty array means no interfaces were observed.
+      additionalProperties: false
+      required: [status, interfaces]
+      properties:
+        status: { type: string, enum: [success] }
+        interfaces:
+          type: array
+          maxItems: 1024
+          items: { $ref: "#/components/schemas/NetworkInterfaceObservation" }
+    InterfaceCollectionWriteFailed:
+      type: object
+      description: Failed interface collection; contains no authoritative interface inventory.
+      additionalProperties: false
+      required: [status, error]
+      properties:
+        status: { type: string, enum: [failed] }
+        error:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 2000,
+            description: Sanitized collector error.,
+          }
+    InterfaceCollectionWrite:
+      oneOf:
+        - $ref: "#/components/schemas/InterfaceCollectionWriteSuccess"
+        - $ref: "#/components/schemas/InterfaceCollectionWriteFailed"
+      discriminator:
+        propertyName: status
+        mapping:
+          success: "#/components/schemas/InterfaceCollectionWriteSuccess"
+          failed: "#/components/schemas/InterfaceCollectionWriteFailed"
+    CollectorErrorCode:
+      type: string
+      minLength: 1
+      maxLength: 100
+      pattern: "^[a-z0-9_]+$"
+      description: Stable sanitized code included in structural content; diagnostic text belongs to the per-report envelope.
+    StructuralHostSnapshot:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          machine_id,
+          hostname,
+          os_name,
+          os_version,
+          kernel_version,
+          architecture,
+          logical_cpu_count,
+          memory_bytes,
+        ]
+      properties:
+        machine_id: { type: string, minLength: 1, maxLength: 255 }
+        hostname: { type: string, minLength: 1, maxLength: 253 }
+        os_name: { type: string, minLength: 1, maxLength: 255 }
+        os_version: { type: string, maxLength: 255 }
+        kernel_version: { type: string, minLength: 1, maxLength: 255 }
+        architecture: { type: string, minLength: 1, maxLength: 64 }
+        cpu_model: { type: string, maxLength: 500 }
+        logical_cpu_count: { type: integer, minimum: 1, maximum: 65536 }
+        memory_bytes: { type: integer, format: int64, minimum: 0 }
+        boot_id: { type: string, maxLength: 255 }
+        booted_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+        virtualization_role:
+          { type: string, enum: [none, host, guest, unknown] }
+    StructuralFilesystemSnapshot:
+      type: object
+      additionalProperties: false
+      required: [device, filesystem, mount_point, total_bytes]
+      properties:
+        device: { type: string, minLength: 1, maxLength: 4096 }
+        filesystem: { type: string, minLength: 1, maxLength: 100 }
+        mount_point: { type: string, minLength: 1, maxLength: 4096 }
+        total_bytes: { type: integer, format: int64, minimum: 0 }
+    HostCollectionSuccess:
+      type: object
+      additionalProperties: false
+      required: [status, host]
+      properties:
+        status: { type: string, enum: [success] }
+        host: { $ref: "#/components/schemas/StructuralHostSnapshot" }
+    HostCollectionFailed:
+      type: object
+      additionalProperties: false
+      required: [status, error_code]
+      properties:
+        status: { type: string, enum: [failed] }
+        error_code: { $ref: "#/components/schemas/CollectorErrorCode" }
+    HostCollection:
+      oneOf:
+        - $ref: "#/components/schemas/HostCollectionSuccess"
+        - $ref: "#/components/schemas/HostCollectionFailed"
+      discriminator:
+        propertyName: status
+        mapping:
+          success: "#/components/schemas/HostCollectionSuccess"
+          failed: "#/components/schemas/HostCollectionFailed"
+    DiskCollectionSuccess:
+      type: object
+      additionalProperties: false
+      required: [status, disks]
+      properties:
+        status: { type: string, enum: [success] }
+        disks:
+          type: array
+          maxItems: 1024
+          items: { $ref: "#/components/schemas/DiskSnapshot" }
+    DiskCollectionFailed:
+      type: object
+      additionalProperties: false
+      required: [status, error_code]
+      properties:
+        status: { type: string, enum: [failed] }
+        error_code: { $ref: "#/components/schemas/CollectorErrorCode" }
+    DiskCollection:
+      oneOf:
+        - $ref: "#/components/schemas/DiskCollectionSuccess"
+        - $ref: "#/components/schemas/DiskCollectionFailed"
+      discriminator:
+        propertyName: status
+        mapping:
+          success: "#/components/schemas/DiskCollectionSuccess"
+          failed: "#/components/schemas/DiskCollectionFailed"
+    InterfaceCollectionSuccess:
+      type: object
+      additionalProperties: false
+      required: [status, interfaces]
+      properties:
+        status: { type: string, enum: [success] }
+        interfaces:
+          type: array
+          maxItems: 1024
+          items: { $ref: "#/components/schemas/NetworkInterfaceObservation" }
+    InterfaceCollectionFailed:
+      type: object
+      additionalProperties: false
+      required: [status, error_code]
+      properties:
+        status: { type: string, enum: [failed] }
+        error_code: { $ref: "#/components/schemas/CollectorErrorCode" }
+    InterfaceCollection:
+      oneOf:
+        - $ref: "#/components/schemas/InterfaceCollectionSuccess"
+        - $ref: "#/components/schemas/InterfaceCollectionFailed"
+      discriminator:
+        propertyName: status
+        mapping:
+          success: "#/components/schemas/InterfaceCollectionSuccess"
+          failed: "#/components/schemas/InterfaceCollectionFailed"
+    FilesystemCollectionSuccess:
+      type: object
+      additionalProperties: false
+      required: [status, filesystems]
+      properties:
+        status: { type: string, enum: [success] }
+        filesystems:
+          type: array
+          maxItems: 4096
+          items: { $ref: "#/components/schemas/StructuralFilesystemSnapshot" }
+    FilesystemCollectionFailed:
+      type: object
+      additionalProperties: false
+      required: [status, error_code]
+      properties:
+        status: { type: string, enum: [failed] }
+        error_code: { $ref: "#/components/schemas/CollectorErrorCode" }
+    FilesystemCollection:
+      oneOf:
+        - $ref: "#/components/schemas/FilesystemCollectionSuccess"
+        - $ref: "#/components/schemas/FilesystemCollectionFailed"
+      discriminator:
+        propertyName: status
+        mapping:
+          success: "#/components/schemas/FilesystemCollectionSuccess"
+          failed: "#/components/schemas/FilesystemCollectionFailed"
+    StructuralPodmanCollectionSuccess:
+      type: object
+      description: A complete authoritative snapshot for this connection and numeric owner UID.
+      additionalProperties: false
+      required: [connection, owner_uid, status, containers]
+      properties:
+        connection: { type: string, minLength: 1, maxLength: 200 }
+        owner_uid:
+          { type: integer, format: int64, minimum: 0, maximum: 4294967295 }
+        status: { type: string, enum: [success] }
+        containers:
+          type: array
+          maxItems: 10000
+          items: { $ref: "#/components/schemas/SnapshotContainer" }
+    StructuralPodmanCollectionFailed:
+      type: object
+      description: Failed collection for this connection and numeric owner UID.
+      additionalProperties: false
+      required: [connection, owner_uid, status, error_code]
+      properties:
+        connection: { type: string, minLength: 1, maxLength: 200 }
+        owner_uid:
+          { type: integer, format: int64, minimum: 0, maximum: 4294967295 }
+        status: { type: string, enum: [failed] }
+        error_code: { $ref: "#/components/schemas/CollectorErrorCode" }
+    StructuralPodmanCollection:
+      oneOf:
+        - $ref: "#/components/schemas/StructuralPodmanCollectionSuccess"
+        - $ref: "#/components/schemas/StructuralPodmanCollectionFailed"
+      discriminator:
+        propertyName: status
+        mapping:
+          success: "#/components/schemas/StructuralPodmanCollectionSuccess"
+          failed: "#/components/schemas/StructuralPodmanCollectionFailed"
     DiscoverySnapshotWrite:
       type: object
       additionalProperties: false
+      description: >-
+        Agent report retries retain the same report ID and payload for at most 90
+        days from collection start. Older reports are rejected and cannot reapply
+        stale observations after report-retention cleanup.
       required:
         [
           report_id,
@@ -4388,43 +5260,35 @@ components:
         client_version: { type: string, minLength: 1, maxLength: 100 }
         collection_started_at: { $ref: "#/components/schemas/Timestamp" }
         collection_finished_at: { $ref: "#/components/schemas/Timestamp" }
-        host: { $ref: "#/components/schemas/HostSnapshot" }
-        disks:
-          {
-            type: array,
-            maxItems: 1024,
-            items: { $ref: "#/components/schemas/DiskSnapshot" },
-          }
-        interfaces:
-          {
-            type: array,
-            maxItems: 1024,
-            items: { $ref: "#/components/schemas/NetworkInterfaceObservation" },
-          }
-        filesystems:
-          {
-            type: array,
-            maxItems: 4096,
-            items: { $ref: "#/components/schemas/FilesystemSnapshot" },
-          }
+        host: { $ref: "#/components/schemas/HostCollectionWrite" }
+        disks: { $ref: "#/components/schemas/DiskCollectionWrite" }
+        interfaces: { $ref: "#/components/schemas/InterfaceCollectionWrite" }
+        filesystems: { $ref: "#/components/schemas/FilesystemCollectionWrite" }
         podman:
           {
             type: array,
             maxItems: 64,
-            items: { $ref: "#/components/schemas/PodmanCollection" },
+            items: { $ref: "#/components/schemas/PodmanCollectionWrite" },
           }
         errors:
-          {
-            type: array,
-            maxItems: 256,
-            items: { $ref: "#/components/schemas/CollectionError" },
-          }
+          type: array
+          maxItems: 256
+          description: >-
+            Additional sanitized diagnostics only. Host, disk, interface,
+            filesystem, and Podman outcomes are represented by their own
+            collector unions.
+          items: { $ref: "#/components/schemas/CollectionError" }
     SnapshotAcceptance:
       type: object
       additionalProperties: false
       required:
         [
+          id,
           report_id,
+          protocol_version,
+          client_version,
+          collection_started_at,
+          collection_finished_at,
           result,
           received_at,
           content_reused,
@@ -4433,10 +5297,31 @@ components:
           schedule,
         ]
       properties:
+        id:
+          allOf: [{ $ref: "#/components/schemas/UuidV7" }]
+          description: Server-assigned immutable history id for this accepted report.
         report_id: { $ref: "#/components/schemas/UuidV7" }
+        protocol_version: { type: integer, minimum: 1 }
+        client_version:
+          type: string
+          minLength: 1
+          maxLength: 100
+          nullable: true
+          description: Null for schema-1 reports where client version was not retained.
+        collection_started_at:
+          allOf: [{ $ref: "#/components/schemas/Timestamp" }]
+          nullable: true
+          description: Null for schema-1 reports without a stored collection-start value.
+        collection_finished_at:
+          allOf: [{ $ref: "#/components/schemas/Timestamp" }]
+          nullable: true
+          description: Null for schema-1 reports without a stored collection-finish value.
         result: { type: string, enum: [accepted, accepted_with_errors] }
         received_at: { $ref: "#/components/schemas/Timestamp" }
-        content_reused: { type: boolean }
+        content_reused:
+          type: boolean
+          nullable: true
+          description: Null when reuse status predates report-envelope storage.
         server_time: { $ref: "#/components/schemas/Timestamp" }
         accepted_protocol: { $ref: "#/components/schemas/ProtocolRange" }
         schedule: { $ref: "#/components/schemas/AgentSchedule" }
@@ -4452,11 +5337,22 @@ components:
         status: { type: string, enum: [success, failed] }
         error: { type: string, maxLength: 2000, nullable: true }
     DiscoveryReport:
+      oneOf:
+        - $ref: "#/components/schemas/AcceptedDiscoveryReport"
+        - $ref: "#/components/schemas/RejectedDiscoveryReport"
+      discriminator:
+        propertyName: result
+        mapping:
+          accepted: "#/components/schemas/AcceptedDiscoveryReport"
+          accepted_with_errors: "#/components/schemas/AcceptedDiscoveryReport"
+          rejected: "#/components/schemas/RejectedDiscoveryReport"
+    AcceptedDiscoveryReport:
       type: object
       additionalProperties: false
       required:
         [
           id,
+          report_id,
           agent_id,
           compute_id,
           protocol_version,
@@ -4467,26 +5363,105 @@ components:
           result,
           content_id,
           content_reused,
+          volatile_measurements,
+          collection_error_summary,
           collector_results,
+          diagnostics,
         ]
       properties:
-        id: { $ref: "#/components/schemas/UuidV7" }
+        id:
+          allOf: [{ $ref: "#/components/schemas/UuidV7" }]
+          description: Server-assigned immutable history id used in history paths.
+        report_id:
+          allOf: [{ $ref: "#/components/schemas/UuidV7" }]
+          description: Client-supplied idempotency identity used in the snapshot PUT path.
         agent_id: { $ref: "#/components/schemas/UuidV7" }
         compute_id: { $ref: "#/components/schemas/UuidV7" }
         protocol_version: { type: integer, minimum: 1 }
-        client_version: { type: string, minLength: 1, maxLength: 100 }
+        client_version:
+          { type: string, minLength: 1, maxLength: 100, nullable: true }
         received_at: { $ref: "#/components/schemas/Timestamp" }
-        collection_started_at: { $ref: "#/components/schemas/Timestamp" }
-        collection_finished_at: { $ref: "#/components/schemas/Timestamp" }
-        result: { $ref: "#/components/schemas/DiscoveryReportResult" }
+        collection_started_at:
+          allOf: [{ $ref: "#/components/schemas/Timestamp" }]
+          nullable: true
+          description: Null for schema-1 reports without a stored collection-start value.
+        collection_finished_at:
+          allOf: [{ $ref: "#/components/schemas/Timestamp" }]
+          nullable: true
+          description: Null for schema-1 reports without a stored collection-finish value.
+        result: { type: string, enum: [accepted, accepted_with_errors] }
         content_id: { $ref: "#/components/schemas/UuidV7" }
-        content_reused: { type: boolean }
+        content_reused:
+          type: boolean
+          nullable: true
+          description: Null when schema-1 history did not retain the content-reuse flag.
+        volatile_measurements:
+          allOf: [{ $ref: "#/components/schemas/VolatileMeasurements" }]
+          nullable: true
+          description: Null for schema-1 history without separately retained volatile samples.
+        collection_error_summary:
+          { type: string, maxLength: 2000, nullable: true }
         collector_results:
           {
             type: array,
             maxItems: 256,
             items: { $ref: "#/components/schemas/CollectorResult" },
           }
+        diagnostics:
+          type: array
+          maxItems: 256
+          items: { $ref: "#/components/schemas/CollectionError" }
+    RejectedDiscoveryReport:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          id,
+          report_id,
+          agent_id,
+          compute_id,
+          protocol_version,
+          client_version,
+          received_at,
+          collection_started_at,
+          collection_finished_at,
+          result,
+          collection_error_summary,
+          collector_results,
+          diagnostics,
+        ]
+      properties:
+        id:
+          allOf: [{ $ref: "#/components/schemas/UuidV7" }]
+          description: Server-assigned immutable history id used in history paths.
+        report_id:
+          allOf: [{ $ref: "#/components/schemas/UuidV7" }]
+          description: Client-supplied report identity from the snapshot PUT request.
+        agent_id: { $ref: "#/components/schemas/UuidV7" }
+        compute_id: { $ref: "#/components/schemas/UuidV7" }
+        protocol_version: { type: integer, minimum: 1 }
+        client_version:
+          { type: string, minLength: 1, maxLength: 100, nullable: true }
+        received_at: { $ref: "#/components/schemas/Timestamp" }
+        collection_started_at:
+          allOf: [{ $ref: "#/components/schemas/Timestamp" }]
+          nullable: true
+          description: Null for schema-1 reports without a stored collection-start value.
+        collection_finished_at:
+          allOf: [{ $ref: "#/components/schemas/Timestamp" }]
+          nullable: true
+          description: Null for schema-1 reports without a stored collection-finish value.
+        result: { type: string, enum: [rejected] }
+        collection_error_summary:
+          { type: string, maxLength: 2000, nullable: true }
+        collector_results:
+          type: array
+          maxItems: 256
+          items: { $ref: "#/components/schemas/CollectorResult" }
+        diagnostics:
+          type: array
+          maxItems: 256
+          items: { $ref: "#/components/schemas/CollectionError" }
     DiscoveryReportPage:
       type: object
       additionalProperties: false
@@ -4501,58 +5476,74 @@ components:
             },
           page: { $ref: "#/components/schemas/PageInfo" },
         }
-    CanonicalSnapshot:
+    ContainerHistoryPresence:
+      { type: string, enum: [present, absent, unavailable] }
+    ContainerHistoryEntry:
       type: object
       additionalProperties: false
-      required:
-        [
-          report_id,
-          format_version,
-          sha256,
-          host,
-          disks,
-          interfaces,
-          filesystems,
-          podman,
-          errors,
-        ]
+      required: [report, presence]
       properties:
-        report_id:
-          allOf: [{ $ref: "#/components/schemas/UuidV7" }]
-          description: Report identity retained in the canonical document but excluded from infrastructure-state content hashing.
-        format_version: { type: integer, minimum: 1 }
-        sha256: { type: string, pattern: "^[0-9a-f]{64}$" }
-        host: { $ref: "#/components/schemas/HostSnapshot" }
-        disks:
-          {
-            type: array,
-            maxItems: 1024,
-            items: { $ref: "#/components/schemas/DiskSnapshot" },
-          }
-        interfaces:
-          {
-            type: array,
-            maxItems: 1024,
-            items: { $ref: "#/components/schemas/NetworkInterfaceObservation" },
-          }
+        report: { $ref: "#/components/schemas/DiscoveryReport" }
+        presence:
+          allOf: [{ $ref: "#/components/schemas/ContainerHistoryPresence" }]
+          description: unavailable means the report was rejected or the relevant Podman collector failed.
+    ContainerHistoryPage:
+      type: object
+      additionalProperties: false
+      required: [items, page]
+      properties:
+        items:
+          type: array
+          maxItems: 200
+          items: { $ref: "#/components/schemas/ContainerHistoryEntry" }
+        page: { $ref: "#/components/schemas/PageInfo" }
+    VolatileFilesystemMeasurement:
+      type: object
+      additionalProperties: false
+      required: [device, mount_point, available_bytes]
+      properties:
+        device: { type: string, minLength: 1, maxLength: 4096 }
+        mount_point: { type: string, minLength: 1, maxLength: 4096 }
+        available_bytes: { type: integer, format: int64, minimum: 0 }
+    VolatileMeasurements:
+      type: object
+      additionalProperties: false
+      required: [filesystems]
+      properties:
+        host_uptime_seconds:
+          { type: integer, format: int64, minimum: 0, nullable: true }
         filesystems:
-          {
-            type: array,
-            maxItems: 4096,
-            items: { $ref: "#/components/schemas/FilesystemSnapshot" },
-          }
+          type: array
+          maxItems: 4096
+          items: { $ref: "#/components/schemas/VolatileFilesystemMeasurement" }
+    StructuralSnapshot:
+      type: object
+      additionalProperties: false
+      required: [format_version, host, disks, interfaces, filesystems, podman]
+      properties:
+        format_version: { type: integer, minimum: 1 }
+        host: { $ref: "#/components/schemas/HostCollection" }
+        disks: { $ref: "#/components/schemas/DiskCollection" }
+        interfaces: { $ref: "#/components/schemas/InterfaceCollection" }
+        filesystems: { $ref: "#/components/schemas/FilesystemCollection" }
         podman:
           {
             type: array,
             maxItems: 64,
-            items: { $ref: "#/components/schemas/PodmanCollection" },
+            items: { $ref: "#/components/schemas/StructuralPodmanCollection" },
           }
-        errors:
-          {
-            type: array,
-            maxItems: 256,
-            items: { $ref: "#/components/schemas/CollectionError" },
-          }
+    SnapshotDownload:
+      type: object
+      additionalProperties: false
+      required: [report, structural_sha256, structural]
+      description: Reconstructed report-specific envelope and shared structural state; this document itself is not the hashed structural content.
+      properties:
+        report: { $ref: "#/components/schemas/AcceptedDiscoveryReport" }
+        structural_sha256:
+          type: string
+          pattern: "^[0-9a-f]{64}$"
+          description: SHA-256 of canonical structural bytes only, excluding report envelope and volatile measurements.
+        structural: { $ref: "#/components/schemas/StructuralSnapshot" }
     ScalarValue:
       oneOf:
         - { type: string, maxLength: 10000, nullable: true }
@@ -4598,21 +5589,49 @@ components:
       properties:
         key: { type: string, minLength: 1, maxLength: 4096 }
         change: { type: string, enum: [added, removed, changed] }
-        before: { allOf: [{ $ref: "#/components/schemas/FilesystemSnapshot" }] }
-        after: { allOf: [{ $ref: "#/components/schemas/FilesystemSnapshot" }] }
+        before:
+          {
+            allOf:
+              [{ $ref: "#/components/schemas/StructuralFilesystemSnapshot" }],
+          }
+        after:
+          {
+            allOf:
+              [{ $ref: "#/components/schemas/StructuralFilesystemSnapshot" }],
+          }
         fields:
           {
             type: array,
             maxItems: 256,
             items: { $ref: "#/components/schemas/FieldChange" },
           }
+    DiskChange:
+      type: object
+      additionalProperties: false
+      required: [key, change]
+      properties:
+        key:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 255,
+            description: Disk device name.,
+          }
+        change: { type: string, enum: [added, removed, changed] }
+        before: { allOf: [{ $ref: "#/components/schemas/DiskSnapshot" }] }
+        after: { allOf: [{ $ref: "#/components/schemas/DiskSnapshot" }] }
+        fields:
+          type: array
+          maxItems: 64
+          items: { $ref: "#/components/schemas/FieldChange" }
     ContainerChange:
       type: object
       additionalProperties: false
-      required: [connection, owner, name, change]
+      required: [connection, owner_uid, name, change]
       properties:
         connection: { type: string, minLength: 1, maxLength: 200 }
-        owner: { type: string, minLength: 1, maxLength: 200 }
+        owner_uid:
+          { type: integer, format: int64, minimum: 0, maximum: 4294967295 }
         name: { type: string, minLength: 1, maxLength: 255 }
         change: { type: string, enum: [added, removed, changed] }
         before: { allOf: [{ $ref: "#/components/schemas/SnapshotContainer" }] }
@@ -4631,54 +5650,112 @@ components:
         collector: { type: string, minLength: 1, maxLength: 200 }
         before: { type: string, enum: [success, failed, absent] }
         after: { type: string, enum: [success, failed, absent] }
+    HostUptimeChange:
+      type: object
+      additionalProperties: false
+      required: [measurement, before, after]
+      properties:
+        measurement: { type: string, enum: [host_uptime_seconds] }
+        before: { type: integer, format: int64, minimum: 0, nullable: true }
+        after: { type: integer, format: int64, minimum: 0, nullable: true }
+    FilesystemAvailableBytesChange:
+      type: object
+      additionalProperties: false
+      required: [measurement, device, mount_point, before, after]
+      properties:
+        measurement: { type: string, enum: [filesystem_available_bytes] }
+        device: { type: string, minLength: 1, maxLength: 4096 }
+        mount_point: { type: string, minLength: 1, maxLength: 4096 }
+        before: { type: integer, format: int64, minimum: 0, nullable: true }
+        after: { type: integer, format: int64, minimum: 0, nullable: true }
+    VolatileMeasurementChange:
+      oneOf:
+        - $ref: "#/components/schemas/HostUptimeChange"
+        - $ref: "#/components/schemas/FilesystemAvailableBytesChange"
+      discriminator:
+        propertyName: measurement
+        mapping:
+          host_uptime_seconds: "#/components/schemas/HostUptimeChange"
+          filesystem_available_bytes: "#/components/schemas/FilesystemAvailableBytesChange"
+    SnapshotUnavailableSection:
+      type: string
+      enum: [host, interfaces, disks, filesystems, containers]
     SnapshotComparison:
       type: object
       additionalProperties: false
+      description: >-
+        One globally ordered page of differences. The service MUST NOT infer child
+        removals when the corresponding collector failed; such sections are listed
+        in unavailable_sections instead. Differences sort by section in this order:
+        host, interfaces, disks, filesystems, containers, collectors, measurements;
+        within a section they sort by stable resource key. The total number of
+        entries across all section arrays equals page.size and never exceeds the
+        requested page size.
       required:
         [
           from_report_id,
           to_report_id,
           host,
           interfaces,
+          disks,
           filesystems,
           containers,
           collectors,
-          truncated,
+          measurements,
+          unavailable_sections,
+          page,
         ]
       properties:
-        from_report_id: { $ref: "#/components/schemas/UuidV7" }
-        to_report_id: { $ref: "#/components/schemas/UuidV7" }
+        from_report_id:
+          allOf: [{ $ref: "#/components/schemas/UuidV7" }]
+          description: Server-assigned history id of the source report.
+        to_report_id:
+          allOf: [{ $ref: "#/components/schemas/UuidV7" }]
+          description: Server-assigned history id of the target report.
         host:
-          {
-            type: array,
-            maxItems: 256,
-            items: { $ref: "#/components/schemas/FieldChange" },
-          }
+          type: array
+          maxItems: 200
+          description: Structural host fact changes only; uptime is reported under measurements.
+          items: { $ref: "#/components/schemas/FieldChange" }
         interfaces:
           {
             type: array,
-            maxItems: 2048,
+            maxItems: 200,
             items: { $ref: "#/components/schemas/InterfaceChange" },
           }
+        disks:
+          type: array
+          maxItems: 200
+          items: { $ref: "#/components/schemas/DiskChange" }
         filesystems:
-          {
-            type: array,
-            maxItems: 8192,
-            items: { $ref: "#/components/schemas/FilesystemChange" },
-          }
+          type: array
+          maxItems: 200
+          description: Structural filesystem differences only; available_bytes is reported under measurements.
+          items: { $ref: "#/components/schemas/FilesystemChange" }
         containers:
           {
             type: array,
-            maxItems: 20000,
+            maxItems: 200,
             items: { $ref: "#/components/schemas/ContainerChange" },
           }
         collectors:
           {
             type: array,
-            maxItems: 256,
+            maxItems: 200,
             items: { $ref: "#/components/schemas/CollectorStatusChange" },
           }
-        truncated: { type: boolean }
+        measurements:
+          type: array
+          maxItems: 200
+          items: { $ref: "#/components/schemas/VolatileMeasurementChange" }
+        unavailable_sections:
+          type: array
+          maxItems: 5
+          uniqueItems: true
+          items: { $ref: "#/components/schemas/SnapshotUnavailableSection" }
+        page:
+          allOf: [{ $ref: "#/components/schemas/PageInfo" }]
+          description: Continuation state for the globally ordered difference sequence.
 
     DnsZoneSelection: { type: string, enum: [available, managed, disabled] }
     DnsZone:
@@ -4747,18 +5824,49 @@ components:
     DnsPublicationStatus:
       type: object
       additionalProperties: false
-      required: [state]
+      required:
+        [state, desired_generation, next_serial, attempt_count, fencing_token]
       properties:
         state:
           {
             type: string,
             enum: [not_applicable, pending, synchronized, failed],
           }
-        desired_revision: { type: integer, format: int64, minimum: 0 }
-        applied_revision: { type: integer, format: int64, minimum: 0 }
-        serial: { type: integer, format: int64, minimum: 0 }
+        desired_generation: { type: integer, format: int64, minimum: 0 }
+        published_generation:
+          { type: integer, format: int64, minimum: 0, nullable: true }
+        next_serial: { type: integer, minimum: 1, maximum: 4294967295 }
+        serial:
+          { type: integer, minimum: 1, maximum: 4294967295, nullable: true }
         checksum: { type: string, pattern: "^[0-9a-f]{64}$", nullable: true }
-        published_at: { allOf: [{ $ref: "#/components/schemas/Timestamp" }] }
+        file_name: { type: string, maxLength: 512, nullable: true }
+        published_at:
+          {
+            allOf: [{ $ref: "#/components/schemas/Timestamp" }],
+            nullable: true,
+          }
+        next_retry_at:
+          {
+            allOf: [{ $ref: "#/components/schemas/Timestamp" }],
+            nullable: true,
+          }
+        last_attempt_at:
+          {
+            allOf: [{ $ref: "#/components/schemas/Timestamp" }],
+            nullable: true,
+          }
+        last_success_at:
+          {
+            allOf: [{ $ref: "#/components/schemas/Timestamp" }],
+            nullable: true,
+          }
+        attempt_count: { type: integer, minimum: 0 }
+        lease_expires_at:
+          {
+            allOf: [{ $ref: "#/components/schemas/Timestamp" }],
+            nullable: true,
+          }
+        fencing_token: { type: integer, format: int64, minimum: 0 }
         error_code: { type: string, maxLength: 100, nullable: true }
         error_message: { type: string, maxLength: 2000, nullable: true }
     DnsZoneStatus:
@@ -4784,6 +5892,8 @@ components:
         failed_projection_count: { type: integer, minimum: 0 }
         drift_count: { type: integer, minimum: 0 }
 
+    DnsLinkTargetType:
+      { type: string, enum: [compute, container, ip_assignment] }
     DnsViewName: { type: string, enum: [public, internal] }
     DnsRecordType: { type: string, enum: [A, AAAA, CNAME] }
     DnsPublicARecordSet:
@@ -4949,6 +6059,7 @@ components:
         archived: { type: boolean, readOnly: true }
     DnsNameWrite:
       type: object
+      additionalProperties: false
       required: [zone_id, name, wildcard, description, links, public, internal]
       properties:
         zone_id: { $ref: "#/components/schemas/UuidV7" }
@@ -5032,13 +6143,7 @@ components:
           page: { $ref: "#/components/schemas/PageInfo" },
         }
 
-    DnsImportCandidateStatus:
-      {
-        type: string,
-        enum:
-          [importable, unsupported, malformed, conflicting, already_managed],
-      }
-    DnsImportCandidate:
+    DnsImportableCandidate:
       type: object
       additionalProperties: false
       required: [id, name, type, ttl, values, proxied, status]
@@ -5062,9 +6167,76 @@ components:
             items: { type: string, minLength: 1, maxLength: 253 },
           }
         proxied: { type: boolean }
-        status: { $ref: "#/components/schemas/DnsImportCandidateStatus" }
-        reason_code: { type: string, maxLength: 100, nullable: true }
-        reason: { type: string, maxLength: 2000, nullable: true }
+        status: { type: string, enum: [importable] }
+    RejectedDnsImportCandidate:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          id,
+          status,
+          reason_code,
+          reason,
+          record_count,
+          raw_name,
+          raw_type,
+          raw_ttl,
+        ]
+      properties:
+        id:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 256,
+            description: Opaque refresh-scoped candidate identifier.,
+          }
+        status:
+          {
+            type: string,
+            enum: [unsupported, malformed, conflicting, already_managed],
+          }
+        reason_code:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 100,
+            pattern: "^[a-z0-9_]+$",
+          }
+        reason: { type: string, minLength: 1, maxLength: 2000 }
+        record_count: { type: integer, minimum: 1, maximum: 10000 }
+        raw_name:
+          {
+            type: string,
+            maxLength: 4096,
+            nullable: true,
+            description: Unnormalized provider owner name when available.,
+          }
+        raw_type:
+          {
+            type: string,
+            maxLength: 64,
+            nullable: true,
+            description: Provider record type without asserting it is supported.,
+          }
+        raw_ttl:
+          {
+            type: integer,
+            format: int64,
+            nullable: true,
+            description: Provider TTL summary without asserting it satisfies supported bounds.,
+          }
+    DnsImportCandidate:
+      oneOf:
+        - $ref: "#/components/schemas/DnsImportableCandidate"
+        - $ref: "#/components/schemas/RejectedDnsImportCandidate"
+      discriminator:
+        propertyName: status
+        mapping:
+          importable: "#/components/schemas/DnsImportableCandidate"
+          unsupported: "#/components/schemas/RejectedDnsImportCandidate"
+          malformed: "#/components/schemas/RejectedDnsImportCandidate"
+          conflicting: "#/components/schemas/RejectedDnsImportCandidate"
+          already_managed: "#/components/schemas/RejectedDnsImportCandidate"
     DnsImportCandidatePage:
       type: object
       additionalProperties: false
@@ -5088,7 +6260,7 @@ components:
           {
             type: array,
             minItems: 1,
-            maxItems: 1000,
+            maxItems: 10,
             uniqueItems: true,
             items: { type: string, minLength: 1, maxLength: 256 },
           }
@@ -5165,11 +6337,13 @@ components:
             items: { $ref: "#/components/schemas/DnsValidationIssue" },
           }
         changes:
-          {
-            type: array,
-            maxItems: 1000,
-            items: { $ref: "#/components/schemas/DnsPreviewChange" },
-          }
+          type: array
+          maxItems: 1000
+          description: >-
+            Complete preview change set; responses are never silently truncated.
+            Each selected candidate is bounded to 100 values and selections to 10
+            candidates.
+          items: { $ref: "#/components/schemas/DnsPreviewChange" }
         unmanaged_conflicts:
           {
             type: array,
@@ -5179,6 +6353,7 @@ components:
     DnsImportPreview:
       type: object
       additionalProperties: false
+      description: Complete, non-truncated preview tied to the exact candidate selection and provider observation.
       required: [selection, preview]
       properties:
         selection: { $ref: "#/components/schemas/DnsImportSelection" }
@@ -5192,7 +6367,7 @@ components:
           {
             type: array,
             minItems: 1,
-            maxItems: 1000,
+            maxItems: 10,
             uniqueItems: true,
             items: { type: string, minLength: 1, maxLength: 256 },
           }
@@ -5252,6 +6427,10 @@ components:
     DnsDraftValidation: { type: string, enum: [unvalidated, valid, invalid] }
     DnsDraft:
       type: object
+      description: >-
+        A mutable draft with a revision independent of the target DNS name's
+        revision. If-Match on draft operations uses this draft revision;
+        base_revision identifies the target DNS name revision captured by the draft.
       additionalProperties: false
       required:
         [
@@ -5267,11 +6446,17 @@ components:
         ]
       properties:
         id: { $ref: "#/components/schemas/UuidV7" }
-        revision: { $ref: "#/components/schemas/Revision" }
+        revision:
+          allOf: [{ $ref: "#/components/schemas/Revision" }]
+          description: Monotonic revision of this draft, independent of the DNS name revision.
         operation: { $ref: "#/components/schemas/DnsDraftOperation" }
         target_name_id: { $ref: "#/components/schemas/UuidV7" }
         base_revision:
-          { type: integer, format: int64, minimum: 1, nullable: true }
+          type: integer
+          format: int64
+          minimum: 1
+          nullable: true
+          description: Target DNS name revision captured when this update/delete draft was created.
         proposed: { allOf: [{ $ref: "#/components/schemas/DnsNameWrite" }] }
         status: { $ref: "#/components/schemas/DnsDraftStatus" }
         validation: { $ref: "#/components/schemas/DnsDraftValidation" }
@@ -5287,7 +6472,11 @@ components:
       additionalProperties: false
       required: [expected_base_revision, preview_fingerprint]
       properties:
-        expected_base_revision: { type: integer, format: int64, minimum: 0 }
+        expected_base_revision:
+          type: integer
+          format: int64
+          minimum: 0
+          description: Current target DNS name revision; zero is required for a create draft.
         preview_fingerprint: { type: string, pattern: "^[0-9a-f]{64}$" }
     DnsApplyResult:
       type: object
@@ -5310,12 +6499,83 @@ components:
         accepted_at: { $ref: "#/components/schemas/Timestamp" }
         aggregate_count: { type: integer, minimum: 0 }
 
+    PurgeDependencyKind:
+      type: string
+      enum:
+        [
+          provider_role,
+          location,
+          compute,
+          container,
+          ip_assignment,
+          domain,
+          cost,
+          tag,
+          agent,
+          enrollment_token,
+          discovery_report,
+          dns_zone,
+          dns_name,
+          dns_link,
+          other,
+        ]
+    PurgeDependencyGroup:
+      type: object
+      additionalProperties: false
+      required: [kind, count, list_href]
+      properties:
+        kind: { $ref: "#/components/schemas/PurgeDependencyKind" }
+        count: { type: integer, minimum: 1 }
+        list_href:
+          type: string
+          format: uri-reference
+          minLength: 1
+          maxLength: 2048
+          pattern: "^/"
+          description: Paginated route/filter for listing every dependency in this group.
+    PurgeDependencyReference:
+      type: object
+      additionalProperties: false
+      required: [kind, id, href]
+      properties:
+        kind: { $ref: "#/components/schemas/PurgeDependencyKind" }
+        id: { $ref: "#/components/schemas/UuidV7" }
+        href:
+          {
+            type: string,
+            format: uri-reference,
+            minLength: 1,
+            maxLength: 2048,
+            pattern: "^/",
+          }
+        display_name: { type: string, maxLength: 255 }
+    PurgeDependencyDetails:
+      type: object
+      additionalProperties: false
+      description: >-
+        Complete typed counts plus a bounded navigable sample. Group list_href
+        values provide paged access to every dependency for explicit cleanup.
+      required: [groups, references, references_truncated]
+      properties:
+        groups:
+          type: array
+          maxItems: 32
+          items: { $ref: "#/components/schemas/PurgeDependencyGroup" }
+        references:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/PurgeDependencyReference" }
+        references_truncated: { type: boolean }
     AuditActorType:
       {
         type: string,
         enum: [administrator, personal_access_token, agent, system],
       }
-    AuditResult: { type: string, enum: [success, rejected] }
+    AuditResult: { type: string, enum: [success, rejected, failure] }
+    SystemActorId:
+      type: string
+      enum: ["0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73c0"]
+      description: Fixed persisted UUIDv7 identity used for CLI and worker audit events.
     AuditField:
       type: object
       additionalProperties: false
@@ -5328,12 +6588,14 @@ components:
     AuditEvent:
       type: object
       additionalProperties: false
+      x-system-actor-id: "0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73c0"
       required:
         [
           id,
           sequence,
           occurred_at,
           actor_type,
+          actor_id,
           action,
           resource_type,
           request_id,
@@ -5345,7 +6607,9 @@ components:
         sequence: { type: integer, format: int64, minimum: 1 }
         occurred_at: { $ref: "#/components/schemas/Timestamp" }
         actor_type: { $ref: "#/components/schemas/AuditActorType" }
-        actor_id: { $ref: "#/components/schemas/UuidV7" }
+        actor_id:
+          allOf: [{ $ref: "#/components/schemas/UuidV7" }]
+          description: For actor_type system, MUST equal SystemActorId.
         action: { type: string, minLength: 1, maxLength: 100 }
         resource_type: { type: string, minLength: 1, maxLength: 100 }
         resource_id: { $ref: "#/components/schemas/UuidV7" }
@@ -5392,7 +6656,7 @@ components:
       additionalProperties: false
       required: [status, time, checks]
       properties:
-        status: { type: string, enum: [ready] }
+        status: { type: string, enum: [ready, not_ready] }
         time: { $ref: "#/components/schemas/Timestamp" }
         checks:
           {

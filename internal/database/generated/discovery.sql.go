@@ -10,6 +10,34 @@ import (
 	"database/sql"
 )
 
+const countExpiredDiscoveryReports = `-- name: CountExpiredDiscoveryReports :one
+SELECT count(*) FROM discovery_reports WHERE received_at < ?1
+`
+
+func (q *Queries) CountExpiredDiscoveryReports(ctx context.Context, cutoff string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countExpiredDiscoveryReports, cutoff)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countReclaimableSnapshotContents = `-- name: CountReclaimableSnapshotContents :one
+SELECT count(*)
+FROM snapshot_contents content
+WHERE NOT EXISTS (
+    SELECT 1 FROM discovery_reports report
+    WHERE report.snapshot_content_id = content.id
+      AND report.received_at >= ?1
+)
+`
+
+func (q *Queries) CountReclaimableSnapshotContents(ctx context.Context, cutoff string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countReclaimableSnapshotContents, cutoff)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createAgent = `-- name: CreateAgent :one
 INSERT INTO agents (
     id, compute_id, credential_hash, credential_generation, protocol_version,
@@ -59,7 +87,7 @@ INSERT INTO discovery_reports (
     id, report_id, agent_id, protocol_version, received_at, client_collected_at,
     snapshot_content_id, result, collection_error_summary
 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-RETURNING id, report_id, agent_id, protocol_version, received_at, client_collected_at, snapshot_content_id, result, collection_error_summary
+RETURNING id, report_id, agent_id, protocol_version, client_version, received_at, client_collected_at, collection_started_at, collection_finished_at, snapshot_content_id, result, content_reused, request_fingerprint, envelope_version, collection_error_summary
 `
 
 type CreateDiscoveryReportParams struct {
@@ -92,13 +120,63 @@ func (q *Queries) CreateDiscoveryReport(ctx context.Context, arg CreateDiscovery
 		&i.ReportID,
 		&i.AgentID,
 		&i.ProtocolVersion,
+		&i.ClientVersion,
 		&i.ReceivedAt,
 		&i.ClientCollectedAt,
+		&i.CollectionStartedAt,
+		&i.CollectionFinishedAt,
 		&i.SnapshotContentID,
 		&i.Result,
+		&i.ContentReused,
+		&i.RequestFingerprint,
+		&i.EnvelopeVersion,
 		&i.CollectionErrorSummary,
 	)
 	return &i, err
+}
+
+const deleteExpiredDiscoveryReportsBatch = `-- name: DeleteExpiredDiscoveryReportsBatch :execrows
+DELETE FROM discovery_reports
+WHERE id IN (
+    SELECT candidate.id FROM discovery_reports candidate
+    WHERE candidate.received_at < ?1
+    ORDER BY candidate.received_at, candidate.id
+    LIMIT ?2
+)
+`
+
+type DeleteExpiredDiscoveryReportsBatchParams struct {
+	Cutoff    string `db:"cutoff" json:"cutoff"`
+	BatchSize int64  `db:"batch_size" json:"batch_size"`
+}
+
+func (q *Queries) DeleteExpiredDiscoveryReportsBatch(ctx context.Context, arg DeleteExpiredDiscoveryReportsBatchParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, deleteExpiredDiscoveryReportsBatch, arg.Cutoff, arg.BatchSize)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
+const deleteUnreferencedSnapshotContentsBatch = `-- name: DeleteUnreferencedSnapshotContentsBatch :execrows
+DELETE FROM snapshot_contents
+WHERE id IN (
+    SELECT content.id FROM snapshot_contents content
+    WHERE NOT EXISTS (
+        SELECT 1 FROM discovery_reports report
+        WHERE report.snapshot_content_id = content.id
+    )
+    ORDER BY content.created_at, content.id
+    LIMIT ?1
+)
+`
+
+func (q *Queries) DeleteUnreferencedSnapshotContentsBatch(ctx context.Context, batchSize int64) (int64, error) {
+	result, err := q.db.ExecContext(ctx, deleteUnreferencedSnapshotContentsBatch, batchSize)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }
 
 const getAgentByCredentialHash = `-- name: GetAgentByCredentialHash :one
@@ -126,7 +204,7 @@ func (q *Queries) GetAgentByCredentialHash(ctx context.Context, credentialHash s
 }
 
 const getDiscoveryReportByAgentReportID = `-- name: GetDiscoveryReportByAgentReportID :one
-SELECT id, report_id, agent_id, protocol_version, received_at, client_collected_at, snapshot_content_id, result, collection_error_summary FROM discovery_reports WHERE agent_id = ? AND report_id = ?
+SELECT id, report_id, agent_id, protocol_version, client_version, received_at, client_collected_at, collection_started_at, collection_finished_at, snapshot_content_id, result, content_reused, request_fingerprint, envelope_version, collection_error_summary FROM discovery_reports WHERE agent_id = ? AND report_id = ?
 `
 
 type GetDiscoveryReportByAgentReportIDParams struct {
@@ -142,17 +220,23 @@ func (q *Queries) GetDiscoveryReportByAgentReportID(ctx context.Context, arg Get
 		&i.ReportID,
 		&i.AgentID,
 		&i.ProtocolVersion,
+		&i.ClientVersion,
 		&i.ReceivedAt,
 		&i.ClientCollectedAt,
+		&i.CollectionStartedAt,
+		&i.CollectionFinishedAt,
 		&i.SnapshotContentID,
 		&i.Result,
+		&i.ContentReused,
+		&i.RequestFingerprint,
+		&i.EnvelopeVersion,
 		&i.CollectionErrorSummary,
 	)
 	return &i, err
 }
 
 const listAgentReports = `-- name: ListAgentReports :many
-SELECT id, report_id, agent_id, protocol_version, received_at, client_collected_at, snapshot_content_id, result, collection_error_summary
+SELECT id, report_id, agent_id, protocol_version, client_version, received_at, client_collected_at, collection_started_at, collection_finished_at, snapshot_content_id, result, content_reused, request_fingerprint, envelope_version, collection_error_summary
 FROM discovery_reports
 WHERE agent_id = ?
   AND (received_at < ?2
@@ -187,10 +271,16 @@ func (q *Queries) ListAgentReports(ctx context.Context, arg ListAgentReportsPara
 			&i.ReportID,
 			&i.AgentID,
 			&i.ProtocolVersion,
+			&i.ClientVersion,
 			&i.ReceivedAt,
 			&i.ClientCollectedAt,
+			&i.CollectionStartedAt,
+			&i.CollectionFinishedAt,
 			&i.SnapshotContentID,
 			&i.Result,
+			&i.ContentReused,
+			&i.RequestFingerprint,
+			&i.EnvelopeVersion,
 			&i.CollectionErrorSummary,
 		); err != nil {
 			return nil, err

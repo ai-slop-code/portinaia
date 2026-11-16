@@ -21,3 +21,16 @@ LIMIT 1;
 UPDATE administrators
 SET password_hash = ?, password_parameters = ?, updated_at = ?
 WHERE id = ? AND disabled_at IS NULL;
+
+-- name: TouchSessionLastSeen :execrows
+UPDATE sessions
+SET last_seen_at = sqlc.arg(now)
+WHERE credential_hash = sqlc.arg(credential_hash)
+  AND revoked_at IS NULL
+  AND last_seen_at <= sqlc.arg(cutoff);
+
+-- name: RevokeSession :execrows
+UPDATE sessions
+SET revoked_at = sqlc.arg(now)
+WHERE credential_hash = sqlc.arg(credential_hash)
+  AND revoked_at IS NULL;

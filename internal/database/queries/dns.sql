@@ -8,12 +8,13 @@ SELECT * FROM dns_projections WHERE dns_name_id = ? ORDER BY provider;
 INSERT INTO dns_projections (
     id, dns_name_id, provider, desired_revision, applied_revision, state,
     attempt_count, next_retry_at, updated_at
-) VALUES (?, ?, ?, ?, 0, ?, 0, ?, ?)
+) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)
 ON CONFLICT (dns_name_id, provider) DO UPDATE SET
     desired_revision = excluded.desired_revision,
     state = excluded.state,
     attempt_count = 0,
     next_retry_at = excluded.next_retry_at,
+    retryable = 1,
     lease_owner = NULL,
     lease_expires_at = NULL,
     leased_revision = NULL,
@@ -33,8 +34,11 @@ SET lease_owner = CAST(sqlc.arg(lease_owner) AS TEXT),
 WHERE id IN (
     SELECT id
     FROM dns_projections
-    WHERE state IN ('pending', 'failed', 'deleting')
-      AND (next_retry_at IS NULL OR next_retry_at <= CAST(sqlc.arg(claimed_at) AS TEXT))
+    WHERE provider = CAST(sqlc.arg(provider) AS TEXT)
+      AND (
+          (state IN ('pending', 'deleting') AND (next_retry_at IS NULL OR next_retry_at <= CAST(sqlc.arg(claimed_at) AS TEXT)))
+          OR (state = 'failed' AND retryable = 1 AND next_retry_at <= CAST(sqlc.arg(claimed_at) AS TEXT))
+      )
       AND (lease_owner IS NULL OR lease_expires_at <= CAST(sqlc.arg(claimed_at) AS TEXT))
       AND EXISTS (
           SELECT 1 FROM dns_names
@@ -49,7 +53,8 @@ RETURNING *;
 -- name: CompleteDNSProjection :execrows
 UPDATE dns_projections
 SET applied_revision = CAST(sqlc.arg(applied_revision) AS INTEGER),
-    state = 'synchronized',
+    state = CAST(sqlc.arg(completion_state) AS TEXT),
+    retryable = 1,
     last_success_at = CAST(sqlc.arg(completed_at) AS TEXT),
     next_retry_at = NULL,
     last_error_code = NULL,
@@ -60,6 +65,7 @@ SET applied_revision = CAST(sqlc.arg(applied_revision) AS INTEGER),
     leased_revision = NULL,
     updated_at = CAST(sqlc.arg(completed_at) AS TEXT)
 WHERE id = CAST(sqlc.arg(id) AS TEXT)
+  AND provider = CAST(sqlc.arg(provider) AS TEXT)
   AND lease_owner = CAST(sqlc.arg(lease_owner) AS TEXT)
   AND lease_expires_at > CAST(sqlc.arg(completed_at) AS TEXT)
   AND leased_revision = CAST(sqlc.arg(applied_revision) AS INTEGER)
@@ -73,7 +79,8 @@ WHERE id = CAST(sqlc.arg(id) AS TEXT)
 -- name: FailDNSProjection :execrows
 UPDATE dns_projections
 SET state = 'failed',
-    next_retry_at = CAST(sqlc.arg(next_retry_at) AS TEXT),
+    retryable = CAST(sqlc.arg(retryable) AS INTEGER),
+    next_retry_at = sqlc.narg(next_retry_at),
     last_error_code = CAST(sqlc.arg(error_code) AS TEXT),
     last_error_message = CAST(sqlc.arg(error_message) AS TEXT),
     lease_owner = NULL,
@@ -81,6 +88,7 @@ SET state = 'failed',
     leased_revision = NULL,
     updated_at = CAST(sqlc.arg(failed_at) AS TEXT)
 WHERE id = CAST(sqlc.arg(id) AS TEXT)
+  AND provider = CAST(sqlc.arg(provider) AS TEXT)
   AND lease_owner = CAST(sqlc.arg(lease_owner) AS TEXT)
   AND lease_expires_at > CAST(sqlc.arg(failed_at) AS TEXT)
   AND leased_revision = CAST(sqlc.arg(failed_revision) AS INTEGER)
@@ -94,4 +102,27 @@ WHERE id = CAST(sqlc.arg(id) AS TEXT)
 -- name: ReleaseExpiredDNSProjectionLeases :execrows
 UPDATE dns_projections
 SET lease_owner = NULL, lease_expires_at = NULL, leased_revision = NULL, updated_at = ?
-WHERE lease_owner IS NOT NULL AND lease_expires_at <= ?;
+WHERE provider = ? AND lease_owner IS NOT NULL AND lease_expires_at <= ?;
+
+-- name: RepairDNSProjection :one
+UPDATE dns_projections
+SET state = 'pending',
+    retryable = 1,
+    attempt_count = 0,
+    next_retry_at = NULL,
+    last_error_code = NULL,
+    last_error_message = NULL,
+    lease_owner = NULL,
+    lease_expires_at = NULL,
+    leased_revision = NULL,
+    updated_at = CAST(sqlc.arg(repaired_at) AS TEXT)
+WHERE dns_name_id = CAST(sqlc.arg(dns_name_id) AS TEXT)
+  AND provider = CAST(sqlc.arg(provider) AS TEXT)
+  AND desired_revision = CAST(sqlc.arg(desired_revision) AS INTEGER)
+  AND state IN ('failed', 'synchronized')
+  AND EXISTS (
+      SELECT 1 FROM dns_names
+      WHERE dns_names.id = dns_projections.dns_name_id
+        AND dns_names.desired_revision = CAST(sqlc.arg(desired_revision) AS INTEGER)
+  )
+RETURNING *;

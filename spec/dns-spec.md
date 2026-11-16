@@ -2,9 +2,17 @@
 
 Status: Approved for implementation
 
-Detailed implementation instructions and baseline gaps are in
-[WP-09](coding/wp-09-dns-domain.md), [WP-10](coding/wp-10-cloudflare.md),
-[WP-11](coding/wp-11-internal-dns.md), and [WP-14](coding/wp-14-web-dns.md).
+Delivery scope and sequencing follow [focused delivery](focused-delivery.md).
+This document remains the correctness contract for split-horizon DNS; deferred
+inventory/history/cost features are not prerequisites for DNS implementation.
+
+Before new M4 behavior, pass G1 in
+[focused delivery](focused-delivery.md) for implemented M1–M3 workflows.
+DNS schema/query groundwork does not satisfy DNS runtime acceptance.
+
+Implementation refinements and acceptance are in
+[DNS implementation requirements](coding/dns-implementation.md); current state is
+in the [progress ledger](coding/parallel-progress.md).
 
 ## 1. Purpose
 
@@ -16,9 +24,10 @@ or direct write access to CoreDNS files.
 The public and internal projections are independently reconciled. A failure in
 one provider must not roll back, remove, or block a valid state in the other.
 
-This document is normative for DNS behavior. General product, authentication,
-deployment, and audit requirements are defined in
-[high-level-plan.md](high-level-plan.md).
+This document is normative for DNS behavior. General scope is defined in
+[focused delivery](focused-delivery.md), authentication/audit in
+[backend requirements](coding/backend-requirements.md), and deployment/recovery in
+[runtime requirements](coding/runtime-requirements.md).
 
 ## 2. Goals
 
@@ -661,7 +670,9 @@ normative in the OpenAPI document created during implementation.
 
 ### 22.5 API Safety
 
-- Writes require DNS-specific personal token scope or administrator session.
+- Writes require an administrator session with the operation's explicit DNS
+  capability and CSRF. Human personal-token issuance/UI is deferred by the pivot;
+  capability checks remain required and future token support must preserve them.
 - Draft apply and import apply require idempotency keys.
 - Updates use aggregate revisions and `If-Match` where appropriate.
 - Provider synchronization never runs in the request transaction.
@@ -711,7 +722,7 @@ normative in the OpenAPI document created during implementation.
 ## 24. Security
 
 - All business endpoints require authentication.
-- Authorization distinguishes DNS read and DNS write token scopes.
+- Authorization distinguishes explicit DNS read and DNS write capabilities.
 - Cloudflare token content is available only to server-side adapter code.
 - Generated filenames derive from selected zone identifiers, not unchecked
   user path input.
@@ -736,7 +747,8 @@ normative in the OpenAPI document created during implementation.
 
 ## 26. Observability
 
-Metrics include:
+The first release exposes useful feature status, errors and structured diagnostics.
+A comprehensive metrics catalog/listener is deferred. Future metrics may include:
 
 - Managed zones and DNS names by view and type.
 - Draft validation failures.
@@ -794,7 +806,8 @@ when internal DNS publication is enabled.
 - SOA serial advancement.
 - Parse validation before publication.
 - Temporary write and atomic rename.
-- Last-valid-file preservation for every failure stage.
+- Before-rename failures preserve the old valid file; after-rename fsync/metadata
+  uncertainty preserves the new valid file and reconciles completion safely.
 - Concurrent updates converge to the newest desired revision.
 - CoreDNS integration test proving internal answers and public fallthrough.
 
@@ -821,7 +834,9 @@ when internal DNS publication is enabled.
 - External drift on owned Cloudflare records is detected, audited, and
   repaired.
 - CoreDNS receives complete validated zone files through atomic replacement.
-- A publication failure leaves the previous valid zone available.
+- A pre-rename publication failure leaves the previous valid zone available.
+  After rename, uncertain durability/metadata is recovered without restoring an
+  older file or falsely claiming that the old bytes remain.
 - Internal clients receive internal answers.
 - Names without internal overrides fall through and resolve publicly.
 - Public clients receive Cloudflare answers.
@@ -829,16 +844,8 @@ when internal DNS publication is enabled.
 - No credentials or sensitive provider metadata appear in API responses,
   audit events, or logs.
 
-## 29. Future Extensions
+## 29. Scope boundary
 
-The architecture may later support:
-
-- Additional record types with type-specific schemas and validation.
-- Multiple Cloudflare accounts.
-- Private internal-only zones.
-- Multi-record change sets.
-- etcd or PowerDNS internal adapters.
-- Consul integration for ephemeral service discovery.
-
-These extensions must not weaken explicit ownership, preview/apply safety, or
-independent provider reconciliation.
+Additional types/accounts, private suffixes and alternate DNS backends are outside
+the current product scope. Do not implement extension infrastructure for them as
+a prerequisite for the selected Cloudflare/CoreDNS workflow.

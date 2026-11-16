@@ -1,17 +1,64 @@
 # Portinaia
 
-Portinaia is a self-hosted infrastructure inventory and DNS control plane. The
-approved behavior and implementation order are defined in `spec/`.
+Portinaia is a self-hosted application for three workflows:
+
+1. See servers, what runs on them, and relationships down to containers.
+2. Keep a list of owned domains.
+3. Manage split-horizon DNS through Cloudflare and CoreDNS.
+
+The architecture is one Go server with an embedded React UI and SQLite, plus a
+read-only Linux/Podman discovery agent. The active scope, delivery milestones,
+and acceptance criteria are in [focused delivery](spec/focused-delivery.md).
+Start at the [specification index](spec/README.md). The
+[progress ledger](spec/coding/parallel-progress.md) is the sole current state and
+verification record; historical planning records are retained in
+[legacy coding records](spec/coding/legacy/README.md).
+
+## Delivery Roadmap
+
+1. **M1 — Inventory:** persistent authenticated server inventory, counts and hierarchy.
+2. **M2 — Current discovery:** enrolled hosts, Podman containers and freshness.
+3. **M3 — Domains:** owned-domain list, registrar and optional expiry information.
+4. **M4 — Split-horizon DNS:** public/internal views, preview/apply and publication status.
+5. **M5 — Deployment/recovery:** installation, backup/restore and end-to-end verification.
+
+Financial tracking, historical browsing/comparisons, human API-token management,
+and large-capacity certification are deferred. Existing storage/contracts are
+reused; features are implemented as complete browser/API/database slices.
+
+The running application now supports authenticated providers, locations, computes,
+manual IP assignments, and owned domains. Discovery has an agent, ingestion and
+container UI but remains partially verified. Split-horizon DNS runtime workflows
+are not implemented yet.
+
+The active assignment is to finish and integrate the remaining acceptance work.
+The current build
+has been deployed to a German server and a Debian VM; enrollment, root-owned
+Podman discovery, retry/restart/revocation behavior, and backup/restore were
+reported working. Formal evidence is maintained in the
+[progress ledger](spec/coding/parallel-progress.md). DNS work is now the next
+major implementation area, while rootless Podman and native systemd evidence
+remain unverified for the current deployment.
 
 ## Implementation Status
 
-- WP-00 specification baseline: complete.
-- WP-01 repository and build foundation: complete; local verification and the
-  browser smoke test pass, while multi-architecture image verification requires
-  a container tool.
-- WP-02 OpenAPI and database contract: implementation present; contract
-  reconciliation remains.
-- Next package: complete WP-02 contract reconciliation.
+- Inventory/domain workflows, explicit SQLite startup, sessions/CSRF, reset,
+  hierarchy, manual IPs, pagination and process-restart tests exist.
+- Discovery has a Linux/Podman client, enrollment/heartbeats, ingestion, current
+  facts/containers/diagnostics and safe bounded retention. A
+  [dated Linux/Podman pilot](spec/coding/legacy/consolidation-evidence-2026-09-27.md) records
+  real rootful/rootless, recreation, recovery and service work; current-build edge
+  acceptance remains separate from that historical evidence.
+- Audit browsing is mounted at `/api/v1/audit-events` with authentication,
+  filtering, cursor pagination, and redacted changes. Transactional idempotency
+  is integrated across current inventory create/update/lifecycle mutations, and
+  the shared browser transport supplies mutation keys.
+- The current UI remains a functional foundation rather than final visual design;
+  visual redesign is deferred.
+- DNS runtime implementation is intentionally on hold; the future resume point is
+  the [DNS implementation handoff](spec/coding/dns-handoff.md).
+- DNS runtime is not implemented. Detailed current packet status is maintained in
+  [the ledger](spec/coding/parallel-progress.md), not in historical audit backlogs.
 
 ## Prerequisites
 
@@ -25,25 +72,140 @@ Install the pinned frontend dependencies with `npm ci`.
 Install the Chromium browser used by the foundation smoke test with
 `npm exec playwright install chromium`.
 
-## Local Foundation
+## Local Run and First Administrator
 
-Run `make verify` to check formatting, static analysis, Go and frontend tests,
-the embedded server build, and both Linux agent architectures.
-
-Run `make test-e2e` to build the server and exercise the embedded UI and health
-endpoint in Chromium.
-
-Run the minimal server with:
+Build the embedded UI and server, then create the first administrator. Passwords
+are read from the environment so they are not exposed as command-line arguments.
 
 ```sh
+npm ci
 make build
-./bin/portinaia server
+export PORTINAIA_DB="$PWD/portinaia.db"
+./bin/portinaia db migrate -path "$PORTINAIA_DB"
+export PORTINAIA_BOOTSTRAP_PASSWORD='use-a-long-unique-password'
+./bin/portinaia admin bootstrap -username admin
+unset PORTINAIA_BOOTSTRAP_PASSWORD
+./bin/portinaia server -listen 127.0.0.1:8080 -db "$PORTINAIA_DB"
 ```
 
-The embedded frontend is served on `http://localhost:8080`. Liveness and
-readiness are available at `/api/v1/health/live` and
-`/api/v1/health/ready`. Runtime configuration is introduced by WP-03; the
-foundation server intentionally uses port 8080 until then.
+Migrations are explicit: run `db migrate` before first bootstrap and after each
+upgrade, with a verified backup beforehand. `server`, `admin bootstrap`, and
+`admin password-reset` refuse missing, old, inconsistent, or newer unsupported
+schemas. `db status` checks both goose metadata and the application schema version.
+Liveness and readiness are available at `/api/v1/health/live` and
+`/api/v1/health/ready`; readiness verifies the supported schema and performs a
+bounded SQLite read/write probe that rolls back. `PORTINAIA_LISTEN`, `PORTINAIA_DB`,
+`PORTINAIA_PUBLIC_URL`, and `PORTINAIA_TRUSTED_PROXY_CIDRS` configure runtime
+defaults; CLI flags override the corresponding listen/database/public URL values.
+Discovery retention defaults to 90 days with a 1000-row batch every hour. The
+runtime rejects ages below 90 days and retains an additional five-minute margin
+for the accepted future collection-clock skew. Set
+`PORTINAIA_DISCOVERY_RETENTION_DAYS`, `PORTINAIA_DISCOVERY_RETENTION_BATCH`, or
+`PORTINAIA_DISCOVERY_RETENTION_INTERVAL` (or their matching server flags) to tune it.
+Only peers in `PORTINAIA_TRUSTED_PROXY_CIDRS` contribute `X-Forwarded-For` client
+addresses; forwarded scheme headers do not control cookie security. Set
+`PORTINAIA_PUBLIC_URL` to the externally visible HTTPS URL behind TLS termination.
+Discovery retention defaults to 90 days, batches of 1000, and an hourly schedule;
+override with `PORTINAIA_DISCOVERY_RETENTION_DAYS`,
+`PORTINAIA_DISCOVERY_RETENTION_BATCH`, and
+`PORTINAIA_DISCOVERY_RETENTION_INTERVAL` or their matching server flags.
+
+## Linux Agent Client (M2 In Progress)
+
+The agent can exchange a one-time token for a private local credential, send
+heartbeats, collect Linux host facts, and report from explicitly configured
+Podman 4.x–6.x Unix sockets (including actual 6.1.1 Podman machine verification;
+see [pilot evidence](spec/coding/legacy/consolidation-evidence-2026-09-27.md)). Do not
+put tokens in command-line arguments. Place
+the token in a 0600 file, run enrollment, and remove the token file after success:
+
+```sh
+sudo install -d -m 0700 /var/lib/portinaia-agent
+sudo install -m 0600 /secure/enrollment-token /run/portinaia-enrollment-token
+sudo ./dist/portinaia-agent-linux-amd64 enroll \
+  -server https://portinaia.example \
+  -token-file /run/portinaia-enrollment-token
+sudo rm /run/portinaia-enrollment-token
+sudo ./dist/portinaia-agent-linux-amd64 run \
+  -podman-socket rootful=0:/run/podman/podman.sock
+```
+
+The client requires HTTPS except for loopback development servers. Credential
+state defaults to `/var/lib/portinaia-agent/credential.json`, written atomically
+with owner-only permissions. `heartbeat` sends one heartbeat; `snapshot` collects
+and uploads once; `run` sends heartbeats every 60 seconds and snapshots every five
+minutes by default. Both schedules can be adjusted with command flags. The latest
+pending snapshot is stored as one private report and retains its report ID until
+accepted or superseded by a newer complete report. Independent collection during
+upload backoff and concurrent acknowledgement safety remain tracked acceptance
+items. Retries are supported for up to 90 days from collection start;
+older, unrecognized reports are rejected so retention cannot reapply stale state.
+Report history is retained for 90 days by server receipt time. `portinaia db
+retention` prints a dry-run report/content count; the server removes expired rows in
+bounded hourly batches and never runs VACUUM automatically. Podman sockets must be explicitly listed as
+`NAME=UID:/absolute/socket`; the agent verifies socket type and owner, supports
+one configured connection per UID, and does not search for arbitrary sockets.
+Rootless endpoints use their numeric user's UID and socket path. If no Podman
+socket is configured, no Podman inventory or absence is asserted. The example
+root-owned unit is [`deploy/portinaia-agent.service`](deploy/portinaia-agent.service).
+For rootless Podman, explicitly configure its numeric owner and socket in that
+agent's repeated `-podman-socket NAME=UID:/absolute/socket` arguments, retaining
+root-owned private agent state and one connection per UID. Enable the relevant
+owner's Podman socket before collection; no separate user-service model is assumed.
+
+For a native systemd installation, verify the release checksum, install the binary
+as root, provide a one-use token in a mode-0600 file, enroll once, remove the token,
+then enable the service:
+
+```sh
+sudo install -o root -g root -m 0755 ./portinaia-agent-linux-amd64 /usr/local/bin/portinaia-agent
+sudo install -d -o root -g root -m 0700 /var/lib/portinaia-agent
+sudo install -o root -g root -m 0600 /secure/enrollment-token /run/portinaia-enrollment-token
+sudo /usr/local/bin/portinaia-agent enroll -server https://portinaia.example -token-file /run/portinaia-enrollment-token
+sudo rm /run/portinaia-enrollment-token
+sudo install -o root -g root -m 0644 deploy/portinaia-agent.service /etc/systemd/system/portinaia-agent.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now portinaia-agent.service
+sudo systemctl status portinaia-agent.service
+sudo journalctl -u portinaia-agent.service
+```
+
+The service requires an active rootful Podman API socket at the path shown in the
+unit. Enable `podman.socket` and confirm its owner before starting it. Never enable
+the unit with a missing socket if you expect container collection; the agent will
+report that collector as failed rather than claiming an empty host.
+
+To recover access on the host with database-file access, stop the server and run:
+
+```sh
+export PORTINAIA_ADMIN_PASSWORD='another-long-unique-password'
+./bin/portinaia admin password-reset -username admin -db "$PORTINAIA_DB"
+unset PORTINAIA_ADMIN_PASSWORD
+```
+
+Password reset invalidates all existing browser sessions. It does not print or
+store the new plaintext password.
+
+## Backup and Restore (SQLite)
+
+Create a consistent online SQLite snapshot and verify it before relying on it:
+
+```sh
+./bin/portinaia db backup -path "$PORTINAIA_DB" -output /secure/backups/portinaia-$(date +%F).db
+./bin/portinaia db verify -path /secure/backups/portinaia-$(date +%F).db
+```
+
+The destination must not already exist; snapshots are created with owner-only
+permissions. Follow the [recovery procedure](deploy/recovery.md): stop the server,
+preserve its database and WAL/SHM sidecars, and restore the verified snapshot to a
+clean destination with the expected owner/mode and matching configuration/secrets.
+Never combine the restored DB with stale sidecars. Run `db verify` and `db status`
+before starting. Restoring SQLite does not roll back external DNS-provider
+changes. Keep the database and backup readable only by the service administrator;
+protect bootstrap/reset environment values as secrets.
+
+Run `make verify` for formatting, static analysis, Go and frontend tests, generated
+contract checks, and builds. `make test-e2e` exercises the embedded UI in Chromium.
 
 Use `./bin/portinaia version` or a built `portinaia-agent version` binary to
 inspect build metadata.

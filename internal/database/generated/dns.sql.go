@@ -21,8 +21,11 @@ SET lease_owner = CAST(?1 AS TEXT),
 WHERE id IN (
     SELECT id
     FROM dns_projections
-    WHERE state IN ('pending', 'failed', 'deleting')
-      AND (next_retry_at IS NULL OR next_retry_at <= CAST(?3 AS TEXT))
+    WHERE provider = CAST(?4 AS TEXT)
+      AND (
+          (state IN ('pending', 'deleting') AND (next_retry_at IS NULL OR next_retry_at <= CAST(?3 AS TEXT)))
+          OR (state = 'failed' AND retryable = 1 AND next_retry_at <= CAST(?3 AS TEXT))
+      )
       AND (lease_owner IS NULL OR lease_expires_at <= CAST(?3 AS TEXT))
       AND EXISTS (
           SELECT 1 FROM dns_names
@@ -30,15 +33,16 @@ WHERE id IN (
             AND dns_names.desired_revision = dns_projections.desired_revision
       )
     ORDER BY COALESCE(next_retry_at, updated_at), id
-    LIMIT CAST(?4 AS INTEGER)
+    LIMIT CAST(?5 AS INTEGER)
 )
-RETURNING id, dns_name_id, provider, desired_revision, applied_revision, state, attempt_count, next_retry_at, last_attempt_at, last_success_at, last_error_code, last_error_message, observed_checksum, lease_owner, lease_expires_at, leased_revision, updated_at
+RETURNING id, dns_name_id, provider, desired_revision, applied_revision, state, attempt_count, next_retry_at, last_attempt_at, last_success_at, last_error_code, last_error_message, observed_checksum, lease_owner, lease_expires_at, leased_revision, updated_at, retryable
 `
 
 type ClaimDNSProjectionsParams struct {
 	LeaseOwner     string `db:"lease_owner" json:"lease_owner"`
 	LeaseExpiresAt string `db:"lease_expires_at" json:"lease_expires_at"`
 	ClaimedAt      string `db:"claimed_at" json:"claimed_at"`
+	Provider       string `db:"provider" json:"provider"`
 	BatchSize      int64  `db:"batch_size" json:"batch_size"`
 }
 
@@ -47,6 +51,7 @@ func (q *Queries) ClaimDNSProjections(ctx context.Context, arg ClaimDNSProjectio
 		arg.LeaseOwner,
 		arg.LeaseExpiresAt,
 		arg.ClaimedAt,
+		arg.Provider,
 		arg.BatchSize,
 	)
 	if err != nil {
@@ -74,6 +79,7 @@ func (q *Queries) ClaimDNSProjections(ctx context.Context, arg ClaimDNSProjectio
 			&i.LeaseExpiresAt,
 			&i.LeasedRevision,
 			&i.UpdatedAt,
+			&i.Retryable,
 		); err != nil {
 			return nil, err
 		}
@@ -91,19 +97,21 @@ func (q *Queries) ClaimDNSProjections(ctx context.Context, arg ClaimDNSProjectio
 const completeDNSProjection = `-- name: CompleteDNSProjection :execrows
 UPDATE dns_projections
 SET applied_revision = CAST(?1 AS INTEGER),
-    state = 'synchronized',
-    last_success_at = CAST(?2 AS TEXT),
+    state = CAST(?2 AS TEXT),
+    retryable = 1,
+    last_success_at = CAST(?3 AS TEXT),
     next_retry_at = NULL,
     last_error_code = NULL,
     last_error_message = NULL,
-    observed_checksum = ?3,
+    observed_checksum = ?4,
     lease_owner = NULL,
     lease_expires_at = NULL,
     leased_revision = NULL,
-    updated_at = CAST(?2 AS TEXT)
-WHERE id = CAST(?4 AS TEXT)
-  AND lease_owner = CAST(?5 AS TEXT)
-  AND lease_expires_at > CAST(?2 AS TEXT)
+    updated_at = CAST(?3 AS TEXT)
+WHERE id = CAST(?5 AS TEXT)
+  AND provider = CAST(?6 AS TEXT)
+  AND lease_owner = CAST(?7 AS TEXT)
+  AND lease_expires_at > CAST(?3 AS TEXT)
   AND leased_revision = CAST(?1 AS INTEGER)
   AND desired_revision = CAST(?1 AS INTEGER)
   AND EXISTS (
@@ -115,18 +123,22 @@ WHERE id = CAST(?4 AS TEXT)
 
 type CompleteDNSProjectionParams struct {
 	AppliedRevision  int64          `db:"applied_revision" json:"applied_revision"`
+	CompletionState  string         `db:"completion_state" json:"completion_state"`
 	CompletedAt      string         `db:"completed_at" json:"completed_at"`
 	ObservedChecksum sql.NullString `db:"observed_checksum" json:"observed_checksum"`
 	ID               string         `db:"id" json:"id"`
+	Provider         string         `db:"provider" json:"provider"`
 	LeaseOwner       string         `db:"lease_owner" json:"lease_owner"`
 }
 
 func (q *Queries) CompleteDNSProjection(ctx context.Context, arg CompleteDNSProjectionParams) (int64, error) {
 	result, err := q.db.ExecContext(ctx, completeDNSProjection,
 		arg.AppliedRevision,
+		arg.CompletionState,
 		arg.CompletedAt,
 		arg.ObservedChecksum,
 		arg.ID,
+		arg.Provider,
 		arg.LeaseOwner,
 	)
 	if err != nil {
@@ -138,42 +150,48 @@ func (q *Queries) CompleteDNSProjection(ctx context.Context, arg CompleteDNSProj
 const failDNSProjection = `-- name: FailDNSProjection :execrows
 UPDATE dns_projections
 SET state = 'failed',
-    next_retry_at = CAST(?1 AS TEXT),
-    last_error_code = CAST(?2 AS TEXT),
-    last_error_message = CAST(?3 AS TEXT),
+    retryable = CAST(?1 AS INTEGER),
+    next_retry_at = ?2,
+    last_error_code = CAST(?3 AS TEXT),
+    last_error_message = CAST(?4 AS TEXT),
     lease_owner = NULL,
     lease_expires_at = NULL,
     leased_revision = NULL,
-    updated_at = CAST(?4 AS TEXT)
-WHERE id = CAST(?5 AS TEXT)
-  AND lease_owner = CAST(?6 AS TEXT)
-  AND lease_expires_at > CAST(?4 AS TEXT)
-  AND leased_revision = CAST(?7 AS INTEGER)
-  AND desired_revision = CAST(?7 AS INTEGER)
+    updated_at = CAST(?5 AS TEXT)
+WHERE id = CAST(?6 AS TEXT)
+  AND provider = CAST(?7 AS TEXT)
+  AND lease_owner = CAST(?8 AS TEXT)
+  AND lease_expires_at > CAST(?5 AS TEXT)
+  AND leased_revision = CAST(?9 AS INTEGER)
+  AND desired_revision = CAST(?9 AS INTEGER)
   AND EXISTS (
       SELECT 1 FROM dns_names
       WHERE dns_names.id = dns_projections.dns_name_id
-        AND dns_names.desired_revision = CAST(?7 AS INTEGER)
+        AND dns_names.desired_revision = CAST(?9 AS INTEGER)
   )
 `
 
 type FailDNSProjectionParams struct {
-	NextRetryAt    string `db:"next_retry_at" json:"next_retry_at"`
-	ErrorCode      string `db:"error_code" json:"error_code"`
-	ErrorMessage   string `db:"error_message" json:"error_message"`
-	FailedAt       string `db:"failed_at" json:"failed_at"`
-	ID             string `db:"id" json:"id"`
-	LeaseOwner     string `db:"lease_owner" json:"lease_owner"`
-	FailedRevision int64  `db:"failed_revision" json:"failed_revision"`
+	Retryable      int64          `db:"retryable" json:"retryable"`
+	NextRetryAt    sql.NullString `db:"next_retry_at" json:"next_retry_at"`
+	ErrorCode      string         `db:"error_code" json:"error_code"`
+	ErrorMessage   string         `db:"error_message" json:"error_message"`
+	FailedAt       string         `db:"failed_at" json:"failed_at"`
+	ID             string         `db:"id" json:"id"`
+	Provider       string         `db:"provider" json:"provider"`
+	LeaseOwner     string         `db:"lease_owner" json:"lease_owner"`
+	FailedRevision int64          `db:"failed_revision" json:"failed_revision"`
 }
 
 func (q *Queries) FailDNSProjection(ctx context.Context, arg FailDNSProjectionParams) (int64, error) {
 	result, err := q.db.ExecContext(ctx, failDNSProjection,
+		arg.Retryable,
 		arg.NextRetryAt,
 		arg.ErrorCode,
 		arg.ErrorMessage,
 		arg.FailedAt,
 		arg.ID,
+		arg.Provider,
 		arg.LeaseOwner,
 		arg.FailedRevision,
 	)
@@ -184,7 +202,7 @@ func (q *Queries) FailDNSProjection(ctx context.Context, arg FailDNSProjectionPa
 }
 
 const getDNSProjection = `-- name: GetDNSProjection :one
-SELECT id, dns_name_id, provider, desired_revision, applied_revision, state, attempt_count, next_retry_at, last_attempt_at, last_success_at, last_error_code, last_error_message, observed_checksum, lease_owner, lease_expires_at, leased_revision, updated_at FROM dns_projections WHERE id = ?
+SELECT id, dns_name_id, provider, desired_revision, applied_revision, state, attempt_count, next_retry_at, last_attempt_at, last_success_at, last_error_code, last_error_message, observed_checksum, lease_owner, lease_expires_at, leased_revision, updated_at, retryable FROM dns_projections WHERE id = ?
 `
 
 func (q *Queries) GetDNSProjection(ctx context.Context, id string) (*DnsProjection, error) {
@@ -208,12 +226,13 @@ func (q *Queries) GetDNSProjection(ctx context.Context, id string) (*DnsProjecti
 		&i.LeaseExpiresAt,
 		&i.LeasedRevision,
 		&i.UpdatedAt,
+		&i.Retryable,
 	)
 	return &i, err
 }
 
 const listDNSProjectionsForName = `-- name: ListDNSProjectionsForName :many
-SELECT id, dns_name_id, provider, desired_revision, applied_revision, state, attempt_count, next_retry_at, last_attempt_at, last_success_at, last_error_code, last_error_message, observed_checksum, lease_owner, lease_expires_at, leased_revision, updated_at FROM dns_projections WHERE dns_name_id = ? ORDER BY provider
+SELECT id, dns_name_id, provider, desired_revision, applied_revision, state, attempt_count, next_retry_at, last_attempt_at, last_success_at, last_error_code, last_error_message, observed_checksum, lease_owner, lease_expires_at, leased_revision, updated_at, retryable FROM dns_projections WHERE dns_name_id = ? ORDER BY provider
 `
 
 func (q *Queries) ListDNSProjectionsForName(ctx context.Context, dnsNameID string) ([]*DnsProjection, error) {
@@ -243,6 +262,7 @@ func (q *Queries) ListDNSProjectionsForName(ctx context.Context, dnsNameID strin
 			&i.LeaseExpiresAt,
 			&i.LeasedRevision,
 			&i.UpdatedAt,
+			&i.Retryable,
 		); err != nil {
 			return nil, err
 		}
@@ -260,39 +280,103 @@ func (q *Queries) ListDNSProjectionsForName(ctx context.Context, dnsNameID strin
 const releaseExpiredDNSProjectionLeases = `-- name: ReleaseExpiredDNSProjectionLeases :execrows
 UPDATE dns_projections
 SET lease_owner = NULL, lease_expires_at = NULL, leased_revision = NULL, updated_at = ?
-WHERE lease_owner IS NOT NULL AND lease_expires_at <= ?
+WHERE provider = ? AND lease_owner IS NOT NULL AND lease_expires_at <= ?
 `
 
 type ReleaseExpiredDNSProjectionLeasesParams struct {
 	UpdatedAt      string         `db:"updated_at" json:"updated_at"`
+	Provider       string         `db:"provider" json:"provider"`
 	LeaseExpiresAt sql.NullString `db:"lease_expires_at" json:"lease_expires_at"`
 }
 
 func (q *Queries) ReleaseExpiredDNSProjectionLeases(ctx context.Context, arg ReleaseExpiredDNSProjectionLeasesParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, releaseExpiredDNSProjectionLeases, arg.UpdatedAt, arg.LeaseExpiresAt)
+	result, err := q.db.ExecContext(ctx, releaseExpiredDNSProjectionLeases, arg.UpdatedAt, arg.Provider, arg.LeaseExpiresAt)
 	if err != nil {
 		return 0, err
 	}
 	return result.RowsAffected()
 }
 
+const repairDNSProjection = `-- name: RepairDNSProjection :one
+UPDATE dns_projections
+SET state = 'pending',
+    retryable = 1,
+    attempt_count = 0,
+    next_retry_at = NULL,
+    last_error_code = NULL,
+    last_error_message = NULL,
+    lease_owner = NULL,
+    lease_expires_at = NULL,
+    leased_revision = NULL,
+    updated_at = CAST(?1 AS TEXT)
+WHERE dns_name_id = CAST(?2 AS TEXT)
+  AND provider = CAST(?3 AS TEXT)
+  AND desired_revision = CAST(?4 AS INTEGER)
+  AND state IN ('failed', 'synchronized')
+  AND EXISTS (
+      SELECT 1 FROM dns_names
+      WHERE dns_names.id = dns_projections.dns_name_id
+        AND dns_names.desired_revision = CAST(?4 AS INTEGER)
+  )
+RETURNING id, dns_name_id, provider, desired_revision, applied_revision, state, attempt_count, next_retry_at, last_attempt_at, last_success_at, last_error_code, last_error_message, observed_checksum, lease_owner, lease_expires_at, leased_revision, updated_at, retryable
+`
+
+type RepairDNSProjectionParams struct {
+	RepairedAt      string `db:"repaired_at" json:"repaired_at"`
+	DnsNameID       string `db:"dns_name_id" json:"dns_name_id"`
+	Provider        string `db:"provider" json:"provider"`
+	DesiredRevision int64  `db:"desired_revision" json:"desired_revision"`
+}
+
+func (q *Queries) RepairDNSProjection(ctx context.Context, arg RepairDNSProjectionParams) (*DnsProjection, error) {
+	row := q.db.QueryRowContext(ctx, repairDNSProjection,
+		arg.RepairedAt,
+		arg.DnsNameID,
+		arg.Provider,
+		arg.DesiredRevision,
+	)
+	var i DnsProjection
+	err := row.Scan(
+		&i.ID,
+		&i.DnsNameID,
+		&i.Provider,
+		&i.DesiredRevision,
+		&i.AppliedRevision,
+		&i.State,
+		&i.AttemptCount,
+		&i.NextRetryAt,
+		&i.LastAttemptAt,
+		&i.LastSuccessAt,
+		&i.LastErrorCode,
+		&i.LastErrorMessage,
+		&i.ObservedChecksum,
+		&i.LeaseOwner,
+		&i.LeaseExpiresAt,
+		&i.LeasedRevision,
+		&i.UpdatedAt,
+		&i.Retryable,
+	)
+	return &i, err
+}
+
 const scheduleDNSProjection = `-- name: ScheduleDNSProjection :one
 INSERT INTO dns_projections (
     id, dns_name_id, provider, desired_revision, applied_revision, state,
     attempt_count, next_retry_at, updated_at
-) VALUES (?, ?, ?, ?, 0, ?, 0, ?, ?)
+) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)
 ON CONFLICT (dns_name_id, provider) DO UPDATE SET
     desired_revision = excluded.desired_revision,
     state = excluded.state,
     attempt_count = 0,
     next_retry_at = excluded.next_retry_at,
+    retryable = 1,
     lease_owner = NULL,
     lease_expires_at = NULL,
     leased_revision = NULL,
     updated_at = excluded.updated_at
 WHERE excluded.desired_revision > dns_projections.desired_revision
   AND excluded.desired_revision >= dns_projections.applied_revision
-RETURNING id, dns_name_id, provider, desired_revision, applied_revision, state, attempt_count, next_retry_at, last_attempt_at, last_success_at, last_error_code, last_error_message, observed_checksum, lease_owner, lease_expires_at, leased_revision, updated_at
+RETURNING id, dns_name_id, provider, desired_revision, applied_revision, state, attempt_count, next_retry_at, last_attempt_at, last_success_at, last_error_code, last_error_message, observed_checksum, lease_owner, lease_expires_at, leased_revision, updated_at, retryable
 `
 
 type ScheduleDNSProjectionParams struct {
@@ -300,6 +384,7 @@ type ScheduleDNSProjectionParams struct {
 	DnsNameID       string         `db:"dns_name_id" json:"dns_name_id"`
 	Provider        string         `db:"provider" json:"provider"`
 	DesiredRevision int64          `db:"desired_revision" json:"desired_revision"`
+	AppliedRevision int64          `db:"applied_revision" json:"applied_revision"`
 	State           string         `db:"state" json:"state"`
 	NextRetryAt     sql.NullString `db:"next_retry_at" json:"next_retry_at"`
 	UpdatedAt       string         `db:"updated_at" json:"updated_at"`
@@ -311,6 +396,7 @@ func (q *Queries) ScheduleDNSProjection(ctx context.Context, arg ScheduleDNSProj
 		arg.DnsNameID,
 		arg.Provider,
 		arg.DesiredRevision,
+		arg.AppliedRevision,
 		arg.State,
 		arg.NextRetryAt,
 		arg.UpdatedAt,
@@ -334,6 +420,7 @@ func (q *Queries) ScheduleDNSProjection(ctx context.Context, arg ScheduleDNSProj
 		&i.LeaseExpiresAt,
 		&i.LeasedRevision,
 		&i.UpdatedAt,
+		&i.Retryable,
 	)
 	return &i, err
 }

@@ -56,6 +56,15 @@ func (q *Queries) CreateProvider(ctx context.Context, arg CreateProviderParams) 
 	return &i, err
 }
 
+const deleteProviderRoles = `-- name: DeleteProviderRoles :exec
+DELETE FROM provider_roles WHERE provider_id = ?
+`
+
+func (q *Queries) DeleteProviderRoles(ctx context.Context, providerID string) error {
+	_, err := q.db.ExecContext(ctx, deleteProviderRoles, providerID)
+	return err
+}
+
 const getProvider = `-- name: GetProvider :one
 SELECT id, name, website, external_account_reference, description, notes, revision, created_at, updated_at, archived_at FROM providers WHERE id = ?
 `
@@ -78,10 +87,55 @@ func (q *Queries) GetProvider(ctx context.Context, id string) (*Provider, error)
 	return &i, err
 }
 
+const insertProviderRole = `-- name: InsertProviderRole :exec
+INSERT INTO provider_roles (provider_id, role) VALUES (?, ?)
+`
+
+type InsertProviderRoleParams struct {
+	ProviderID string `db:"provider_id" json:"provider_id"`
+	Role       string `db:"role" json:"role"`
+}
+
+func (q *Queries) InsertProviderRole(ctx context.Context, arg InsertProviderRoleParams) error {
+	_, err := q.db.ExecContext(ctx, insertProviderRole, arg.ProviderID, arg.Role)
+	return err
+}
+
+const listProviderRoles = `-- name: ListProviderRoles :many
+SELECT role FROM provider_roles WHERE provider_id = ? ORDER BY role
+`
+
+func (q *Queries) ListProviderRoles(ctx context.Context, providerID string) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, listProviderRoles, providerID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []string{}
+	for rows.Next() {
+		var role string
+		if err := rows.Scan(&role); err != nil {
+			return nil, err
+		}
+		items = append(items, role)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listProviders = `-- name: ListProviders :many
 SELECT id, name, website, external_account_reference, description, notes, revision, created_at, updated_at, archived_at
 FROM providers
-WHERE (CAST(?1 AS INTEGER) = 1 OR archived_at IS NULL)
+WHERE (
+    CAST(?1 AS TEXT) = 'include'
+    OR (CAST(?1 AS TEXT) = 'exclude' AND archived_at IS NULL)
+    OR (CAST(?1 AS TEXT) = 'only' AND archived_at IS NOT NULL)
+)
   AND (CAST(?2 AS TEXT) = '' OR name LIKE '%' || CAST(?2 AS TEXT) || '%' COLLATE NOCASE)
   AND (name > CAST(?3 AS TEXT)
        OR (name = CAST(?3 AS TEXT) AND id > CAST(?4 AS TEXT)))
@@ -90,16 +144,16 @@ LIMIT CAST(?5 AS INTEGER)
 `
 
 type ListProvidersParams struct {
-	IncludeArchived int64  `db:"include_archived" json:"include_archived"`
-	Search          string `db:"search" json:"search"`
-	AfterName       string `db:"after_name" json:"after_name"`
-	AfterID         string `db:"after_id" json:"after_id"`
-	PageSize        int64  `db:"page_size" json:"page_size"`
+	ArchivedMode string `db:"archived_mode" json:"archived_mode"`
+	Search       string `db:"search" json:"search"`
+	AfterName    string `db:"after_name" json:"after_name"`
+	AfterID      string `db:"after_id" json:"after_id"`
+	PageSize     int64  `db:"page_size" json:"page_size"`
 }
 
 func (q *Queries) ListProviders(ctx context.Context, arg ListProvidersParams) ([]*Provider, error) {
 	rows, err := q.db.QueryContext(ctx, listProviders,
-		arg.IncludeArchived,
+		arg.ArchivedMode,
 		arg.Search,
 		arg.AfterName,
 		arg.AfterID,
@@ -135,4 +189,41 @@ func (q *Queries) ListProviders(ctx context.Context, arg ListProvidersParams) ([
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateProvider = `-- name: UpdateProvider :execrows
+UPDATE providers
+SET name = ?, website = ?, external_account_reference = ?, description = ?, notes = ?,
+    revision = ?, updated_at = ?
+WHERE id = ? AND revision = ? AND archived_at IS NULL
+`
+
+type UpdateProviderParams struct {
+	Name                     string         `db:"name" json:"name"`
+	Website                  sql.NullString `db:"website" json:"website"`
+	ExternalAccountReference sql.NullString `db:"external_account_reference" json:"external_account_reference"`
+	Description              string         `db:"description" json:"description"`
+	Notes                    string         `db:"notes" json:"notes"`
+	Revision                 int64          `db:"revision" json:"revision"`
+	UpdatedAt                string         `db:"updated_at" json:"updated_at"`
+	ID                       string         `db:"id" json:"id"`
+	Revision_2               int64          `db:"revision_2" json:"revision_2"`
+}
+
+func (q *Queries) UpdateProvider(ctx context.Context, arg UpdateProviderParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, updateProvider,
+		arg.Name,
+		arg.Website,
+		arg.ExternalAccountReference,
+		arg.Description,
+		arg.Notes,
+		arg.Revision,
+		arg.UpdatedAt,
+		arg.ID,
+		arg.Revision_2,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }

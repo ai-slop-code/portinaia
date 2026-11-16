@@ -57,3 +57,36 @@ WHERE agent_id = ?
        OR (received_at = sqlc.arg(before_received_at) AND id < sqlc.arg(before_id)))
 ORDER BY received_at DESC, id DESC
 LIMIT sqlc.arg(page_size);
+
+-- name: CountExpiredDiscoveryReports :one
+SELECT count(*) FROM discovery_reports WHERE received_at < sqlc.arg(cutoff);
+
+-- name: CountReclaimableSnapshotContents :one
+SELECT count(*)
+FROM snapshot_contents content
+WHERE NOT EXISTS (
+    SELECT 1 FROM discovery_reports report
+    WHERE report.snapshot_content_id = content.id
+      AND report.received_at >= sqlc.arg(cutoff)
+);
+
+-- name: DeleteExpiredDiscoveryReportsBatch :execrows
+DELETE FROM discovery_reports
+WHERE id IN (
+    SELECT candidate.id FROM discovery_reports candidate
+    WHERE candidate.received_at < sqlc.arg(cutoff)
+    ORDER BY candidate.received_at, candidate.id
+    LIMIT sqlc.arg(batch_size)
+);
+
+-- name: DeleteUnreferencedSnapshotContentsBatch :execrows
+DELETE FROM snapshot_contents
+WHERE id IN (
+    SELECT content.id FROM snapshot_contents content
+    WHERE NOT EXISTS (
+        SELECT 1 FROM discovery_reports report
+        WHERE report.snapshot_content_id = content.id
+    )
+    ORDER BY content.created_at, content.id
+    LIMIT sqlc.arg(batch_size)
+);

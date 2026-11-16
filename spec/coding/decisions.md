@@ -1,116 +1,107 @@
-# Decision register
+# Active decisions and preserved deferred decisions
 
-## User decisions recorded 2026-09-26
+Consolidated 2026-09-30. This register preserves substantive policies, not old
+task ordering. [Product scope](../focused-delivery.md) controls release scope and
+The progress ledger is the current implementation and verification record;
+superseded scheduling plans are retained under [legacy records](legacy/README.md).
 
-### D-01 — Separate volatile snapshot observations
+## Active
 
-Approved: deduplicate structural state separately from volatile observations.
-Keep uptime and filesystem available-byte measurements in current state and
-per-report metadata. Preserve those measurements for each retained report so
-history/diff can reconstruct the observation; they are not part of the shared
-structural content hash. Report identifiers, collection times, receipt times,
-client/protocol versions also belong to the report envelope. Boot identity,
-hardware capacity, mounts, interfaces, container state, and runtime IDs remain
-structural state. WP-08 defines the exact field split. No raw HTTP bodies persist.
+### D-08 — Three workflows and one deployment
 
-### D-02 — Four recurring intervals and monthly-equivalent totals
+Inventory down to containers, owned domains and split-horizon DNS. Keep one admin,
+one server/SQLite/embedded UI and Linux/Podman agents. Deliver useful end-to-end
+flows; dormant schemas do not require financial/history/PAT/purge features.
 
-Approved intervals: monthly, quarterly, semiannual, annual. API values are `P1M`,
-`P3M`, `P6M`, `P1Y`; SQL values remain `monthly`, `quarterly`, `semiannual`, `annual`.
-Dashboard totals are monthly equivalents grouped by currency. Use exact rational
-arithmetic, add amounts before rounding, and round half-up once per currency to
-its minor unit. Include active recurring entries whose inclusive effective dates
-contain today's UTC date and whose owner is active. Exclude one-time costs.
-Label this as an estimate of monthly recurring cost, not a bill or cash-flow total.
+### D-09 — Preserve existing data and finish integration before DNS
 
-### D-03 — Compute archival revokes discovery credentials
+New IDs use UUIDv7; persisted UUIDv4 IDs/references remain valid without re-keying.
+Applied migrations and legacy relationships survive forward corrections. Complete
+G1 in [scope](../focused-delivery.md) before DNS behavior. Parallel residual tasks
+are authorized; do not restart completed work or weaken acceptance for concurrency.
 
-Archive the compute and revoke its agent credential and outstanding enrollment
-tokens in the same audited transaction. Keep observations/history and agent ID.
-Reject subsequent ingestion. Restore does not revive credentials: a new explicit
-enrollment issues a new generation for the existing compute-bound agent.
+### D-01 — Structural content is separate from volatile observations
 
-### D-04 — Real protocol compatibility, starting at v1
+Preserve the exact structural/envelope split in
+[DI-03](discovery-requirements.md). Uptime/free bytes and per-report metadata do not
+affect shared structural hashes; boot/runtime identity does. No raw request archive.
+History UI is deferred, but current-state ingestion, replay and safe retention are not.
 
-First release supports protocol v1 only, accepted range `[1,1]`. Do not fabricate
-v0. When v2 is introduced, support v2 and v1 using explicit boundary adapters.
-Binary version output must distinguish build version, API version, protocol
-version, and canonical format version. The canonical format has its own version.
+### D-03 — Compute archive revokes credentials
 
-### D-05 — Capacity reference
+Archive compute and revoke its agent/enrollment tokens atomically with audit.
+Preserve observations and identities. Restore does not revive credentials; explicit
+re-enrollment advances the existing agent's generation.
 
-Reference: Raspberry Pi 4, 4 GB RAM, SSD, 64-bit Linux. Record CPU frequency,
-thermal/throttling state, SSD/filesystem, OS, container limits, and CoreDNS version
-in results. Emulator or desktop tests do not establish this hardware gate.
-The owner approved the WP-16 load, page/detail latency, snapshot latency, memory
-and internal-publication budgets. They are acceptance thresholds, not measured
-achievements. Storage budget awaits representative measurement and owner approval;
-heartbeat/retention timing suggestions remain engineering targets.
+### D-04 — Real versioned protocol
 
-### D-06 — Purge requires explicit dependent cleanup
+Initial range `[1,1]`, no fabricated v0. Future versions require explicit compatibility
+adapters. Build/API/protocol/canonical versions are distinct. Validate required
+response values and document schedule/local-override semantics.
 
-Do not cascade-purge archived subtrees or retained reports. Require the target
-to be archived and block purge while any dependent resource, DNS link, retained
-report, or other blocking FK reference remains. Return typed dependency counts
-and navigable identifiers through bounded responses. Remove children explicitly;
-wait for configured report retention. Purge may remove target-owned join/fact
-rows and already expired/revoked credential records once no dependent history
-remains. Audit records survive, without resource foreign keys.
+### D-07 — Tested CoreDNS upgrade is permitted
 
-## Engineering conventions selected for consistent implementation
+Select and pin a build passing actual authoritative file/auto fallback and reload
+tests. Record minimum version and tested checksum; external deployment owns host
+upgrade. Sources: [file](https://coredns.io/plugins/file/) and
+[auto](https://coredns.io/plugins/auto/). Upstream docs or a version string alone do
+not establish absent-name/type or final-override behavior on the target build.
 
-These refine the approved behavior; change them centrally, with tests, rather
-than choosing a different convention in each feature.
+### Current engineering policies
 
-- Preserve SQLite's whole-second UTC timestamp convention. Normalize incoming
-  RFC 3339 UTC fractional values to seconds before persistence; compare/order by
-  time plus stable ID. API may serialize whole seconds. Do not use timestamps
-  instead of integer revisions.
-- Container identity uses compute ID, verified numeric Podman owner UID, and
-  exact container name. Connection names are configuration/display labels.
-  Reject duplicate configured owners on one host to avoid overlapping authority.
-  Rename means a different logical container; recreation does not.
-- Rotation revokes the current credential immediately and issues a one-use
-  enrollment token; no plaintext long-lived credential is exposed to the browser.
-  Lost successful enrollment responses require a new enrollment token.
-- Zone disable blocks new drafts/applies/imports but preserves existing desired
-  state, files, and ongoing repair of that desired state. Re-selection re-enables
-  changes. No implicit provider deletion.
-- DNS owner/zone are immutable after aggregate creation; rename/move uses an
-  explicit delete draft and separate create draft. This remains single-name work.
-- An active DNS name must have at least one record set across its views. Removing
-  the last set requires a delete draft. Removing only one view still schedules
-  cleanup of that view before its projection becomes not applicable.
-- DNS names are stored as lower-case ASCII without the terminal dot. Zone files
-  use absolute trailing-dot names. Normalize IDNs at the server boundary.
-- Internal publication uses a zone-wide generation counter separate from each
-  DNS-name revision; publication of the final removal writes a valid metadata-only
-  zone, rather than leaving stale answers or deleting a loaded file.
-- Human idempotency results never persist plaintext secrets. Secret-issuing
-  endpoints must not use generic response replay; WP-02 removes their optional
-  idempotency promise and documents one-shot recovery.
-- Query scopes are exact capabilities: write does not imply read and `admin`
-  does not mean every scope. Purge additionally requires `admin`; update the
-  existing inventory-only purge contract before implementation.
+- UTC whole-second storage; integer revisions; canonical lower-case IDNA names
+  without terminal dot internally, absolute dotted names in zone files.
+- Container identity is compute + verified numeric UID + exact name. Connection
+  labels are display/configuration; duplicate owner authority is rejected.
+- Rotation revokes immediately and issues one-use enrollment; lost issuance has
+  explicit revoke/reissue recovery, not plaintext response replay.
+- Exact capabilities: `admin` and write do not implicitly mean every/read capability.
+  Human sessions get an explicit set; PAT issuance remains deferred.
+- Canonical system audit actor is `0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73c0`.
+  New CLI/worker events have correlation; legacy missing IDs are not invented.
+- DNS zone disable prevents new changes but preserves desired state/files/repair.
+  Owner/zone are immutable; rename uses delete/create. Active names have at least
+  one RRset; removed views clean up before becoming not-applicable.
+- Internal publication has a zone generation separate from name revisions; final
+  removal writes a metadata-only zone, not deletion of the loaded file.
+- Retention preserves the 90-day retry window plus five-minute accepted clock skew.
+  Current minimum retention is 90 days; dry-run and cleanup must use compatible policy.
+- Auth hash/session target values remain in [BE-02](backend-requirements.md).
+  Current source differs in some defaults; an implemented value is not automatic
+  approval. Resolve these centrally with compatibility and target evidence.
 
-### D-07 — Tested CoreDNS version upgrade permitted
+## Deferred policy provenance — not current release gates
 
-The owner permits selecting and pinning a CoreDNS build that passes actual
-authoritative-file/auto fallthrough and reload integration tests. Document the
-minimum supported version and exact tested image/binary checksum. External
-deployment automation owns any host upgrade. No need to preserve an unknown
-older deployed version; successful target-version testing remains mandatory.
+### D-02 — Future costs
 
-## Remaining evidence and follow-up gates
+Monthly/quarterly/semiannual/annual map API `P1M/P3M/P6M/P1Y` to storage enums.
+Future monthly equivalents use exact rational addition, then half-up rounding per
+currency minor unit; active inclusive dates, no one-time entries or FX mixing.
+Currency catalog provenance is SIX ISO 4217 List One, 2026-09-17. Preserve dormant
+data, but do not implement billing/currency UI for this release.
 
-| ID   | Question / evidence needed                                                                                                                          | Blocks                                  |
-| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
-| F-01 | Measure representative history/audit storage and obtain a numeric storage budget. Approved latency/load/memory/publication thresholds are in WP-16. | Capacity release sign-off               |
-| F-02 | Select/pin a compatible CoreDNS version under D-07 and record real integration evidence. Upgrade permission is granted.                             | WP-11 deployment compatibility sign-off |
+### D-06 — Future hard purge
 
-The current upstream `file` documentation explicitly lists `fallthrough`; `auto`
-documents support for all `file` directives. This is not proof that an older host
-binary supports it. Sources checked 2026-09-26:
-[file](https://coredns.io/plugins/file/) and
-[auto](https://coredns.io/plugins/auto/). WP-11 must run real DNS queries against
-the pinned target build, including absent names and final-override removal.
+If later enabled, require explicit administrative + inventory-write capability,
+archived target, current revision and explicit dependent cleanup. No cascading
+subtree/history purge; report bounded navigable blockers. Audit survives.
+
+### D-05 — Deferred capacity targets
+
+Historical approval reference: Pi 4, 4 GB RAM, SSD, 64-bit Linux; 500 computes/agents,
+10,000 containers, 100 zones, 100,000 individual record values. These are neither
+measured achievements nor G1/G2 functional gates.
+
+| Historical target                    | Threshold                                                                    |
+| ------------------------------------ | ---------------------------------------------------------------------------- |
+| Sustained ingest                     | 500 agents, 60s heartbeat, 300s snapshot, no growing backlog over 60 minutes |
+| 50-item page/detail latency          | p95 ≤500 ms, p99 ≤2 s under ingest load                                      |
+| Representative 20-container snapshot | p95 ≤2 s, p99 ≤5 s                                                           |
+| Server memory                        | ≤1 GiB steady, ≤1.5 GiB peak                                                 |
+| Internal convergence                 | p95 ≤10 s excluding CoreDNS reload interval                                  |
+| Heartbeat / retention batch          | Engineering targets p95 ≤500 ms, not additional approved current gates       |
+| Storage                              | Measurement and a future owner-approved budget; no fixed budget was approved |
+
+Future benchmark evidence must record hardware/thermal/filesystem/fixture details.
+Current functional pilot evidence may use virtualized Linux; physical-Pi or arbitrary
+multi-distribution testing must not reappear as an unrequested prerequisite.

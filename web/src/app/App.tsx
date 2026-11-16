@@ -1,28 +1,28 @@
-import { CssBaseline, Stack, ThemeProvider, Typography } from "@mui/material";
+import { useEffect } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter } from "react-router-dom";
 
-import { theme } from "../theme/theme";
+import { Workspace } from "./Workspace";
+
+// Keep the entry component focused on application composition. Feature screens
+// and workflows are composed by Workspace and their feature modules.
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false } },
+});
 
 export function App() {
+  useEffect(() => {
+    const clearSessionData = () => queryClient.clear();
+    window.addEventListener("portinaia:session-changed", clearSessionData);
+    return () =>
+      window.removeEventListener("portinaia:session-changed", clearSessionData);
+  }, []);
+
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Stack
-        component="main"
-        spacing={1}
-        sx={{
-          minHeight: "100vh",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: 3,
-        }}
-      >
-        <Typography component="h1" variant="h3">
-          Portinaia
-        </Typography>
-        <Typography color="text.secondary">
-          Infrastructure inventory and DNS control plane
-        </Typography>
-      </Stack>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <Workspace />
+      </BrowserRouter>
+    </QueryClientProvider>
   );
 }

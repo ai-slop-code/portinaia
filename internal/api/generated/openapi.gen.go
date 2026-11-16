@@ -18,6 +18,24 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+// Defines values for AcceptedDiscoveryReportResult.
+const (
+	AcceptedDiscoveryReportResultAccepted           AcceptedDiscoveryReportResult = "accepted"
+	AcceptedDiscoveryReportResultAcceptedWithErrors AcceptedDiscoveryReportResult = "accepted_with_errors"
+)
+
+// Valid indicates whether the value is a known member of the AcceptedDiscoveryReportResult enum.
+func (e AcceptedDiscoveryReportResult) Valid() bool {
+	switch e {
+	case AcceptedDiscoveryReportResultAccepted:
+		return true
+	case AcceptedDiscoveryReportResultAcceptedWithErrors:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AgentStatus.
 const (
 	AgentStatusOffline AgentStatus = "offline"
@@ -65,6 +83,7 @@ func (e AuditActorType) Valid() bool {
 
 // Defines values for AuditResult.
 const (
+	AuditResultFailure  AuditResult = "failure"
 	AuditResultRejected AuditResult = "rejected"
 	AuditResultSuccess  AuditResult = "success"
 )
@@ -72,9 +91,56 @@ const (
 // Valid indicates whether the value is a known member of the AuditResult enum.
 func (e AuditResult) Valid() bool {
 	switch e {
+	case AuditResultFailure:
+		return true
 	case AuditResultRejected:
 		return true
 	case AuditResultSuccess:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CollectorObservationCollector.
+const (
+	CollectorObservationCollectorDisks       CollectorObservationCollector = "disks"
+	CollectorObservationCollectorFilesystems CollectorObservationCollector = "filesystems"
+	CollectorObservationCollectorHost        CollectorObservationCollector = "host"
+	CollectorObservationCollectorInterfaces  CollectorObservationCollector = "interfaces"
+	CollectorObservationCollectorPodman      CollectorObservationCollector = "podman"
+)
+
+// Valid indicates whether the value is a known member of the CollectorObservationCollector enum.
+func (e CollectorObservationCollector) Valid() bool {
+	switch e {
+	case CollectorObservationCollectorDisks:
+		return true
+	case CollectorObservationCollectorFilesystems:
+		return true
+	case CollectorObservationCollectorHost:
+		return true
+	case CollectorObservationCollectorInterfaces:
+		return true
+	case CollectorObservationCollectorPodman:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CollectorObservationLastStatus.
+const (
+	CollectorObservationLastStatusFailed  CollectorObservationLastStatus = "failed"
+	CollectorObservationLastStatusSuccess CollectorObservationLastStatus = "success"
+)
+
+// Valid indicates whether the value is a known member of the CollectorObservationLastStatus enum.
+func (e CollectorObservationLastStatus) Valid() bool {
+	switch e {
+	case CollectorObservationLastStatusFailed:
+		return true
+	case CollectorObservationLastStatusSuccess:
 		return true
 	default:
 		return false
@@ -252,6 +318,27 @@ func (e ContainerChangeChange) Valid() bool {
 	}
 }
 
+// Defines values for ContainerHistoryPresence.
+const (
+	ContainerHistoryPresenceAbsent      ContainerHistoryPresence = "absent"
+	ContainerHistoryPresencePresent     ContainerHistoryPresence = "present"
+	ContainerHistoryPresenceUnavailable ContainerHistoryPresence = "unavailable"
+)
+
+// Valid indicates whether the value is a known member of the ContainerHistoryPresence enum.
+func (e ContainerHistoryPresence) Valid() bool {
+	switch e {
+	case ContainerHistoryPresenceAbsent:
+		return true
+	case ContainerHistoryPresencePresent:
+		return true
+	case ContainerHistoryPresenceUnavailable:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ContainerMountType.
 const (
 	ContainerMountTypeBind   ContainerMountType = "bind"
@@ -297,33 +384,6 @@ func (e ContainerObservationHealth) Valid() bool {
 	case ContainerObservationHealthUnhealthy:
 		return true
 	case ContainerObservationHealthUnknown:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for ContainerObservationRestartPolicy.
-const (
-	ContainerObservationRestartPolicyAlways        ContainerObservationRestartPolicy = "always"
-	ContainerObservationRestartPolicyNo            ContainerObservationRestartPolicy = "no"
-	ContainerObservationRestartPolicyOnFailure     ContainerObservationRestartPolicy = "on_failure"
-	ContainerObservationRestartPolicyUnknown       ContainerObservationRestartPolicy = "unknown"
-	ContainerObservationRestartPolicyUnlessStopped ContainerObservationRestartPolicy = "unless_stopped"
-)
-
-// Valid indicates whether the value is a known member of the ContainerObservationRestartPolicy enum.
-func (e ContainerObservationRestartPolicy) Valid() bool {
-	switch e {
-	case ContainerObservationRestartPolicyAlways:
-		return true
-	case ContainerObservationRestartPolicyNo:
-		return true
-	case ContainerObservationRestartPolicyOnFailure:
-		return true
-	case ContainerObservationRestartPolicyUnknown:
-		return true
-	case ContainerObservationRestartPolicyUnlessStopped:
 		return true
 	default:
 		return false
@@ -381,6 +441,540 @@ func (e ContainerPortProtocol) Valid() bool {
 	}
 }
 
+// Defines values for ContainerRestartPolicy.
+const (
+	ContainerRestartPolicyAlways        ContainerRestartPolicy = "always"
+	ContainerRestartPolicyNo            ContainerRestartPolicy = "no"
+	ContainerRestartPolicyOnFailure     ContainerRestartPolicy = "on_failure"
+	ContainerRestartPolicyUnknown       ContainerRestartPolicy = "unknown"
+	ContainerRestartPolicyUnlessStopped ContainerRestartPolicy = "unless_stopped"
+)
+
+// Valid indicates whether the value is a known member of the ContainerRestartPolicy enum.
+func (e ContainerRestartPolicy) Valid() bool {
+	switch e {
+	case ContainerRestartPolicyAlways:
+		return true
+	case ContainerRestartPolicyNo:
+		return true
+	case ContainerRestartPolicyOnFailure:
+		return true
+	case ContainerRestartPolicyUnknown:
+		return true
+	case ContainerRestartPolicyUnlessStopped:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CurrencyCode.
+const (
+	AED CurrencyCode = "AED"
+	AFN CurrencyCode = "AFN"
+	ALL CurrencyCode = "ALL"
+	AMD CurrencyCode = "AMD"
+	AOA CurrencyCode = "AOA"
+	ARS CurrencyCode = "ARS"
+	AUD CurrencyCode = "AUD"
+	AWG CurrencyCode = "AWG"
+	AZN CurrencyCode = "AZN"
+	BAM CurrencyCode = "BAM"
+	BBD CurrencyCode = "BBD"
+	BDT CurrencyCode = "BDT"
+	BHD CurrencyCode = "BHD"
+	BIF CurrencyCode = "BIF"
+	BMD CurrencyCode = "BMD"
+	BND CurrencyCode = "BND"
+	BOB CurrencyCode = "BOB"
+	BOV CurrencyCode = "BOV"
+	BRL CurrencyCode = "BRL"
+	BSD CurrencyCode = "BSD"
+	BTN CurrencyCode = "BTN"
+	BWP CurrencyCode = "BWP"
+	BYN CurrencyCode = "BYN"
+	BZD CurrencyCode = "BZD"
+	CAD CurrencyCode = "CAD"
+	CDF CurrencyCode = "CDF"
+	CHE CurrencyCode = "CHE"
+	CHF CurrencyCode = "CHF"
+	CHW CurrencyCode = "CHW"
+	CLF CurrencyCode = "CLF"
+	CLP CurrencyCode = "CLP"
+	CNY CurrencyCode = "CNY"
+	COP CurrencyCode = "COP"
+	COU CurrencyCode = "COU"
+	CRC CurrencyCode = "CRC"
+	CUP CurrencyCode = "CUP"
+	CVE CurrencyCode = "CVE"
+	CZK CurrencyCode = "CZK"
+	DJF CurrencyCode = "DJF"
+	DKK CurrencyCode = "DKK"
+	DOP CurrencyCode = "DOP"
+	DZD CurrencyCode = "DZD"
+	EGP CurrencyCode = "EGP"
+	ERN CurrencyCode = "ERN"
+	ETB CurrencyCode = "ETB"
+	EUR CurrencyCode = "EUR"
+	FJD CurrencyCode = "FJD"
+	FKP CurrencyCode = "FKP"
+	GBP CurrencyCode = "GBP"
+	GEL CurrencyCode = "GEL"
+	GHS CurrencyCode = "GHS"
+	GIP CurrencyCode = "GIP"
+	GMD CurrencyCode = "GMD"
+	GNF CurrencyCode = "GNF"
+	GTQ CurrencyCode = "GTQ"
+	GYD CurrencyCode = "GYD"
+	HKD CurrencyCode = "HKD"
+	HNL CurrencyCode = "HNL"
+	HTG CurrencyCode = "HTG"
+	HUF CurrencyCode = "HUF"
+	IDR CurrencyCode = "IDR"
+	ILS CurrencyCode = "ILS"
+	INR CurrencyCode = "INR"
+	IQD CurrencyCode = "IQD"
+	IRR CurrencyCode = "IRR"
+	ISK CurrencyCode = "ISK"
+	JMD CurrencyCode = "JMD"
+	JOD CurrencyCode = "JOD"
+	JPY CurrencyCode = "JPY"
+	KES CurrencyCode = "KES"
+	KGS CurrencyCode = "KGS"
+	KHR CurrencyCode = "KHR"
+	KMF CurrencyCode = "KMF"
+	KPW CurrencyCode = "KPW"
+	KRW CurrencyCode = "KRW"
+	KWD CurrencyCode = "KWD"
+	KYD CurrencyCode = "KYD"
+	KZT CurrencyCode = "KZT"
+	LAK CurrencyCode = "LAK"
+	LBP CurrencyCode = "LBP"
+	LKR CurrencyCode = "LKR"
+	LRD CurrencyCode = "LRD"
+	LSL CurrencyCode = "LSL"
+	LYD CurrencyCode = "LYD"
+	MAD CurrencyCode = "MAD"
+	MDL CurrencyCode = "MDL"
+	MGA CurrencyCode = "MGA"
+	MKD CurrencyCode = "MKD"
+	MMK CurrencyCode = "MMK"
+	MNT CurrencyCode = "MNT"
+	MOP CurrencyCode = "MOP"
+	MRU CurrencyCode = "MRU"
+	MUR CurrencyCode = "MUR"
+	MVR CurrencyCode = "MVR"
+	MWK CurrencyCode = "MWK"
+	MXN CurrencyCode = "MXN"
+	MXV CurrencyCode = "MXV"
+	MYR CurrencyCode = "MYR"
+	MZN CurrencyCode = "MZN"
+	NAD CurrencyCode = "NAD"
+	NGN CurrencyCode = "NGN"
+	NIO CurrencyCode = "NIO"
+	NOK CurrencyCode = "NOK"
+	NPR CurrencyCode = "NPR"
+	NZD CurrencyCode = "NZD"
+	OMR CurrencyCode = "OMR"
+	PAB CurrencyCode = "PAB"
+	PEN CurrencyCode = "PEN"
+	PGK CurrencyCode = "PGK"
+	PHP CurrencyCode = "PHP"
+	PKR CurrencyCode = "PKR"
+	PLN CurrencyCode = "PLN"
+	PYG CurrencyCode = "PYG"
+	QAR CurrencyCode = "QAR"
+	RON CurrencyCode = "RON"
+	RSD CurrencyCode = "RSD"
+	RUB CurrencyCode = "RUB"
+	RWF CurrencyCode = "RWF"
+	SAR CurrencyCode = "SAR"
+	SBD CurrencyCode = "SBD"
+	SCR CurrencyCode = "SCR"
+	SDG CurrencyCode = "SDG"
+	SEK CurrencyCode = "SEK"
+	SGD CurrencyCode = "SGD"
+	SHP CurrencyCode = "SHP"
+	SLE CurrencyCode = "SLE"
+	SOS CurrencyCode = "SOS"
+	SRD CurrencyCode = "SRD"
+	SSP CurrencyCode = "SSP"
+	STN CurrencyCode = "STN"
+	SVC CurrencyCode = "SVC"
+	SYP CurrencyCode = "SYP"
+	SZL CurrencyCode = "SZL"
+	THB CurrencyCode = "THB"
+	TJS CurrencyCode = "TJS"
+	TMT CurrencyCode = "TMT"
+	TND CurrencyCode = "TND"
+	TOP CurrencyCode = "TOP"
+	TRY CurrencyCode = "TRY"
+	TTD CurrencyCode = "TTD"
+	TWD CurrencyCode = "TWD"
+	TZS CurrencyCode = "TZS"
+	UAH CurrencyCode = "UAH"
+	UGX CurrencyCode = "UGX"
+	USD CurrencyCode = "USD"
+	USN CurrencyCode = "USN"
+	UYI CurrencyCode = "UYI"
+	UYU CurrencyCode = "UYU"
+	UYW CurrencyCode = "UYW"
+	UZS CurrencyCode = "UZS"
+	VED CurrencyCode = "VED"
+	VES CurrencyCode = "VES"
+	VND CurrencyCode = "VND"
+	VUV CurrencyCode = "VUV"
+	WST CurrencyCode = "WST"
+	XAD CurrencyCode = "XAD"
+	XAF CurrencyCode = "XAF"
+	XCD CurrencyCode = "XCD"
+	XCG CurrencyCode = "XCG"
+	XOF CurrencyCode = "XOF"
+	XPF CurrencyCode = "XPF"
+	YER CurrencyCode = "YER"
+	ZAR CurrencyCode = "ZAR"
+	ZMW CurrencyCode = "ZMW"
+	ZWG CurrencyCode = "ZWG"
+)
+
+// Valid indicates whether the value is a known member of the CurrencyCode enum.
+func (e CurrencyCode) Valid() bool {
+	switch e {
+	case AED:
+		return true
+	case AFN:
+		return true
+	case ALL:
+		return true
+	case AMD:
+		return true
+	case AOA:
+		return true
+	case ARS:
+		return true
+	case AUD:
+		return true
+	case AWG:
+		return true
+	case AZN:
+		return true
+	case BAM:
+		return true
+	case BBD:
+		return true
+	case BDT:
+		return true
+	case BHD:
+		return true
+	case BIF:
+		return true
+	case BMD:
+		return true
+	case BND:
+		return true
+	case BOB:
+		return true
+	case BOV:
+		return true
+	case BRL:
+		return true
+	case BSD:
+		return true
+	case BTN:
+		return true
+	case BWP:
+		return true
+	case BYN:
+		return true
+	case BZD:
+		return true
+	case CAD:
+		return true
+	case CDF:
+		return true
+	case CHE:
+		return true
+	case CHF:
+		return true
+	case CHW:
+		return true
+	case CLF:
+		return true
+	case CLP:
+		return true
+	case CNY:
+		return true
+	case COP:
+		return true
+	case COU:
+		return true
+	case CRC:
+		return true
+	case CUP:
+		return true
+	case CVE:
+		return true
+	case CZK:
+		return true
+	case DJF:
+		return true
+	case DKK:
+		return true
+	case DOP:
+		return true
+	case DZD:
+		return true
+	case EGP:
+		return true
+	case ERN:
+		return true
+	case ETB:
+		return true
+	case EUR:
+		return true
+	case FJD:
+		return true
+	case FKP:
+		return true
+	case GBP:
+		return true
+	case GEL:
+		return true
+	case GHS:
+		return true
+	case GIP:
+		return true
+	case GMD:
+		return true
+	case GNF:
+		return true
+	case GTQ:
+		return true
+	case GYD:
+		return true
+	case HKD:
+		return true
+	case HNL:
+		return true
+	case HTG:
+		return true
+	case HUF:
+		return true
+	case IDR:
+		return true
+	case ILS:
+		return true
+	case INR:
+		return true
+	case IQD:
+		return true
+	case IRR:
+		return true
+	case ISK:
+		return true
+	case JMD:
+		return true
+	case JOD:
+		return true
+	case JPY:
+		return true
+	case KES:
+		return true
+	case KGS:
+		return true
+	case KHR:
+		return true
+	case KMF:
+		return true
+	case KPW:
+		return true
+	case KRW:
+		return true
+	case KWD:
+		return true
+	case KYD:
+		return true
+	case KZT:
+		return true
+	case LAK:
+		return true
+	case LBP:
+		return true
+	case LKR:
+		return true
+	case LRD:
+		return true
+	case LSL:
+		return true
+	case LYD:
+		return true
+	case MAD:
+		return true
+	case MDL:
+		return true
+	case MGA:
+		return true
+	case MKD:
+		return true
+	case MMK:
+		return true
+	case MNT:
+		return true
+	case MOP:
+		return true
+	case MRU:
+		return true
+	case MUR:
+		return true
+	case MVR:
+		return true
+	case MWK:
+		return true
+	case MXN:
+		return true
+	case MXV:
+		return true
+	case MYR:
+		return true
+	case MZN:
+		return true
+	case NAD:
+		return true
+	case NGN:
+		return true
+	case NIO:
+		return true
+	case NOK:
+		return true
+	case NPR:
+		return true
+	case NZD:
+		return true
+	case OMR:
+		return true
+	case PAB:
+		return true
+	case PEN:
+		return true
+	case PGK:
+		return true
+	case PHP:
+		return true
+	case PKR:
+		return true
+	case PLN:
+		return true
+	case PYG:
+		return true
+	case QAR:
+		return true
+	case RON:
+		return true
+	case RSD:
+		return true
+	case RUB:
+		return true
+	case RWF:
+		return true
+	case SAR:
+		return true
+	case SBD:
+		return true
+	case SCR:
+		return true
+	case SDG:
+		return true
+	case SEK:
+		return true
+	case SGD:
+		return true
+	case SHP:
+		return true
+	case SLE:
+		return true
+	case SOS:
+		return true
+	case SRD:
+		return true
+	case SSP:
+		return true
+	case STN:
+		return true
+	case SVC:
+		return true
+	case SYP:
+		return true
+	case SZL:
+		return true
+	case THB:
+		return true
+	case TJS:
+		return true
+	case TMT:
+		return true
+	case TND:
+		return true
+	case TOP:
+		return true
+	case TRY:
+		return true
+	case TTD:
+		return true
+	case TWD:
+		return true
+	case TZS:
+		return true
+	case UAH:
+		return true
+	case UGX:
+		return true
+	case USD:
+		return true
+	case USN:
+		return true
+	case UYI:
+		return true
+	case UYU:
+		return true
+	case UYW:
+		return true
+	case UZS:
+		return true
+	case VED:
+		return true
+	case VES:
+		return true
+	case VND:
+		return true
+	case VUV:
+		return true
+	case WST:
+		return true
+	case XAD:
+		return true
+	case XAF:
+		return true
+	case XCD:
+		return true
+	case XCG:
+		return true
+	case XOF:
+		return true
+	case XPF:
+		return true
+	case YER:
+		return true
+	case ZAR:
+		return true
+	case ZMW:
+		return true
+	case ZWG:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for DiscoveryReportResult.
 const (
 	DiscoveryReportResultAccepted           DiscoveryReportResult = "accepted"
@@ -396,6 +990,57 @@ func (e DiscoveryReportResult) Valid() bool {
 	case DiscoveryReportResultAcceptedWithErrors:
 		return true
 	case DiscoveryReportResultRejected:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DiskChangeChange.
+const (
+	DiskChangeChangeAdded   DiskChangeChange = "added"
+	DiskChangeChangeChanged DiskChangeChange = "changed"
+	DiskChangeChangeRemoved DiskChangeChange = "removed"
+)
+
+// Valid indicates whether the value is a known member of the DiskChangeChange enum.
+func (e DiskChangeChange) Valid() bool {
+	switch e {
+	case DiskChangeChangeAdded:
+		return true
+	case DiskChangeChangeChanged:
+		return true
+	case DiskChangeChangeRemoved:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DiskCollectionWriteFailedStatus.
+const (
+	DiskCollectionWriteFailedStatusFailed DiskCollectionWriteFailedStatus = "failed"
+)
+
+// Valid indicates whether the value is a known member of the DiskCollectionWriteFailedStatus enum.
+func (e DiskCollectionWriteFailedStatus) Valid() bool {
+	switch e {
+	case DiskCollectionWriteFailedStatusFailed:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DiskCollectionWriteSuccessStatus.
+const (
+	DiskCollectionWriteSuccessStatusSuccess DiskCollectionWriteSuccessStatus = "success"
+)
+
+// Valid indicates whether the value is a known member of the DiskCollectionWriteSuccessStatus enum.
+func (e DiskCollectionWriteSuccessStatus) Valid() bool {
+	switch e {
+	case DiskCollectionWriteSuccessStatusSuccess:
 		return true
 	default:
 		return false
@@ -495,27 +1140,15 @@ func (e DnsDraftValidation) Valid() bool {
 	}
 }
 
-// Defines values for DnsImportCandidateStatus.
+// Defines values for DnsImportableCandidateStatus.
 const (
-	DnsImportCandidateStatusAlreadyManaged DnsImportCandidateStatus = "already_managed"
-	DnsImportCandidateStatusConflicting    DnsImportCandidateStatus = "conflicting"
-	DnsImportCandidateStatusImportable     DnsImportCandidateStatus = "importable"
-	DnsImportCandidateStatusMalformed      DnsImportCandidateStatus = "malformed"
-	DnsImportCandidateStatusUnsupported    DnsImportCandidateStatus = "unsupported"
+	Importable DnsImportableCandidateStatus = "importable"
 )
 
-// Valid indicates whether the value is a known member of the DnsImportCandidateStatus enum.
-func (e DnsImportCandidateStatus) Valid() bool {
+// Valid indicates whether the value is a known member of the DnsImportableCandidateStatus enum.
+func (e DnsImportableCandidateStatus) Valid() bool {
 	switch e {
-	case DnsImportCandidateStatusAlreadyManaged:
-		return true
-	case DnsImportCandidateStatusConflicting:
-		return true
-	case DnsImportCandidateStatusImportable:
-		return true
-	case DnsImportCandidateStatusMalformed:
-		return true
-	case DnsImportCandidateStatusUnsupported:
+	case Importable:
 		return true
 	default:
 		return false
@@ -582,6 +1215,27 @@ func (e DnsInventoryLinkKind) Valid() bool {
 	case DnsInventoryLinkKindContainer:
 		return true
 	case DnsInventoryLinkKindIpAssignment:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DnsLinkTargetType.
+const (
+	DnsLinkTargetTypeCompute      DnsLinkTargetType = "compute"
+	DnsLinkTargetTypeContainer    DnsLinkTargetType = "container"
+	DnsLinkTargetTypeIpAssignment DnsLinkTargetType = "ip_assignment"
+)
+
+// Valid indicates whether the value is a known member of the DnsLinkTargetType enum.
+func (e DnsLinkTargetType) Valid() bool {
+	switch e {
+	case DnsLinkTargetTypeCompute:
+		return true
+	case DnsLinkTargetTypeContainer:
+		return true
+	case DnsLinkTargetTypeIpAssignment:
 		return true
 	default:
 		return false
@@ -927,6 +1581,21 @@ func (e FieldChangeChange) Valid() bool {
 	}
 }
 
+// Defines values for FilesystemAvailableBytesChangeMeasurement.
+const (
+	FilesystemAvailableBytes FilesystemAvailableBytesChangeMeasurement = "filesystem_available_bytes"
+)
+
+// Valid indicates whether the value is a known member of the FilesystemAvailableBytesChangeMeasurement enum.
+func (e FilesystemAvailableBytesChangeMeasurement) Valid() bool {
+	switch e {
+	case FilesystemAvailableBytes:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for FilesystemChangeChange.
 const (
 	FilesystemChangeChangeAdded   FilesystemChangeChange = "added"
@@ -948,6 +1617,36 @@ func (e FilesystemChangeChange) Valid() bool {
 	}
 }
 
+// Defines values for FilesystemCollectionWriteFailedStatus.
+const (
+	FilesystemCollectionWriteFailedStatusFailed FilesystemCollectionWriteFailedStatus = "failed"
+)
+
+// Valid indicates whether the value is a known member of the FilesystemCollectionWriteFailedStatus enum.
+func (e FilesystemCollectionWriteFailedStatus) Valid() bool {
+	switch e {
+	case FilesystemCollectionWriteFailedStatusFailed:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for FilesystemCollectionWriteSuccessStatus.
+const (
+	FilesystemCollectionWriteSuccessStatusSuccess FilesystemCollectionWriteSuccessStatus = "success"
+)
+
+// Valid indicates whether the value is a known member of the FilesystemCollectionWriteSuccessStatus enum.
+func (e FilesystemCollectionWriteSuccessStatus) Valid() bool {
+	switch e {
+	case FilesystemCollectionWriteSuccessStatusSuccess:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for HealthStatusStatus.
 const (
 	Live HealthStatusStatus = "live"
@@ -957,6 +1656,36 @@ const (
 func (e HealthStatusStatus) Valid() bool {
 	switch e {
 	case Live:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for HostCollectionWriteFailedStatus.
+const (
+	HostCollectionWriteFailedStatusFailed HostCollectionWriteFailedStatus = "failed"
+)
+
+// Valid indicates whether the value is a known member of the HostCollectionWriteFailedStatus enum.
+func (e HostCollectionWriteFailedStatus) Valid() bool {
+	switch e {
+	case HostCollectionWriteFailedStatusFailed:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for HostCollectionWriteSuccessStatus.
+const (
+	HostCollectionWriteSuccessStatusSuccess HostCollectionWriteSuccessStatus = "success"
+)
+
+// Valid indicates whether the value is a known member of the HostCollectionWriteSuccessStatus enum.
+func (e HostCollectionWriteSuccessStatus) Valid() bool {
+	switch e {
+	case HostCollectionWriteSuccessStatusSuccess:
 		return true
 	default:
 		return false
@@ -987,6 +1716,21 @@ func (e HostSnapshotVirtualizationRole) Valid() bool {
 	}
 }
 
+// Defines values for HostUptimeChangeMeasurement.
+const (
+	HostUptimeSeconds HostUptimeChangeMeasurement = "host_uptime_seconds"
+)
+
+// Valid indicates whether the value is a known member of the HostUptimeChangeMeasurement enum.
+func (e HostUptimeChangeMeasurement) Valid() bool {
+	switch e {
+	case HostUptimeSeconds:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for InterfaceChangeChange.
 const (
 	InterfaceChangeChangeAdded   InterfaceChangeChange = "added"
@@ -1002,6 +1746,36 @@ func (e InterfaceChangeChange) Valid() bool {
 	case InterfaceChangeChangeChanged:
 		return true
 	case InterfaceChangeChangeRemoved:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for InterfaceCollectionWriteFailedStatus.
+const (
+	InterfaceCollectionWriteFailedStatusFailed InterfaceCollectionWriteFailedStatus = "failed"
+)
+
+// Valid indicates whether the value is a known member of the InterfaceCollectionWriteFailedStatus enum.
+func (e InterfaceCollectionWriteFailedStatus) Valid() bool {
+	switch e {
+	case InterfaceCollectionWriteFailedStatusFailed:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for InterfaceCollectionWriteSuccessStatus.
+const (
+	InterfaceCollectionWriteSuccessStatusSuccess InterfaceCollectionWriteSuccessStatus = "success"
+)
+
+// Valid indicates whether the value is a known member of the InterfaceCollectionWriteSuccessStatus enum.
+func (e InterfaceCollectionWriteSuccessStatus) Valid() bool {
+	switch e {
+	case InterfaceCollectionWriteSuccessStatusSuccess:
 		return true
 	default:
 		return false
@@ -1158,30 +1932,30 @@ func (e PersonalAccessTokenScope) Valid() bool {
 	}
 }
 
-// Defines values for PodmanCollectionFailedStatus.
+// Defines values for PodmanCollectionWriteFailedStatus.
 const (
-	PodmanCollectionFailedStatusFailed PodmanCollectionFailedStatus = "failed"
+	PodmanCollectionWriteFailedStatusFailed PodmanCollectionWriteFailedStatus = "failed"
 )
 
-// Valid indicates whether the value is a known member of the PodmanCollectionFailedStatus enum.
-func (e PodmanCollectionFailedStatus) Valid() bool {
+// Valid indicates whether the value is a known member of the PodmanCollectionWriteFailedStatus enum.
+func (e PodmanCollectionWriteFailedStatus) Valid() bool {
 	switch e {
-	case PodmanCollectionFailedStatusFailed:
+	case PodmanCollectionWriteFailedStatusFailed:
 		return true
 	default:
 		return false
 	}
 }
 
-// Defines values for PodmanCollectionSuccessStatus.
+// Defines values for PodmanCollectionWriteSuccessStatus.
 const (
-	PodmanCollectionSuccessStatusSuccess PodmanCollectionSuccessStatus = "success"
+	PodmanCollectionWriteSuccessStatusSuccess PodmanCollectionWriteSuccessStatus = "success"
 )
 
-// Valid indicates whether the value is a known member of the PodmanCollectionSuccessStatus enum.
-func (e PodmanCollectionSuccessStatus) Valid() bool {
+// Valid indicates whether the value is a known member of the PodmanCollectionWriteSuccessStatus enum.
+func (e PodmanCollectionWriteSuccessStatus) Valid() bool {
 	switch e {
-	case PodmanCollectionSuccessStatusSuccess:
+	case PodmanCollectionWriteSuccessStatusSuccess:
 		return true
 	default:
 		return false
@@ -1233,6 +2007,63 @@ func (e ProviderRole) Valid() bool {
 	}
 }
 
+// Defines values for PurgeDependencyKind.
+const (
+	PurgeDependencyKindAgent           PurgeDependencyKind = "agent"
+	PurgeDependencyKindCompute         PurgeDependencyKind = "compute"
+	PurgeDependencyKindContainer       PurgeDependencyKind = "container"
+	PurgeDependencyKindCost            PurgeDependencyKind = "cost"
+	PurgeDependencyKindDiscoveryReport PurgeDependencyKind = "discovery_report"
+	PurgeDependencyKindDnsLink         PurgeDependencyKind = "dns_link"
+	PurgeDependencyKindDnsName         PurgeDependencyKind = "dns_name"
+	PurgeDependencyKindDnsZone         PurgeDependencyKind = "dns_zone"
+	PurgeDependencyKindDomain          PurgeDependencyKind = "domain"
+	PurgeDependencyKindEnrollmentToken PurgeDependencyKind = "enrollment_token"
+	PurgeDependencyKindIpAssignment    PurgeDependencyKind = "ip_assignment"
+	PurgeDependencyKindLocation        PurgeDependencyKind = "location"
+	PurgeDependencyKindOther           PurgeDependencyKind = "other"
+	PurgeDependencyKindProviderRole    PurgeDependencyKind = "provider_role"
+	PurgeDependencyKindTag             PurgeDependencyKind = "tag"
+)
+
+// Valid indicates whether the value is a known member of the PurgeDependencyKind enum.
+func (e PurgeDependencyKind) Valid() bool {
+	switch e {
+	case PurgeDependencyKindAgent:
+		return true
+	case PurgeDependencyKindCompute:
+		return true
+	case PurgeDependencyKindContainer:
+		return true
+	case PurgeDependencyKindCost:
+		return true
+	case PurgeDependencyKindDiscoveryReport:
+		return true
+	case PurgeDependencyKindDnsLink:
+		return true
+	case PurgeDependencyKindDnsName:
+		return true
+	case PurgeDependencyKindDnsZone:
+		return true
+	case PurgeDependencyKindDomain:
+		return true
+	case PurgeDependencyKindEnrollmentToken:
+		return true
+	case PurgeDependencyKindIpAssignment:
+		return true
+	case PurgeDependencyKindLocation:
+		return true
+	case PurgeDependencyKindOther:
+		return true
+	case PurgeDependencyKindProviderRole:
+		return true
+	case PurgeDependencyKindTag:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ReadinessCheckStatus.
 const (
 	ReadinessCheckStatusNotReady ReadinessCheckStatus = "not_ready"
@@ -1253,12 +2084,15 @@ func (e ReadinessCheckStatus) Valid() bool {
 
 // Defines values for ReadinessStatusStatus.
 const (
-	ReadinessStatusStatusReady ReadinessStatusStatus = "ready"
+	ReadinessStatusStatusNotReady ReadinessStatusStatus = "not_ready"
+	ReadinessStatusStatusReady    ReadinessStatusStatus = "ready"
 )
 
 // Valid indicates whether the value is a known member of the ReadinessStatusStatus enum.
 func (e ReadinessStatusStatus) Valid() bool {
 	switch e {
+	case ReadinessStatusStatusNotReady:
+		return true
 	case ReadinessStatusStatusReady:
 		return true
 	default:
@@ -1323,6 +2157,45 @@ func (e RecurringCostWriteType) Valid() bool {
 	}
 }
 
+// Defines values for RejectedDiscoveryReportResult.
+const (
+	RejectedDiscoveryReportResultRejected RejectedDiscoveryReportResult = "rejected"
+)
+
+// Valid indicates whether the value is a known member of the RejectedDiscoveryReportResult enum.
+func (e RejectedDiscoveryReportResult) Valid() bool {
+	switch e {
+	case RejectedDiscoveryReportResultRejected:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RejectedDnsImportCandidateStatus.
+const (
+	RejectedDnsImportCandidateStatusAlreadyManaged RejectedDnsImportCandidateStatus = "already_managed"
+	RejectedDnsImportCandidateStatusConflicting    RejectedDnsImportCandidateStatus = "conflicting"
+	RejectedDnsImportCandidateStatusMalformed      RejectedDnsImportCandidateStatus = "malformed"
+	RejectedDnsImportCandidateStatusUnsupported    RejectedDnsImportCandidateStatus = "unsupported"
+)
+
+// Valid indicates whether the value is a known member of the RejectedDnsImportCandidateStatus enum.
+func (e RejectedDnsImportCandidateStatus) Valid() bool {
+	switch e {
+	case RejectedDnsImportCandidateStatusAlreadyManaged:
+		return true
+	case RejectedDnsImportCandidateStatusConflicting:
+		return true
+	case RejectedDnsImportCandidateStatusMalformed:
+		return true
+	case RejectedDnsImportCandidateStatusUnsupported:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for SnapshotAcceptanceResult.
 const (
 	SnapshotAcceptanceResultAccepted           SnapshotAcceptanceResult = "accepted"
@@ -1368,33 +2241,6 @@ func (e SnapshotContainerHealth) Valid() bool {
 	}
 }
 
-// Defines values for SnapshotContainerRestartPolicy.
-const (
-	SnapshotContainerRestartPolicyAlways        SnapshotContainerRestartPolicy = "always"
-	SnapshotContainerRestartPolicyNo            SnapshotContainerRestartPolicy = "no"
-	SnapshotContainerRestartPolicyOnFailure     SnapshotContainerRestartPolicy = "on_failure"
-	SnapshotContainerRestartPolicyUnknown       SnapshotContainerRestartPolicy = "unknown"
-	SnapshotContainerRestartPolicyUnlessStopped SnapshotContainerRestartPolicy = "unless_stopped"
-)
-
-// Valid indicates whether the value is a known member of the SnapshotContainerRestartPolicy enum.
-func (e SnapshotContainerRestartPolicy) Valid() bool {
-	switch e {
-	case SnapshotContainerRestartPolicyAlways:
-		return true
-	case SnapshotContainerRestartPolicyNo:
-		return true
-	case SnapshotContainerRestartPolicyOnFailure:
-		return true
-	case SnapshotContainerRestartPolicyUnknown:
-		return true
-	case SnapshotContainerRestartPolicyUnlessStopped:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for SnapshotContainerState.
 const (
 	SnapshotContainerStateCreated SnapshotContainerState = "created"
@@ -1419,6 +2265,33 @@ func (e SnapshotContainerState) Valid() bool {
 	case SnapshotContainerStateStopped:
 		return true
 	case SnapshotContainerStateUnknown:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SnapshotUnavailableSection.
+const (
+	SnapshotUnavailableSectionContainers  SnapshotUnavailableSection = "containers"
+	SnapshotUnavailableSectionDisks       SnapshotUnavailableSection = "disks"
+	SnapshotUnavailableSectionFilesystems SnapshotUnavailableSection = "filesystems"
+	SnapshotUnavailableSectionHost        SnapshotUnavailableSection = "host"
+	SnapshotUnavailableSectionInterfaces  SnapshotUnavailableSection = "interfaces"
+)
+
+// Valid indicates whether the value is a known member of the SnapshotUnavailableSection enum.
+func (e SnapshotUnavailableSection) Valid() bool {
+	switch e {
+	case SnapshotUnavailableSectionContainers:
+		return true
+	case SnapshotUnavailableSectionDisks:
+		return true
+	case SnapshotUnavailableSectionFilesystems:
+		return true
+	case SnapshotUnavailableSectionHost:
+		return true
+	case SnapshotUnavailableSectionInterfaces:
 		return true
 	default:
 		return false
@@ -1635,6 +2508,27 @@ func (e GetInventoryTreeParamsArchived) Valid() bool {
 	}
 }
 
+// Defines values for ListInventoryTreeChildrenParamsArchived.
+const (
+	ListInventoryTreeChildrenParamsArchivedExclude ListInventoryTreeChildrenParamsArchived = "exclude"
+	ListInventoryTreeChildrenParamsArchivedInclude ListInventoryTreeChildrenParamsArchived = "include"
+	ListInventoryTreeChildrenParamsArchivedOnly    ListInventoryTreeChildrenParamsArchived = "only"
+)
+
+// Valid indicates whether the value is a known member of the ListInventoryTreeChildrenParamsArchived enum.
+func (e ListInventoryTreeChildrenParamsArchived) Valid() bool {
+	switch e {
+	case ListInventoryTreeChildrenParamsArchivedExclude:
+		return true
+	case ListInventoryTreeChildrenParamsArchivedInclude:
+		return true
+	case ListInventoryTreeChildrenParamsArchivedOnly:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ListIpAssignmentsParamsArchived.
 const (
 	ListIpAssignmentsParamsArchivedExclude ListIpAssignmentsParamsArchived = "exclude"
@@ -1719,19 +2613,75 @@ func (e ListTagsParamsArchived) Valid() bool {
 	}
 }
 
+// AcceptedDiscoveryReport defines model for AcceptedDiscoveryReport.
+type AcceptedDiscoveryReport struct {
+	// AgentId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	AgentId                UuidV7  `json:"agent_id"`
+	ClientVersion          *string `json:"client_version"`
+	CollectionErrorSummary *string `json:"collection_error_summary"`
+
+	// CollectionFinishedAt Null for schema-1 reports without a stored collection-finish value.
+	CollectionFinishedAt *Timestamp `json:"collection_finished_at"`
+
+	// CollectionStartedAt Null for schema-1 reports without a stored collection-start value.
+	CollectionStartedAt *Timestamp        `json:"collection_started_at"`
+	CollectorResults    []CollectorResult `json:"collector_results"`
+
+	// ComputeId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	ComputeId UuidV7 `json:"compute_id"`
+
+	// ContentId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	ContentId UuidV7 `json:"content_id"`
+
+	// ContentReused Null when schema-1 history did not retain the content-reuse flag.
+	ContentReused *bool             `json:"content_reused"`
+	Diagnostics   []CollectionError `json:"diagnostics"`
+
+	// Id Server-assigned immutable history id used in history paths.
+	Id              UuidV7 `json:"id"`
+	ProtocolVersion int    `json:"protocol_version"`
+
+	// ReceivedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
+	ReceivedAt Timestamp `json:"received_at"`
+
+	// ReportId Client-supplied idempotency identity used in the snapshot PUT path.
+	ReportId UuidV7                        `json:"report_id"`
+	Result   AcceptedDiscoveryReportResult `json:"result"`
+
+	// VolatileMeasurements Null for schema-1 history without separately retained volatile samples.
+	VolatileMeasurements *VolatileMeasurements `json:"volatile_measurements"`
+}
+
+// AcceptedDiscoveryReportResult defines model for AcceptedDiscoveryReport.Result.
+type AcceptedDiscoveryReportResult string
+
 // Agent defines model for Agent.
 type Agent struct {
 	ClientVersion string                `json:"client_version"`
 	Compatibility ProtocolCompatibility `json:"compatibility"`
 
-	// ComputeId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// ComputeId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	ComputeId            UuidV7 `json:"compute_id"`
 	CredentialGeneration int    `json:"credential_generation"`
 
-	// EnrolledAt Example: 2026-08-04T12:00:00Z
+	// EnrolledAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	EnrolledAt Timestamp `json:"enrolled_at"`
 
-	// Id Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// Id New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	Id                       UuidV7      `json:"id"`
 	LastError                *string     `json:"last_error,omitempty"`
 	LastHeartbeatAt          *Timestamp  `json:"last_heartbeat_at,omitempty"`
@@ -1752,16 +2702,22 @@ type AgentEnrollRequest struct {
 type AgentEnrollment struct {
 	AcceptedProtocol ProtocolRange `json:"accepted_protocol"`
 
-	// AgentId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// AgentId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	AgentId UuidV7 `json:"agent_id"`
 
-	// ComputeId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// ComputeId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	ComputeId            UuidV7        `json:"compute_id"`
 	Credential           *string       `json:"credential,omitempty"`
 	CredentialGeneration int           `json:"credential_generation"`
 	Schedule             AgentSchedule `json:"schedule"`
 
-	// ServerTime Example: 2026-08-04T12:00:00Z
+	// ServerTime RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	ServerTime Timestamp `json:"server_time"`
 }
 
@@ -1771,7 +2727,9 @@ type AgentHeartbeatRequest struct {
 	LastCollectionError *string `json:"last_collection_error,omitempty"`
 	ProtocolVersion     int     `json:"protocol_version"`
 
-	// SentAt Example: 2026-08-04T12:00:00Z
+	// SentAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	SentAt Timestamp `json:"sent_at"`
 }
 
@@ -1786,7 +2744,9 @@ type AgentProtocolResponse struct {
 	AcceptedProtocol ProtocolRange `json:"accepted_protocol"`
 	Schedule         AgentSchedule `json:"schedule"`
 
-	// ServerTime Example: 2026-08-04T12:00:00Z
+	// ServerTime RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	ServerTime Timestamp              `json:"server_time"`
 	Warnings   []AgentProtocolWarning `json:"warnings"`
 }
@@ -1813,19 +2773,25 @@ type AuditActorType string
 type AuditEvent struct {
 	Action string `json:"action"`
 
-	// ActorId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
-	ActorId   *UuidV7        `json:"actor_id,omitempty"`
+	// ActorId For actor_type system, MUST equal SystemActorId.
+	ActorId   UuidV7         `json:"actor_id"`
 	ActorType AuditActorType `json:"actor_type"`
 	Changes   []AuditField   `json:"changes"`
 
-	// Id Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// Id New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	Id UuidV7 `json:"id"`
 
-	// OccurredAt Example: 2026-08-04T12:00:00Z
+	// OccurredAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	OccurredAt Timestamp `json:"occurred_at"`
 	RequestId  string    `json:"request_id"`
 
-	// ResourceId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// ResourceId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	ResourceId   *UuidV7     `json:"resource_id,omitempty"`
 	ResourceType string      `json:"resource_type"`
 	Result       AuditResult `json:"result"`
@@ -1856,6 +2822,33 @@ type CollectionError struct {
 	Message   string `json:"message"`
 }
 
+// CollectorObservation defines model for CollectorObservation.
+type CollectorObservation struct {
+	Collector          CollectorObservationCollector `json:"collector"`
+	CollectorKey       string                        `json:"collector_key"`
+	ConnectionName     *string                       `json:"connection_name,omitempty"`
+	LastErrorCode      *string                       `json:"last_error_code,omitempty"`
+	LastErrorMessage   *string                       `json:"last_error_message,omitempty"`
+	LastFailedAt       *Timestamp                    `json:"last_failed_at,omitempty"`
+	LastFailedReportId *UuidV7                       `json:"last_failed_report_id,omitempty"`
+
+	// LastReceivedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
+	LastReceivedAt         Timestamp                      `json:"last_received_at"`
+	LastReportId           *UuidV7                        `json:"last_report_id,omitempty"`
+	LastStatus             CollectorObservationLastStatus `json:"last_status"`
+	LastSuccessfulAt       *Timestamp                     `json:"last_successful_at,omitempty"`
+	LastSuccessfulReportId *UuidV7                        `json:"last_successful_report_id,omitempty"`
+	OwnerUid               *int                           `json:"owner_uid,omitempty"`
+}
+
+// CollectorObservationCollector defines model for CollectorObservation.Collector.
+type CollectorObservationCollector string
+
+// CollectorObservationLastStatus defines model for CollectorObservation.LastStatus.
+type CollectorObservationLastStatus string
+
 // CollectorResult defines model for CollectorResult.
 type CollectorResult struct {
 	Collector string                `json:"collector"`
@@ -1885,36 +2878,53 @@ type Compute struct {
 	AgentStatus ComputeAgentStatus `json:"agent_status"`
 	ArchivedAt  *Timestamp         `json:"archived_at,omitempty"`
 
-	// CreatedAt Example: 2026-08-04T12:00:00Z
+	// CreatedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	CreatedAt   Timestamp `json:"created_at"`
 	Description *string   `json:"description,omitempty"`
 	DisplayName string    `json:"display_name"`
 
-	// Id Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// Id New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	Id   UuidV7      `json:"id"`
 	Kind ComputeKind `json:"kind"`
 
-	// LocationId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// LocationId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	LocationId  *UuidV7             `json:"location_id,omitempty"`
 	Notes       *string             `json:"notes,omitempty"`
 	Observation *ComputeObservation `json:"observation,omitempty"`
 	Ownership   ComputeOwnership    `json:"ownership"`
 
-	// ParentComputeId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// ParentComputeId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	ParentComputeId *UuidV7 `json:"parent_compute_id,omitempty"`
 
-	// ProviderId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// ProviderId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	ProviderId         *UuidV7  `json:"provider_id,omitempty"`
 	ProviderResourceId *string  `json:"provider_resource_id,omitempty"`
 	Revision           Revision `json:"revision"`
 	TagIds             []UuidV7 `json:"tag_ids"`
 
-	// UpdatedAt Example: 2026-08-04T12:00:00Z
+	// UpdatedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	UpdatedAt Timestamp `json:"updated_at"`
 }
 
 // ComputeAgentStatus defines model for ComputeAgentStatus.
 type ComputeAgentStatus string
+
+// ComputeCollectorStatus defines model for ComputeCollectorStatus.
+type ComputeCollectorStatus struct {
+	Items []CollectorObservation `json:"items"`
+}
 
 // ComputeKind defines model for ComputeKind.
 type ComputeKind string
@@ -1933,7 +2943,9 @@ type ComputeObservation struct {
 	MachineId       *string                       `json:"machine_id,omitempty"`
 	MemoryBytes     int64                         `json:"memory_bytes"`
 
-	// ObservedAt Example: 2026-08-04T12:00:00Z
+	// ObservedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	ObservedAt         Timestamp                             `json:"observed_at"`
 	OsName             *string                               `json:"os_name,omitempty"`
 	OsVersion          *string                               `json:"os_version,omitempty"`
@@ -1970,15 +2982,21 @@ type ComputeWrite struct {
 	DisplayName string      `json:"display_name"`
 	Kind        ComputeKind `json:"kind"`
 
-	// LocationId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// LocationId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	LocationId *UuidV7          `json:"location_id,omitempty"`
 	Notes      *string          `json:"notes,omitempty"`
 	Ownership  ComputeOwnership `json:"ownership"`
 
-	// ParentComputeId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// ParentComputeId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	ParentComputeId *UuidV7 `json:"parent_compute_id,omitempty"`
 
-	// ProviderId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// ProviderId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	ProviderId         *UuidV7  `json:"provider_id,omitempty"`
 	ProviderResourceId *string  `json:"provider_resource_id,omitempty"`
 	TagIds             []UuidV7 `json:"tag_ids"`
@@ -1988,25 +3006,41 @@ type ComputeWrite struct {
 type Container struct {
 	ArchivedAt *Timestamp `json:"archived_at,omitempty"`
 
-	// ComputeId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// ComputeId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	ComputeId UuidV7 `json:"compute_id"`
 
-	// CreatedAt Example: 2026-08-04T12:00:00Z
+	// CreatedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	CreatedAt   Timestamp `json:"created_at"`
 	Description *string   `json:"description,omitempty"`
 
-	// Id Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// Id New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	Id               UuidV7                `json:"id"`
 	Name             string                `json:"name"`
 	Notes            *string               `json:"notes,omitempty"`
 	Observation      *ContainerObservation `json:"observation,omitempty"`
 	PodmanConnection *string               `json:"podman_connection,omitempty"`
-	PodmanOwner      string                `json:"podman_owner"`
+	PodmanOwnerUid   int64                 `json:"podman_owner_uid"`
 	Revision         Revision              `json:"revision"`
 	TagIds           []UuidV7              `json:"tag_ids"`
 
-	// UpdatedAt Example: 2026-08-04T12:00:00Z
+	// UpdatedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	UpdatedAt Timestamp `json:"updated_at"`
+}
+
+// ContainerAddress defines model for ContainerAddress.
+type ContainerAddress struct {
+	Address string `json:"address"`
+
+	// PrefixLength Unknown prefix remains null; the server does not fabricate a network prefix.
+	PrefixLength *int `json:"prefix_length,omitempty"`
 }
 
 // ContainerChange defines model for ContainerChange.
@@ -2017,11 +3051,27 @@ type ContainerChange struct {
 	Connection string                `json:"connection"`
 	Fields     *[]FieldChange        `json:"fields,omitempty"`
 	Name       string                `json:"name"`
-	Owner      string                `json:"owner"`
+	OwnerUid   int64                 `json:"owner_uid"`
 }
 
 // ContainerChangeChange defines model for ContainerChange.Change.
 type ContainerChangeChange string
+
+// ContainerHistoryEntry defines model for ContainerHistoryEntry.
+type ContainerHistoryEntry struct {
+	// Presence unavailable means the report was rejected or the relevant Podman collector failed.
+	Presence ContainerHistoryPresence `json:"presence"`
+	Report   DiscoveryReport          `json:"report"`
+}
+
+// ContainerHistoryPage defines model for ContainerHistoryPage.
+type ContainerHistoryPage struct {
+	Items []ContainerHistoryEntry `json:"items"`
+	Page  PageInfo                `json:"page"`
+}
+
+// ContainerHistoryPresence defines model for ContainerHistoryPresence.
+type ContainerHistoryPresence string
 
 // ContainerLabel defines model for ContainerLabel.
 type ContainerLabel struct {
@@ -2042,16 +3092,18 @@ type ContainerMountType string
 
 // ContainerNetwork defines model for ContainerNetwork.
 type ContainerNetwork struct {
-	Addresses []string `json:"addresses"`
-	Name      string   `json:"name"`
-	NetworkId *string  `json:"network_id,omitempty"`
+	Addresses []ContainerAddress `json:"addresses"`
+	Name      string             `json:"name"`
+	NetworkId *string            `json:"network_id,omitempty"`
 }
 
 // ContainerObservation defines model for ContainerObservation.
 type ContainerObservation struct {
 	CreatedAt *Timestamp `json:"created_at,omitempty"`
 
-	// FirstObservedAt Example: 2026-08-04T12:00:00Z
+	// FirstObservedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	FirstObservedAt Timestamp                  `json:"first_observed_at"`
 	Health          ContainerObservationHealth `json:"health"`
 	ImageDigest     *string                    `json:"image_digest,omitempty"`
@@ -2059,24 +3111,25 @@ type ContainerObservation struct {
 	ImageName       string                     `json:"image_name"`
 	Labels          []ContainerLabel           `json:"labels"`
 
-	// LastObservedAt Example: 2026-08-04T12:00:00Z
-	LastObservedAt           Timestamp                         `json:"last_observed_at"`
-	Mounts                   []ContainerMount                  `json:"mounts"`
-	Networks                 []ContainerNetwork                `json:"networks"`
-	Ports                    []ContainerPort                   `json:"ports"`
-	RestartMaximumRetryCount *int                              `json:"restart_maximum_retry_count,omitempty"`
-	RestartPolicy            ContainerObservationRestartPolicy `json:"restart_policy"`
-	RuntimeId                string                            `json:"runtime_id"`
-	StaleAt                  *Timestamp                        `json:"stale_at,omitempty"`
-	StartedAt                *Timestamp                        `json:"started_at,omitempty"`
-	State                    ContainerObservationState         `json:"state"`
+	// LastObservedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
+	LastObservedAt           Timestamp          `json:"last_observed_at"`
+	Mounts                   []ContainerMount   `json:"mounts"`
+	Networks                 []ContainerNetwork `json:"networks"`
+	Ports                    []ContainerPort    `json:"ports"`
+	RestartMaximumRetryCount *int               `json:"restart_maximum_retry_count,omitempty"`
+
+	// RestartPolicy API on_failure and unless_stopped map to persisted SQL on-failure and unless-stopped; unknown is preserved.
+	RestartPolicy ContainerRestartPolicy    `json:"restart_policy"`
+	RuntimeId     string                    `json:"runtime_id"`
+	StaleAt       *Timestamp                `json:"stale_at,omitempty"`
+	StartedAt     *Timestamp                `json:"started_at,omitempty"`
+	State         ContainerObservationState `json:"state"`
 }
 
 // ContainerObservationHealth defines model for ContainerObservation.Health.
 type ContainerObservationHealth string
-
-// ContainerObservationRestartPolicy defines model for ContainerObservation.RestartPolicy.
-type ContainerObservationRestartPolicy string
 
 // ContainerObservationState defines model for ContainerObservation.State.
 type ContainerObservationState string
@@ -2098,6 +3151,9 @@ type ContainerPort struct {
 // ContainerPortProtocol defines model for ContainerPort.Protocol.
 type ContainerPortProtocol string
 
+// ContainerRestartPolicy API on_failure and unless_stopped map to persisted SQL on-failure and unless-stopped; unknown is preserved.
+type ContainerRestartPolicy string
+
 // ContainerWrite defines model for ContainerWrite.
 type ContainerWrite struct {
 	Description *string  `json:"description,omitempty"`
@@ -2109,14 +3165,20 @@ type ContainerWrite struct {
 type Cost struct {
 	ArchivedAt *Timestamp `json:"archived_at,omitempty"`
 
-	// CreatedAt Example: 2026-08-04T12:00:00Z
+	// CreatedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	CreatedAt Timestamp `json:"created_at"`
 
-	// Id Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// Id New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	Id       UuidV7   `json:"id"`
 	Revision Revision `json:"revision"`
 
-	// UpdatedAt Example: 2026-08-04T12:00:00Z
+	// UpdatedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	UpdatedAt Timestamp `json:"updated_at"`
 	union     json.RawMessage
 }
@@ -2132,15 +3194,15 @@ type CostWrite struct {
 	union json.RawMessage
 }
 
-// CurrencyCode Example: EUR
-type CurrencyCode = string
+// CurrencyCode Supported ISO 4217 currency codes from the pinned SIX List One catalog published 2026-09-17. The server derives currency_exponent; unsupported codes are rejected rather than assigned a guessed exponent.
+type CurrencyCode string
 
 // CurrencyTotal A monthly-equivalent estimate of active recurring costs in this currency. Entries are summed exactly and rounded half-up once to the currency's minor unit. One-time costs are excluded; this is not a bill or cash-flow total.
 type CurrencyTotal struct {
 	// AmountMinor Exact non-negative integer minor units, encoded as a decimal string to avoid aggregate overflow and JavaScript precision loss.
 	AmountMinor string `json:"amount_minor"`
 
-	// Currency Example: EUR
+	// Currency Supported ISO 4217 currency codes from the pinned SIX List One catalog published 2026-09-17. The server derives currency_exponent; unsupported codes are rejected rather than assigned a guessed exponent.
 	Currency         CurrencyCode `json:"currency"`
 	CurrencyExponent int          `json:"currency_exponent"`
 }
@@ -2151,7 +3213,9 @@ type DashboardSummary struct {
 	DnsPendingCount     int `json:"dns_pending_count"`
 	ExpiringDomainCount int `json:"expiring_domain_count"`
 
-	// GeneratedAt Example: 2026-08-04T12:00:00Z
+	// GeneratedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	GeneratedAt         Timestamp `json:"generated_at"`
 	OfflineComputeCount int       `json:"offline_compute_count"`
 
@@ -2160,36 +3224,12 @@ type DashboardSummary struct {
 	StaleResourceCount int             `json:"stale_resource_count"`
 }
 
-// Date defines model for Date.
+// Date Calendar date in YYYY-MM-DD form with no timezone conversion.
 type Date = openapi_types.Date
 
 // DiscoveryReport defines model for DiscoveryReport.
 type DiscoveryReport struct {
-	// AgentId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
-	AgentId       UuidV7 `json:"agent_id"`
-	ClientVersion string `json:"client_version"`
-
-	// CollectionFinishedAt Example: 2026-08-04T12:00:00Z
-	CollectionFinishedAt Timestamp `json:"collection_finished_at"`
-
-	// CollectionStartedAt Example: 2026-08-04T12:00:00Z
-	CollectionStartedAt Timestamp         `json:"collection_started_at"`
-	CollectorResults    []CollectorResult `json:"collector_results"`
-
-	// ComputeId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
-	ComputeId UuidV7 `json:"compute_id"`
-
-	// ContentId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
-	ContentId     UuidV7 `json:"content_id"`
-	ContentReused bool   `json:"content_reused"`
-
-	// Id Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
-	Id              UuidV7 `json:"id"`
-	ProtocolVersion int    `json:"protocol_version"`
-
-	// ReceivedAt Example: 2026-08-04T12:00:00Z
-	ReceivedAt Timestamp             `json:"received_at"`
-	Result     DiscoveryReportResult `json:"result"`
+	union json.RawMessage
 }
 
 // DiscoveryReportPage defines model for DiscoveryReportPage.
@@ -2201,26 +3241,72 @@ type DiscoveryReportPage struct {
 // DiscoveryReportResult defines model for DiscoveryReportResult.
 type DiscoveryReportResult string
 
-// DiscoverySnapshotWrite defines model for DiscoverySnapshotWrite.
+// DiscoverySnapshotWrite Agent report retries retain the same report ID and payload for at most 90 days from collection start. Older reports are rejected and cannot reapply stale observations after report-retention cleanup.
 type DiscoverySnapshotWrite struct {
 	ClientVersion string `json:"client_version"`
 
-	// CollectionFinishedAt Example: 2026-08-04T12:00:00Z
+	// CollectionFinishedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	CollectionFinishedAt Timestamp `json:"collection_finished_at"`
 
-	// CollectionStartedAt Example: 2026-08-04T12:00:00Z
-	CollectionStartedAt Timestamp                     `json:"collection_started_at"`
-	Disks               []DiskSnapshot                `json:"disks"`
-	Errors              []CollectionError             `json:"errors"`
-	Filesystems         []FilesystemSnapshot          `json:"filesystems"`
-	Host                HostSnapshot                  `json:"host"`
-	Interfaces          []NetworkInterfaceObservation `json:"interfaces"`
-	Podman              []PodmanCollection            `json:"podman"`
-	ProtocolVersion     int                           `json:"protocol_version"`
+	// CollectionStartedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
+	CollectionStartedAt Timestamp           `json:"collection_started_at"`
+	Disks               DiskCollectionWrite `json:"disks"`
 
-	// ReportId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// Errors Additional sanitized diagnostics only. Host, disk, interface, filesystem, and Podman outcomes are represented by their own collector unions.
+	Errors          []CollectionError         `json:"errors"`
+	Filesystems     FilesystemCollectionWrite `json:"filesystems"`
+	Host            HostCollectionWrite       `json:"host"`
+	Interfaces      InterfaceCollectionWrite  `json:"interfaces"`
+	Podman          []PodmanCollectionWrite   `json:"podman"`
+	ProtocolVersion int                       `json:"protocol_version"`
+
+	// ReportId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	ReportId UuidV7 `json:"report_id"`
 }
+
+// DiskChange defines model for DiskChange.
+type DiskChange struct {
+	After  *DiskSnapshot    `json:"after,omitempty"`
+	Before *DiskSnapshot    `json:"before,omitempty"`
+	Change DiskChangeChange `json:"change"`
+	Fields *[]FieldChange   `json:"fields,omitempty"`
+
+	// Key Disk device name.
+	Key string `json:"key"`
+}
+
+// DiskChangeChange defines model for DiskChange.Change.
+type DiskChangeChange string
+
+// DiskCollectionWrite defines model for DiskCollectionWrite.
+type DiskCollectionWrite struct {
+	union json.RawMessage
+}
+
+// DiskCollectionWriteFailed Failed disk collection; contains no authoritative disk inventory.
+type DiskCollectionWriteFailed struct {
+	// Error Sanitized collector error.
+	Error  string                          `json:"error"`
+	Status DiskCollectionWriteFailedStatus `json:"status"`
+}
+
+// DiskCollectionWriteFailedStatus defines model for DiskCollectionWriteFailed.Status.
+type DiskCollectionWriteFailedStatus string
+
+// DiskCollectionWriteSuccess A complete authoritative disk inventory; an empty array means no disks were observed.
+type DiskCollectionWriteSuccess struct {
+	Disks  []DiskSnapshot                   `json:"disks"`
+	Status DiskCollectionWriteSuccessStatus `json:"status"`
+}
+
+// DiskCollectionWriteSuccessStatus defines model for DiskCollectionWriteSuccess.Status.
+type DiskCollectionWriteSuccessStatus string
 
 // DiskObservation defines model for DiskObservation.
 type DiskObservation struct {
@@ -2241,7 +3327,9 @@ type DiskSnapshot struct {
 
 // DnsApplyResult defines model for DnsApplyResult.
 type DnsApplyResult struct {
-	// DraftId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// DraftId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	DraftId     UuidV7          `json:"draft_id"`
 	Name        DnsName         `json:"name"`
 	Projections []DnsProjection `json:"projections"`
@@ -2261,43 +3349,60 @@ type DnsDeleteDraftWrite struct {
 	BaseRevision Revision                     `json:"base_revision"`
 	Operation    DnsDeleteDraftWriteOperation `json:"operation"`
 
-	// TargetNameId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// TargetNameId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	TargetNameId UuidV7 `json:"target_name_id"`
 }
 
 // DnsDeleteDraftWriteOperation defines model for DnsDeleteDraftWrite.Operation.
 type DnsDeleteDraftWriteOperation string
 
-// DnsDraft defines model for DnsDraft.
+// DnsDraft A mutable draft with a revision independent of the target DNS name's revision. If-Match on draft operations uses this draft revision; base_revision identifies the target DNS name revision captured by the draft.
 type DnsDraft struct {
-	// ActorId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
-	ActorId      UuidV7     `json:"actor_id"`
-	AppliedAt    *Timestamp `json:"applied_at,omitempty"`
-	BaseRevision *int64     `json:"base_revision,omitempty"`
-	ContentHash  string     `json:"content_hash"`
+	// ActorId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	ActorId   UuidV7     `json:"actor_id"`
+	AppliedAt *Timestamp `json:"applied_at,omitempty"`
 
-	// CreatedAt Example: 2026-08-04T12:00:00Z
+	// BaseRevision Target DNS name revision captured when this update/delete draft was created.
+	BaseRevision *int64 `json:"base_revision,omitempty"`
+	ContentHash  string `json:"content_hash"`
+
+	// CreatedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	CreatedAt   Timestamp  `json:"created_at"`
 	DiscardedAt *Timestamp `json:"discarded_at,omitempty"`
 
-	// Id Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// Id New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	Id            UuidV7            `json:"id"`
 	LatestPreview *DnsPreview       `json:"latest_preview,omitempty"`
 	Operation     DnsDraftOperation `json:"operation"`
 	Proposed      *DnsNameWrite     `json:"proposed,omitempty"`
-	Revision      Revision          `json:"revision"`
-	Status        DnsDraftStatus    `json:"status"`
 
-	// TargetNameId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// Revision Monotonic revision of this draft, independent of the DNS name revision.
+	Revision Revision       `json:"revision"`
+	Status   DnsDraftStatus `json:"status"`
+
+	// TargetNameId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	TargetNameId *UuidV7 `json:"target_name_id,omitempty"`
 
-	// UpdatedAt Example: 2026-08-04T12:00:00Z
+	// UpdatedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	UpdatedAt  Timestamp          `json:"updated_at"`
 	Validation DnsDraftValidation `json:"validation"`
 }
 
 // DnsDraftApply defines model for DnsDraftApply.
 type DnsDraftApply struct {
+	// ExpectedBaseRevision Current target DNS name revision; zero is required for a create draft.
 	ExpectedBaseRevision int64  `json:"expected_base_revision"`
 	PreviewFingerprint   string `json:"preview_fingerprint"`
 }
@@ -2330,16 +3435,7 @@ type DnsImportApplyResult struct {
 
 // DnsImportCandidate defines model for DnsImportCandidate.
 type DnsImportCandidate struct {
-	// Id Opaque refresh-scoped candidate identifier.
-	Id         string                   `json:"id"`
-	Name       string                   `json:"name"`
-	Proxied    bool                     `json:"proxied"`
-	Reason     *string                  `json:"reason,omitempty"`
-	ReasonCode *string                  `json:"reason_code,omitempty"`
-	Status     DnsImportCandidateStatus `json:"status"`
-	Ttl        int                      `json:"ttl"`
-	Type       DnsRecordType            `json:"type"`
-	Values     []string                 `json:"values"`
+	union json.RawMessage
 }
 
 // DnsImportCandidatePage defines model for DnsImportCandidatePage.
@@ -2348,14 +3444,13 @@ type DnsImportCandidatePage struct {
 	ObservationFingerprint string               `json:"observation_fingerprint"`
 	Page                   PageInfo             `json:"page"`
 
-	// ProviderObservedAt Example: 2026-08-04T12:00:00Z
+	// ProviderObservedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	ProviderObservedAt Timestamp `json:"provider_observed_at"`
 }
 
-// DnsImportCandidateStatus defines model for DnsImportCandidateStatus.
-type DnsImportCandidateStatus string
-
-// DnsImportPreview defines model for DnsImportPreview.
+// DnsImportPreview Complete, non-truncated preview tied to the exact candidate selection and provider observation.
 type DnsImportPreview struct {
 	Preview   DnsPreview         `json:"preview"`
 	Selection DnsImportSelection `json:"selection"`
@@ -2366,6 +3461,21 @@ type DnsImportSelection struct {
 	CandidateIds           []string `json:"candidate_ids"`
 	ObservationFingerprint string   `json:"observation_fingerprint"`
 }
+
+// DnsImportableCandidate defines model for DnsImportableCandidate.
+type DnsImportableCandidate struct {
+	// Id Opaque refresh-scoped candidate identifier.
+	Id      string                       `json:"id"`
+	Name    string                       `json:"name"`
+	Proxied bool                         `json:"proxied"`
+	Status  DnsImportableCandidateStatus `json:"status"`
+	Ttl     int                          `json:"ttl"`
+	Type    DnsRecordType                `json:"type"`
+	Values  []string                     `json:"values"`
+}
+
+// DnsImportableCandidateStatus defines model for DnsImportableCandidate.Status.
+type DnsImportableCandidateStatus string
 
 // DnsInternalARecordSet defines model for DnsInternalARecordSet.
 type DnsInternalARecordSet struct {
@@ -2411,7 +3521,9 @@ type DnsInternalView struct {
 type DnsInventoryLink struct {
 	Archived *bool `json:"archived,omitempty"`
 
-	// Id Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// Id New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	Id   UuidV7               `json:"id"`
 	Kind DnsInventoryLinkKind `json:"kind"`
 }
@@ -2419,16 +3531,23 @@ type DnsInventoryLink struct {
 // DnsInventoryLinkKind defines model for DnsInventoryLink.Kind.
 type DnsInventoryLinkKind string
 
+// DnsLinkTargetType defines model for DnsLinkTargetType.
+type DnsLinkTargetType string
+
 // DnsName defines model for DnsName.
 type DnsName struct {
 	ArchivedAt *Timestamp `json:"archived_at,omitempty"`
 
-	// CreatedAt Example: 2026-08-04T12:00:00Z
+	// CreatedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	CreatedAt           Timestamp  `json:"created_at"`
 	DeletionRequestedAt *Timestamp `json:"deletion_requested_at,omitempty"`
 	Description         string     `json:"description"`
 
-	// Id Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// Id New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	Id UuidV7 `json:"id"`
 
 	// Internal Record-set types must be unique. CNAME is exclusive and cannot coexist with A or AAAA in this view.
@@ -2442,11 +3561,15 @@ type DnsName struct {
 	Public   DnsPublicView `json:"public"`
 	Revision Revision      `json:"revision"`
 
-	// UpdatedAt Example: 2026-08-04T12:00:00Z
+	// UpdatedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	UpdatedAt Timestamp `json:"updated_at"`
 	Wildcard  bool      `json:"wildcard"`
 
-	// ZoneId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// ZoneId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	ZoneId UuidV7 `json:"zone_id"`
 }
 
@@ -2472,19 +3595,24 @@ type DnsNameWrite struct {
 	Public   DnsPublicView `json:"public"`
 	Wildcard bool          `json:"wildcard"`
 
-	// ZoneId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// ZoneId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	ZoneId UuidV7 `json:"zone_id"`
 }
 
 // DnsPreview defines model for DnsPreview.
 type DnsPreview struct {
+	// Changes Complete preview change set; responses are never silently truncated. Each selected candidate is bounded to 100 values and selections to 10 candidates.
 	Changes             []DnsPreviewChange   `json:"changes"`
 	CurrentBaseRevision int64                `json:"current_base_revision"`
 	DraftRevision       Revision             `json:"draft_revision"`
 	Fingerprint         string               `json:"fingerprint"`
 	Issues              []DnsValidationIssue `json:"issues"`
 
-	// ProviderObservedAt Example: 2026-08-04T12:00:00Z
+	// ProviderObservedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	ProviderObservedAt   Timestamp              `json:"provider_observed_at"`
 	ProviderStateChanged bool                   `json:"provider_state_changed"`
 	UnmanagedConflicts   []DnsUnmanagedConflict `json:"unmanaged_conflicts"`
@@ -2582,14 +3710,22 @@ type DnsPublicView struct {
 
 // DnsPublicationStatus defines model for DnsPublicationStatus.
 type DnsPublicationStatus struct {
-	AppliedRevision *int64                    `json:"applied_revision,omitempty"`
-	Checksum        *string                   `json:"checksum,omitempty"`
-	DesiredRevision *int64                    `json:"desired_revision,omitempty"`
-	ErrorCode       *string                   `json:"error_code,omitempty"`
-	ErrorMessage    *string                   `json:"error_message,omitempty"`
-	PublishedAt     *Timestamp                `json:"published_at,omitempty"`
-	Serial          *int64                    `json:"serial,omitempty"`
-	State           DnsPublicationStatusState `json:"state"`
+	AttemptCount        int                       `json:"attempt_count"`
+	Checksum            *string                   `json:"checksum,omitempty"`
+	DesiredGeneration   int64                     `json:"desired_generation"`
+	ErrorCode           *string                   `json:"error_code,omitempty"`
+	ErrorMessage        *string                   `json:"error_message,omitempty"`
+	FencingToken        int64                     `json:"fencing_token"`
+	FileName            *string                   `json:"file_name,omitempty"`
+	LastAttemptAt       *Timestamp                `json:"last_attempt_at,omitempty"`
+	LastSuccessAt       *Timestamp                `json:"last_success_at,omitempty"`
+	LeaseExpiresAt      *Timestamp                `json:"lease_expires_at,omitempty"`
+	NextRetryAt         *Timestamp                `json:"next_retry_at,omitempty"`
+	NextSerial          int                       `json:"next_serial"`
+	PublishedAt         *Timestamp                `json:"published_at,omitempty"`
+	PublishedGeneration *int64                    `json:"published_generation,omitempty"`
+	Serial              *int                      `json:"serial,omitempty"`
+	State               DnsPublicationStatusState `json:"state"`
 }
 
 // DnsPublicationStatusState defines model for DnsPublicationStatus.State.
@@ -2617,7 +3753,9 @@ type DnsUpdateDraftWrite struct {
 	Operation    DnsUpdateDraftWriteOperation `json:"operation"`
 	Proposed     DnsNameWrite                 `json:"proposed"`
 
-	// TargetNameId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// TargetNameId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	TargetNameId UuidV7 `json:"target_name_id"`
 }
 
@@ -2643,18 +3781,26 @@ type DnsZone struct {
 	CloudflareStatus string `json:"cloudflare_status"`
 	CloudflareZoneId string `json:"cloudflare_zone_id"`
 
-	// DiscoveredAt Example: 2026-08-04T12:00:00Z
+	// DiscoveredAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	DiscoveredAt Timestamp `json:"discovered_at"`
 
-	// DomainId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// DomainId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	DomainId *UuidV7 `json:"domain_id,omitempty"`
 
-	// Id Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// Id New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	Id              UuidV7     `json:"id"`
 	LastDriftScanAt *Timestamp `json:"last_drift_scan_at,omitempty"`
 	Name            string     `json:"name"`
 
-	// RefreshedAt Example: 2026-08-04T12:00:00Z
+	// RefreshedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	RefreshedAt Timestamp          `json:"refreshed_at"`
 	Revision    Revision           `json:"revision"`
 	Selection   DnsZoneSelection   `json:"selection"`
@@ -2672,7 +3818,9 @@ type DnsZonePage struct {
 
 // DnsZoneSelect defines model for DnsZoneSelect.
 type DnsZoneSelect struct {
-	// DomainId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// DomainId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	DomainId UuidV7 `json:"domain_id"`
 }
 
@@ -2695,30 +3843,44 @@ type Domain struct {
 	ArchivedAt *Timestamp `json:"archived_at,omitempty"`
 	AutoRenew  *bool      `json:"auto_renew,omitempty"`
 
-	// CreatedAt Example: 2026-08-04T12:00:00Z
-	CreatedAt   Timestamp         `json:"created_at"`
-	Description *string           `json:"description,omitempty"`
-	DnsZoneId   *UuidV7           `json:"dns_zone_id,omitempty"`
+	// CreatedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
+	CreatedAt   Timestamp `json:"created_at"`
+	Description *string   `json:"description,omitempty"`
+	DnsZoneId   *UuidV7   `json:"dns_zone_id,omitempty"`
+
+	// ExpiresOn Calendar date in YYYY-MM-DD form with no timezone conversion.
 	ExpiresOn   *Date             `json:"expires_on,omitempty"`
 	ExpiryState DomainExpiryState `json:"expiry_state"`
 
-	// Id Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
-	Id           UuidV7   `json:"id"`
-	Name         string   `json:"name"`
-	Nameservers  []string `json:"nameservers"`
-	Notes        *string  `json:"notes,omitempty"`
-	RegisteredOn *Date    `json:"registered_on,omitempty"`
+	// Id New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	Id UuidV7 `json:"id"`
 
-	// RegistrarProviderId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// Name Unicode or ASCII domain input; the server removes a trailing dot and stores lowercase IDNA ASCII.
+	Name        string   `json:"name"`
+	Nameservers []string `json:"nameservers"`
+	Notes       *string  `json:"notes,omitempty"`
+
+	// RegisteredOn Calendar date in YYYY-MM-DD form with no timezone conversion.
+	RegisteredOn *Date `json:"registered_on,omitempty"`
+
+	// RegistrarProviderId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	RegistrarProviderId *UuidV7  `json:"registrar_provider_id,omitempty"`
 	Revision            Revision `json:"revision"`
 	TagIds              []UuidV7 `json:"tag_ids"`
 
-	// UpdatedAt Example: 2026-08-04T12:00:00Z
+	// UpdatedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	UpdatedAt Timestamp `json:"updated_at"`
 }
 
-// DomainExpiryState defines model for Domain.ExpiryState.
+// DomainExpiryState defines model for DomainExpiryState.
 type DomainExpiryState string
 
 // DomainPage defines model for DomainPage.
@@ -2729,32 +3891,48 @@ type DomainPage struct {
 
 // DomainWrite defines model for DomainWrite.
 type DomainWrite struct {
-	AutoRenew    *bool    `json:"auto_renew,omitempty"`
-	Description  *string  `json:"description,omitempty"`
-	ExpiresOn    *Date    `json:"expires_on,omitempty"`
-	Name         string   `json:"name"`
-	Nameservers  []string `json:"nameservers"`
-	Notes        *string  `json:"notes,omitempty"`
-	RegisteredOn *Date    `json:"registered_on,omitempty"`
+	AutoRenew   *bool   `json:"auto_renew,omitempty"`
+	Description *string `json:"description,omitempty"`
 
-	// RegistrarProviderId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// ExpiresOn Calendar date in YYYY-MM-DD form with no timezone conversion.
+	ExpiresOn *Date `json:"expires_on,omitempty"`
+
+	// Name Unicode or ASCII domain input; the server removes a trailing dot and stores lowercase IDNA ASCII.
+	Name        string   `json:"name"`
+	Nameservers []string `json:"nameservers"`
+	Notes       *string  `json:"notes,omitempty"`
+
+	// RegisteredOn Calendar date in YYYY-MM-DD form with no timezone conversion.
+	RegisteredOn *Date `json:"registered_on,omitempty"`
+
+	// RegistrarProviderId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	RegistrarProviderId *UuidV7  `json:"registrar_provider_id,omitempty"`
 	TagIds              []UuidV7 `json:"tag_ids"`
 }
 
 // EnrollmentToken defines model for EnrollmentToken.
 type EnrollmentToken struct {
-	// ComputeId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// ComputeId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	ComputeId  UuidV7     `json:"compute_id"`
 	ConsumedAt *Timestamp `json:"consumed_at,omitempty"`
 
-	// CreatedAt Example: 2026-08-04T12:00:00Z
+	// CreatedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	CreatedAt Timestamp `json:"created_at"`
 
-	// ExpiresAt Example: 2026-08-04T12:00:00Z
+	// ExpiresAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	ExpiresAt Timestamp `json:"expires_at"`
 
-	// Id Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// Id New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	Id        UuidV7     `json:"id"`
 	RevokedAt *Timestamp `json:"revoked_at,omitempty"`
 }
@@ -2766,17 +3944,25 @@ type EnrollmentTokenCreate struct {
 
 // EnrollmentTokenSecret defines model for EnrollmentTokenSecret.
 type EnrollmentTokenSecret struct {
-	// ComputeId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// ComputeId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	ComputeId  UuidV7     `json:"compute_id"`
 	ConsumedAt *Timestamp `json:"consumed_at,omitempty"`
 
-	// CreatedAt Example: 2026-08-04T12:00:00Z
+	// CreatedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	CreatedAt Timestamp `json:"created_at"`
 
-	// ExpiresAt Example: 2026-08-04T12:00:00Z
+	// ExpiresAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	ExpiresAt Timestamp `json:"expires_at"`
 
-	// Id Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// Id New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	Id        UuidV7     `json:"id"`
 	RevokedAt *Timestamp `json:"revoked_at,omitempty"`
 	Token     *string    `json:"token,omitempty"`
@@ -2796,17 +3982,53 @@ type FieldChange struct {
 // FieldChangeChange defines model for FieldChange.Change.
 type FieldChangeChange string
 
+// FilesystemAvailableBytesChange defines model for FilesystemAvailableBytesChange.
+type FilesystemAvailableBytesChange struct {
+	After       *int64                                    `json:"after"`
+	Before      *int64                                    `json:"before"`
+	Device      string                                    `json:"device"`
+	Measurement FilesystemAvailableBytesChangeMeasurement `json:"measurement"`
+	MountPoint  string                                    `json:"mount_point"`
+}
+
+// FilesystemAvailableBytesChangeMeasurement defines model for FilesystemAvailableBytesChange.Measurement.
+type FilesystemAvailableBytesChangeMeasurement string
+
 // FilesystemChange defines model for FilesystemChange.
 type FilesystemChange struct {
-	After  *FilesystemSnapshot    `json:"after,omitempty"`
-	Before *FilesystemSnapshot    `json:"before,omitempty"`
-	Change FilesystemChangeChange `json:"change"`
-	Fields *[]FieldChange         `json:"fields,omitempty"`
-	Key    string                 `json:"key"`
+	After  *StructuralFilesystemSnapshot `json:"after,omitempty"`
+	Before *StructuralFilesystemSnapshot `json:"before,omitempty"`
+	Change FilesystemChangeChange        `json:"change"`
+	Fields *[]FieldChange                `json:"fields,omitempty"`
+	Key    string                        `json:"key"`
 }
 
 // FilesystemChangeChange defines model for FilesystemChange.Change.
 type FilesystemChangeChange string
+
+// FilesystemCollectionWrite defines model for FilesystemCollectionWrite.
+type FilesystemCollectionWrite struct {
+	union json.RawMessage
+}
+
+// FilesystemCollectionWriteFailed Failed filesystem collection; contains no authoritative filesystem inventory.
+type FilesystemCollectionWriteFailed struct {
+	// Error Sanitized collector error.
+	Error  string                                `json:"error"`
+	Status FilesystemCollectionWriteFailedStatus `json:"status"`
+}
+
+// FilesystemCollectionWriteFailedStatus defines model for FilesystemCollectionWriteFailed.Status.
+type FilesystemCollectionWriteFailedStatus string
+
+// FilesystemCollectionWriteSuccess A complete authoritative filesystem inventory; an empty array means no filesystems were observed.
+type FilesystemCollectionWriteSuccess struct {
+	Filesystems []FilesystemSnapshot                   `json:"filesystems"`
+	Status      FilesystemCollectionWriteSuccessStatus `json:"status"`
+}
+
+// FilesystemCollectionWriteSuccessStatus defines model for FilesystemCollectionWriteSuccess.Status.
+type FilesystemCollectionWriteSuccessStatus string
 
 // FilesystemSnapshot defines model for FilesystemSnapshot.
 type FilesystemSnapshot struct {
@@ -2821,12 +4043,38 @@ type FilesystemSnapshot struct {
 type HealthStatus struct {
 	Status HealthStatusStatus `json:"status"`
 
-	// Time Example: 2026-08-04T12:00:00Z
+	// Time RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	Time Timestamp `json:"time"`
 }
 
 // HealthStatusStatus defines model for HealthStatus.Status.
 type HealthStatusStatus string
+
+// HostCollectionWrite defines model for HostCollectionWrite.
+type HostCollectionWrite struct {
+	union json.RawMessage
+}
+
+// HostCollectionWriteFailed Failed host collection; contains no authoritative host facts.
+type HostCollectionWriteFailed struct {
+	// Error Sanitized collector error.
+	Error  string                          `json:"error"`
+	Status HostCollectionWriteFailedStatus `json:"status"`
+}
+
+// HostCollectionWriteFailedStatus defines model for HostCollectionWriteFailed.Status.
+type HostCollectionWriteFailedStatus string
+
+// HostCollectionWriteSuccess A complete authoritative host fact result; missing optional scalars remain unknown.
+type HostCollectionWriteSuccess struct {
+	Host   HostSnapshot                     `json:"host"`
+	Status HostCollectionWriteSuccessStatus `json:"status"`
+}
+
+// HostCollectionWriteSuccessStatus defines model for HostCollectionWriteSuccess.Status.
+type HostCollectionWriteSuccessStatus string
 
 // HostSnapshot defines model for HostSnapshot.
 type HostSnapshot struct {
@@ -2848,10 +4096,22 @@ type HostSnapshot struct {
 // HostSnapshotVirtualizationRole defines model for HostSnapshot.VirtualizationRole.
 type HostSnapshotVirtualizationRole string
 
+// HostUptimeChange defines model for HostUptimeChange.
+type HostUptimeChange struct {
+	After       *int64                      `json:"after"`
+	Before      *int64                      `json:"before"`
+	Measurement HostUptimeChangeMeasurement `json:"measurement"`
+}
+
+// HostUptimeChangeMeasurement defines model for HostUptimeChange.Measurement.
+type HostUptimeChangeMeasurement string
+
 // InterfaceAddress defines model for InterfaceAddress.
 type InterfaceAddress struct {
-	Address      string   `json:"address"`
-	PrefixLength int      `json:"prefix_length"`
+	Address string `json:"address"`
+
+	// PrefixLength Unknown prefix remains null; the server does not fabricate a network prefix.
+	PrefixLength *int     `json:"prefix_length,omitempty"`
 	Scope        *IpScope `json:"scope,omitempty"`
 }
 
@@ -2867,18 +4127,54 @@ type InterfaceChange struct {
 // InterfaceChangeChange defines model for InterfaceChange.Change.
 type InterfaceChangeChange string
 
+// InterfaceCollectionWrite defines model for InterfaceCollectionWrite.
+type InterfaceCollectionWrite struct {
+	union json.RawMessage
+}
+
+// InterfaceCollectionWriteFailed Failed interface collection; contains no authoritative interface inventory.
+type InterfaceCollectionWriteFailed struct {
+	// Error Sanitized collector error.
+	Error  string                               `json:"error"`
+	Status InterfaceCollectionWriteFailedStatus `json:"status"`
+}
+
+// InterfaceCollectionWriteFailedStatus defines model for InterfaceCollectionWriteFailed.Status.
+type InterfaceCollectionWriteFailedStatus string
+
+// InterfaceCollectionWriteSuccess A complete authoritative interface inventory; an empty array means no interfaces were observed.
+type InterfaceCollectionWriteSuccess struct {
+	Interfaces []NetworkInterfaceObservation         `json:"interfaces"`
+	Status     InterfaceCollectionWriteSuccessStatus `json:"status"`
+}
+
+// InterfaceCollectionWriteSuccessStatus defines model for InterfaceCollectionWriteSuccess.Status.
+type InterfaceCollectionWriteSuccessStatus string
+
+// InventorySummary defines model for InventorySummary.
+type InventorySummary struct {
+	ComputeCount           int `json:"compute_count"`
+	ObservedContainerCount int `json:"observed_container_count"`
+	PhysicalComputeCount   int `json:"physical_compute_count"`
+	StaleContainerCount    int `json:"stale_container_count"`
+	VmCount                int `json:"vm_count"`
+	VpsCount               int `json:"vps_count"`
+}
+
 // InventoryTree defines model for InventoryTree.
 type InventoryTree struct {
-	Roots     []InventoryTreeNode `json:"roots"`
-	Truncated bool                `json:"truncated"`
+	Items []InventoryTreeNode `json:"items"`
+	Page  PageInfo            `json:"page"`
 }
 
 // InventoryTreeNode defines model for InventoryTreeNode.
 type InventoryTreeNode struct {
-	Archived bool                `json:"archived"`
-	Children []InventoryTreeNode `json:"children"`
+	Archived    bool `json:"archived"`
+	HasChildren bool `json:"has_children"`
 
-	// Id Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// Id New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	Id   UuidV7                `json:"id"`
 	Kind InventoryTreeNodeKind `json:"kind"`
 	Name string                `json:"name"`
@@ -2892,17 +4188,25 @@ type IpAssignment struct {
 	Address    string     `json:"address"`
 	ArchivedAt *Timestamp `json:"archived_at,omitempty"`
 
-	// ComputeId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// ComputeId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	ComputeId *UuidV7 `json:"compute_id,omitempty"`
 
-	// ContainerId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// ContainerId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	ContainerId *UuidV7 `json:"container_id,omitempty"`
 
-	// CreatedAt Example: 2026-08-04T12:00:00Z
+	// CreatedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	CreatedAt   Timestamp `json:"created_at"`
 	Description *string   `json:"description,omitempty"`
 
-	// Id Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// Id New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	Id                 UuidV7                   `json:"id"`
 	InterfaceOrNetwork *string                  `json:"interface_or_network,omitempty"`
 	Observation        *IpAssignmentObservation `json:"observation,omitempty"`
@@ -2913,16 +4217,22 @@ type IpAssignment struct {
 	Scope              IpScope                  `json:"scope"`
 	Source             IpAssignmentSource       `json:"source"`
 
-	// UpdatedAt Example: 2026-08-04T12:00:00Z
+	// UpdatedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	UpdatedAt Timestamp `json:"updated_at"`
 }
 
 // IpAssignmentObservation defines model for IpAssignmentObservation.
 type IpAssignmentObservation struct {
-	// FirstObservedAt Example: 2026-08-04T12:00:00Z
+	// FirstObservedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	FirstObservedAt Timestamp `json:"first_observed_at"`
 
-	// LastObservedAt Example: 2026-08-04T12:00:00Z
+	// LastObservedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	LastObservedAt Timestamp  `json:"last_observed_at"`
 	StaleAt        *Timestamp `json:"stale_at,omitempty"`
 }
@@ -2940,10 +4250,14 @@ type IpAssignmentSource string
 type IpAssignmentWrite struct {
 	Address string `json:"address"`
 
-	// ComputeId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// ComputeId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	ComputeId *UuidV7 `json:"compute_id,omitempty"`
 
-	// ContainerId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// ContainerId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	ContainerId        *UuidV7 `json:"container_id,omitempty"`
 	Description        *string `json:"description,omitempty"`
 	InterfaceOrNetwork *string `json:"interface_or_network,omitempty"`
@@ -2960,25 +4274,35 @@ type IpScope string
 type Location struct {
 	ArchivedAt *Timestamp `json:"archived_at,omitempty"`
 
-	// CreatedAt Example: 2026-08-04T12:00:00Z
+	// CreatedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	CreatedAt   Timestamp `json:"created_at"`
 	Description *string   `json:"description,omitempty"`
 
-	// Id Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// Id New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	Id    UuidV7  `json:"id"`
 	Name  string  `json:"name"`
 	Notes *string `json:"notes,omitempty"`
 
-	// ParentId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// ParentId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	ParentId *UuidV7 `json:"parent_id,omitempty"`
 
-	// ProviderId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// ProviderId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	ProviderId *UuidV7      `json:"provider_id,omitempty"`
 	Revision   Revision     `json:"revision"`
 	TagIds     []UuidV7     `json:"tag_ids"`
 	Type       LocationType `json:"type"`
 
-	// UpdatedAt Example: 2026-08-04T12:00:00Z
+	// UpdatedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	UpdatedAt Timestamp `json:"updated_at"`
 }
 
@@ -2997,10 +4321,14 @@ type LocationWrite struct {
 	Name        string  `json:"name"`
 	Notes       *string `json:"notes,omitempty"`
 
-	// ParentId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// ParentId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	ParentId *UuidV7 `json:"parent_id,omitempty"`
 
-	// ProviderId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// ProviderId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	ProviderId *UuidV7      `json:"provider_id,omitempty"`
 	TagIds     []UuidV7     `json:"tag_ids"`
 	Type       LocationType `json:"type"`
@@ -3016,9 +4344,11 @@ type LoginRequest struct {
 type Money struct {
 	AmountMinor int64 `json:"amount_minor"`
 
-	// Currency Example: EUR
-	Currency         CurrencyCode `json:"currency"`
-	CurrencyExponent *int         `json:"currency_exponent,omitempty"`
+	// Currency Supported ISO 4217 currency codes from the pinned SIX List One catalog published 2026-09-17. The server derives currency_exponent; unsupported codes are rejected rather than assigned a guessed exponent.
+	Currency CurrencyCode `json:"currency"`
+
+	// CurrencyExponent Server-derived ISO 4217 minor-unit exponent; never supplied by clients.
+	CurrencyExponent *int `json:"currency_exponent,omitempty"`
 }
 
 // NetworkInterfaceObservation defines model for NetworkInterfaceObservation.
@@ -3032,11 +4362,15 @@ type NetworkInterfaceObservation struct {
 
 // OneTimeCostWrite defines model for OneTimeCostWrite.
 type OneTimeCostWrite struct {
-	Amount      Money   `json:"amount"`
+	Amount Money `json:"amount"`
+
+	// ChargedOn Calendar date in YYYY-MM-DD form with no timezone conversion.
 	ChargedOn   Date    `json:"charged_on"`
 	Description *string `json:"description,omitempty"`
 
-	// OwnerId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// OwnerId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	OwnerId           UuidV7                    `json:"owner_id"`
 	OwnerType         OneTimeCostWriteOwnerType `json:"owner_type"`
 	ProviderReference *string                   `json:"provider_reference,omitempty"`
@@ -3058,11 +4392,15 @@ type PageInfo struct {
 
 // PersonalAccessToken defines model for PersonalAccessToken.
 type PersonalAccessToken struct {
-	// CreatedAt Example: 2026-08-04T12:00:00Z
+	// CreatedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	CreatedAt Timestamp  `json:"created_at"`
 	ExpiresAt *Timestamp `json:"expires_at,omitempty"`
 
-	// Id Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// Id New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	Id         UuidV7                     `json:"id"`
 	LastUsedAt *Timestamp                 `json:"last_used_at,omitempty"`
 	Name       string                     `json:"name"`
@@ -3088,11 +4426,15 @@ type PersonalAccessTokenScope string
 
 // PersonalAccessTokenSecret defines model for PersonalAccessTokenSecret.
 type PersonalAccessTokenSecret struct {
-	// CreatedAt Example: 2026-08-04T12:00:00Z
+	// CreatedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	CreatedAt Timestamp  `json:"created_at"`
 	ExpiresAt *Timestamp `json:"expires_at,omitempty"`
 
-	// Id Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// Id New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	Id         UuidV7                     `json:"id"`
 	LastUsedAt *Timestamp                 `json:"last_used_at,omitempty"`
 	Name       string                     `json:"name"`
@@ -3101,43 +4443,51 @@ type PersonalAccessTokenSecret struct {
 	Token      *string                    `json:"token,omitempty"`
 }
 
-// PodmanCollection defines model for PodmanCollection.
-type PodmanCollection struct {
+// PodmanCollectionWrite defines model for PodmanCollectionWrite.
+type PodmanCollectionWrite struct {
 	union json.RawMessage
 }
 
-// PodmanCollectionFailed defines model for PodmanCollectionFailed.
-type PodmanCollectionFailed struct {
-	Connection string                       `json:"connection"`
-	Error      string                       `json:"error"`
-	Owner      string                       `json:"owner"`
-	Status     PodmanCollectionFailedStatus `json:"status"`
+// PodmanCollectionWriteFailed Failed Podman collection for a numeric owner UID; partial container inventories are discarded.
+type PodmanCollectionWriteFailed struct {
+	Connection string `json:"connection"`
+
+	// Error Sanitized collector error.
+	Error    string                            `json:"error"`
+	OwnerUid int64                             `json:"owner_uid"`
+	Status   PodmanCollectionWriteFailedStatus `json:"status"`
 }
 
-// PodmanCollectionFailedStatus defines model for PodmanCollectionFailed.Status.
-type PodmanCollectionFailedStatus string
+// PodmanCollectionWriteFailedStatus defines model for PodmanCollectionWriteFailed.Status.
+type PodmanCollectionWriteFailedStatus string
 
-// PodmanCollectionSuccess defines model for PodmanCollectionSuccess.
-type PodmanCollectionSuccess struct {
-	Connection string                        `json:"connection"`
-	Containers []SnapshotContainer           `json:"containers"`
-	Owner      string                        `json:"owner"`
-	Status     PodmanCollectionSuccessStatus `json:"status"`
+// PodmanCollectionWriteSuccess A complete authoritative container inventory for this connection and numeric owner UID.
+type PodmanCollectionWriteSuccess struct {
+	Connection string                             `json:"connection"`
+	Containers []SnapshotContainer                `json:"containers"`
+	OwnerUid   int64                              `json:"owner_uid"`
+	Status     PodmanCollectionWriteSuccessStatus `json:"status"`
 }
 
-// PodmanCollectionSuccessStatus defines model for PodmanCollectionSuccess.Status.
-type PodmanCollectionSuccessStatus string
+// PodmanCollectionWriteSuccessStatus defines model for PodmanCollectionWriteSuccess.Status.
+type PodmanCollectionWriteSuccessStatus string
 
 // Problem Example: {"code":"validation_failed","request_id":"req_01J4ABCDEF","status":422,"title":"Request validation failed","type":"https://portinaia.invalid/problems/validation_failed","violations":[{"code":"required","field":"name","message":"Name is required."}]}
 type Problem struct {
-	Code       string       `json:"code"`
-	Detail     *string      `json:"detail,omitempty"`
-	Instance   *string      `json:"instance,omitempty"`
-	RequestId  string       `json:"request_id"`
-	Status     int          `json:"status"`
-	Title      string       `json:"title"`
-	Type       string       `json:"type"`
-	Violations *[]Violation `json:"violations,omitempty"`
+	Code string `json:"code"`
+
+	// DependencyDetails Present on dependency_conflict responses from permanent purge operations.
+	DependencyDetails *PurgeDependencyDetails `json:"dependency_details,omitempty"`
+	Detail            *string                 `json:"detail,omitempty"`
+	Instance          *string                 `json:"instance,omitempty"`
+
+	// Readiness Readiness time and checks included with a 503 from /health/ready.
+	Readiness  *ReadinessStatus `json:"readiness,omitempty"`
+	RequestId  string           `json:"request_id"`
+	Status     int              `json:"status"`
+	Title      string           `json:"title"`
+	Type       string           `json:"type"`
+	Violations *[]Violation     `json:"violations,omitempty"`
 }
 
 // ProtocolCompatibility defines model for ProtocolCompatibility.
@@ -3153,20 +4503,26 @@ type ProtocolRange struct {
 type Provider struct {
 	ArchivedAt *Timestamp `json:"archived_at,omitempty"`
 
-	// CreatedAt Example: 2026-08-04T12:00:00Z
+	// CreatedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	CreatedAt                Timestamp `json:"created_at"`
 	Description              *string   `json:"description,omitempty"`
 	ExternalAccountReference *string   `json:"external_account_reference,omitempty"`
 
-	// Id Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// Id New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	Id       UuidV7         `json:"id"`
 	Name     string         `json:"name"`
 	Notes    *string        `json:"notes,omitempty"`
-	Revision Revision       `json:"revision"`
+	Revision int            `json:"revision"`
 	Roles    []ProviderRole `json:"roles"`
 	TagIds   []UuidV7       `json:"tag_ids"`
 
-	// UpdatedAt Example: 2026-08-04T12:00:00Z
+	// UpdatedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	UpdatedAt Timestamp `json:"updated_at"`
 	Website   *string   `json:"website,omitempty"`
 }
@@ -3177,7 +4533,7 @@ type ProviderPage struct {
 	Page  PageInfo   `json:"page"`
 }
 
-// ProviderRole defines model for ProviderRole.
+// ProviderRole hosting_provider is persisted as SQL role hosting.
 type ProviderRole string
 
 // ProviderWrite defines model for ProviderWrite.
@@ -3189,6 +4545,37 @@ type ProviderWrite struct {
 	Roles                    []ProviderRole `json:"roles"`
 	TagIds                   []UuidV7       `json:"tag_ids"`
 	Website                  *string        `json:"website,omitempty"`
+}
+
+// PurgeDependencyDetails Complete typed counts plus a bounded navigable sample. Group list_href values provide paged access to every dependency for explicit cleanup.
+type PurgeDependencyDetails struct {
+	Groups              []PurgeDependencyGroup     `json:"groups"`
+	References          []PurgeDependencyReference `json:"references"`
+	ReferencesTruncated bool                       `json:"references_truncated"`
+}
+
+// PurgeDependencyGroup defines model for PurgeDependencyGroup.
+type PurgeDependencyGroup struct {
+	Count int                 `json:"count"`
+	Kind  PurgeDependencyKind `json:"kind"`
+
+	// ListHref Paginated route/filter for listing every dependency in this group.
+	ListHref string `json:"list_href"`
+}
+
+// PurgeDependencyKind defines model for PurgeDependencyKind.
+type PurgeDependencyKind string
+
+// PurgeDependencyReference defines model for PurgeDependencyReference.
+type PurgeDependencyReference struct {
+	DisplayName *string `json:"display_name,omitempty"`
+	Href        string  `json:"href"`
+
+	// Id New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	Id   UuidV7              `json:"id"`
+	Kind PurgeDependencyKind `json:"kind"`
 }
 
 // ReadinessCheck defines model for ReadinessCheck.
@@ -3206,7 +4593,9 @@ type ReadinessStatus struct {
 	Checks []ReadinessCheck      `json:"checks"`
 	Status ReadinessStatusStatus `json:"status"`
 
-	// Time Example: 2026-08-04T12:00:00Z
+	// Time RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	Time Timestamp `json:"time"`
 }
 
@@ -3215,7 +4604,9 @@ type ReadinessStatusStatus string
 
 // ReconcileAccepted defines model for ReconcileAccepted.
 type ReconcileAccepted struct {
-	// AcceptedAt Example: 2026-08-04T12:00:00Z
+	// AcceptedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	AcceptedAt     Timestamp `json:"accepted_at"`
 	AggregateCount int       `json:"aggregate_count"`
 }
@@ -3227,10 +4618,16 @@ type RecurringCostWrite struct {
 	// BillingInterval Recurring interval; maps to monthly, quarterly, semiannual, and annual in storage.
 	BillingInterval RecurringCostWriteBillingInterval `json:"billing_interval"`
 	Description     *string                           `json:"description,omitempty"`
-	EffectiveFrom   Date                              `json:"effective_from"`
-	EffectiveTo     *Date                             `json:"effective_to,omitempty"`
 
-	// OwnerId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// EffectiveFrom Calendar date in YYYY-MM-DD form with no timezone conversion.
+	EffectiveFrom Date `json:"effective_from"`
+
+	// EffectiveTo Calendar date in YYYY-MM-DD form with no timezone conversion.
+	EffectiveTo *Date `json:"effective_to,omitempty"`
+
+	// OwnerId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	OwnerId           UuidV7                      `json:"owner_id"`
 	OwnerType         RecurringCostWriteOwnerType `json:"owner_type"`
 	ProviderReference *string                     `json:"provider_reference,omitempty"`
@@ -3246,18 +4643,85 @@ type RecurringCostWriteOwnerType string
 // RecurringCostWriteType defines model for RecurringCostWrite.Type.
 type RecurringCostWriteType string
 
+// RejectedDiscoveryReport defines model for RejectedDiscoveryReport.
+type RejectedDiscoveryReport struct {
+	// AgentId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	AgentId                UuidV7  `json:"agent_id"`
+	ClientVersion          *string `json:"client_version"`
+	CollectionErrorSummary *string `json:"collection_error_summary"`
+
+	// CollectionFinishedAt Null for schema-1 reports without a stored collection-finish value.
+	CollectionFinishedAt *Timestamp `json:"collection_finished_at"`
+
+	// CollectionStartedAt Null for schema-1 reports without a stored collection-start value.
+	CollectionStartedAt *Timestamp        `json:"collection_started_at"`
+	CollectorResults    []CollectorResult `json:"collector_results"`
+
+	// ComputeId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	ComputeId   UuidV7            `json:"compute_id"`
+	Diagnostics []CollectionError `json:"diagnostics"`
+
+	// Id Server-assigned immutable history id used in history paths.
+	Id              UuidV7 `json:"id"`
+	ProtocolVersion int    `json:"protocol_version"`
+
+	// ReceivedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
+	ReceivedAt Timestamp `json:"received_at"`
+
+	// ReportId Client-supplied report identity from the snapshot PUT request.
+	ReportId UuidV7                        `json:"report_id"`
+	Result   RejectedDiscoveryReportResult `json:"result"`
+}
+
+// RejectedDiscoveryReportResult defines model for RejectedDiscoveryReport.Result.
+type RejectedDiscoveryReportResult string
+
+// RejectedDnsImportCandidate defines model for RejectedDnsImportCandidate.
+type RejectedDnsImportCandidate struct {
+	// Id Opaque refresh-scoped candidate identifier.
+	Id string `json:"id"`
+
+	// RawName Unnormalized provider owner name when available.
+	RawName *string `json:"raw_name"`
+
+	// RawTtl Provider TTL summary without asserting it satisfies supported bounds.
+	RawTtl *int64 `json:"raw_ttl"`
+
+	// RawType Provider record type without asserting it is supported.
+	RawType     *string                          `json:"raw_type"`
+	Reason      string                           `json:"reason"`
+	ReasonCode  string                           `json:"reason_code"`
+	RecordCount int                              `json:"record_count"`
+	Status      RejectedDnsImportCandidateStatus `json:"status"`
+}
+
+// RejectedDnsImportCandidateStatus defines model for RejectedDnsImportCandidate.Status.
+type RejectedDnsImportCandidateStatus string
+
 // ResourceMetadata defines model for ResourceMetadata.
 type ResourceMetadata struct {
 	ArchivedAt *Timestamp `json:"archived_at,omitempty"`
 
-	// CreatedAt Example: 2026-08-04T12:00:00Z
+	// CreatedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	CreatedAt Timestamp `json:"created_at"`
 
-	// Id Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// Id New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	Id       UuidV7   `json:"id"`
 	Revision Revision `json:"revision"`
 
-	// UpdatedAt Example: 2026-08-04T12:00:00Z
+	// UpdatedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	UpdatedAt Timestamp `json:"updated_at"`
 }
 
@@ -3283,14 +4747,20 @@ type ScalarValue3 = bool
 
 // Session defines model for Session.
 type Session struct {
-	// AdministratorId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// AdministratorId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	AdministratorId UuidV7 `json:"administrator_id"`
 
-	// CreatedAt Example: 2026-08-04T12:00:00Z
+	// CreatedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	CreatedAt Timestamp `json:"created_at"`
 	CsrfToken *string   `json:"csrf_token,omitempty"`
 
-	// ExpiresAt Example: 2026-08-04T12:00:00Z
+	// ExpiresAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	ExpiresAt  Timestamp  `json:"expires_at"`
 	LastSeenAt *Timestamp `json:"last_seen_at,omitempty"`
 	Username   string     `json:"username"`
@@ -3299,81 +4769,127 @@ type Session struct {
 // SnapshotAcceptance defines model for SnapshotAcceptance.
 type SnapshotAcceptance struct {
 	AcceptedProtocol ProtocolRange `json:"accepted_protocol"`
-	ContentReused    bool          `json:"content_reused"`
 
-	// ReceivedAt Example: 2026-08-04T12:00:00Z
+	// ClientVersion Null for schema-1 reports where client version was not retained.
+	ClientVersion *string `json:"client_version"`
+
+	// CollectionFinishedAt Null for schema-1 reports without a stored collection-finish value.
+	CollectionFinishedAt *Timestamp `json:"collection_finished_at"`
+
+	// CollectionStartedAt Null for schema-1 reports without a stored collection-start value.
+	CollectionStartedAt *Timestamp `json:"collection_started_at"`
+
+	// ContentReused Null when reuse status predates report-envelope storage.
+	ContentReused *bool `json:"content_reused"`
+
+	// Id Server-assigned immutable history id for this accepted report.
+	Id              UuidV7 `json:"id"`
+	ProtocolVersion int    `json:"protocol_version"`
+
+	// ReceivedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	ReceivedAt Timestamp `json:"received_at"`
 
-	// ReportId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// ReportId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	ReportId UuidV7                   `json:"report_id"`
 	Result   SnapshotAcceptanceResult `json:"result"`
 	Schedule AgentSchedule            `json:"schedule"`
 
-	// ServerTime Example: 2026-08-04T12:00:00Z
+	// ServerTime RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	ServerTime Timestamp `json:"server_time"`
 }
 
 // SnapshotAcceptanceResult defines model for SnapshotAcceptance.Result.
 type SnapshotAcceptanceResult string
 
-// SnapshotComparison defines model for SnapshotComparison.
+// SnapshotComparison One globally ordered page of differences. The service MUST NOT infer child removals when the corresponding collector failed; such sections are listed in unavailable_sections instead. Differences sort by section in this order: host, interfaces, disks, filesystems, containers, collectors, measurements; within a section they sort by stable resource key. The total number of entries across all section arrays equals page.size and never exceeds the requested page size.
 type SnapshotComparison struct {
-	Collectors  []CollectorStatusChange `json:"collectors"`
-	Containers  []ContainerChange       `json:"containers"`
-	Filesystems []FilesystemChange      `json:"filesystems"`
+	Collectors []CollectorStatusChange `json:"collectors"`
+	Containers []ContainerChange       `json:"containers"`
+	Disks      []DiskChange            `json:"disks"`
 
-	// FromReportId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
-	FromReportId UuidV7            `json:"from_report_id"`
-	Host         []FieldChange     `json:"host"`
-	Interfaces   []InterfaceChange `json:"interfaces"`
+	// Filesystems Structural filesystem differences only; available_bytes is reported under measurements.
+	Filesystems []FilesystemChange `json:"filesystems"`
 
-	// ToReportId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
-	ToReportId UuidV7 `json:"to_report_id"`
-	Truncated  bool   `json:"truncated"`
+	// FromReportId Server-assigned history id of the source report.
+	FromReportId UuidV7 `json:"from_report_id"`
+
+	// Host Structural host fact changes only; uptime is reported under measurements.
+	Host         []FieldChange               `json:"host"`
+	Interfaces   []InterfaceChange           `json:"interfaces"`
+	Measurements []VolatileMeasurementChange `json:"measurements"`
+
+	// Page Continuation state for the globally ordered difference sequence.
+	Page PageInfo `json:"page"`
+
+	// ToReportId Server-assigned history id of the target report.
+	ToReportId          UuidV7                       `json:"to_report_id"`
+	UnavailableSections []SnapshotUnavailableSection `json:"unavailable_sections"`
 }
 
 // SnapshotContainer defines model for SnapshotContainer.
 type SnapshotContainer struct {
-	CreatedAt                *Timestamp                     `json:"created_at,omitempty"`
-	Health                   SnapshotContainerHealth        `json:"health"`
-	ImageDigest              *string                        `json:"image_digest,omitempty"`
-	ImageId                  *string                        `json:"image_id,omitempty"`
-	ImageName                string                         `json:"image_name"`
-	Labels                   []ContainerLabel               `json:"labels"`
-	Mounts                   []ContainerMount               `json:"mounts"`
-	Name                     string                         `json:"name"`
-	Networks                 []ContainerNetwork             `json:"networks"`
-	Ports                    []ContainerPort                `json:"ports"`
-	RestartMaximumRetryCount *int                           `json:"restart_maximum_retry_count,omitempty"`
-	RestartPolicy            SnapshotContainerRestartPolicy `json:"restart_policy"`
-	RuntimeId                string                         `json:"runtime_id"`
-	StartedAt                *Timestamp                     `json:"started_at,omitempty"`
-	State                    SnapshotContainerState         `json:"state"`
+	CreatedAt                *Timestamp              `json:"created_at,omitempty"`
+	Health                   SnapshotContainerHealth `json:"health"`
+	ImageDigest              *string                 `json:"image_digest,omitempty"`
+	ImageId                  *string                 `json:"image_id,omitempty"`
+	ImageName                string                  `json:"image_name"`
+	Labels                   []ContainerLabel        `json:"labels"`
+	Mounts                   []ContainerMount        `json:"mounts"`
+	Name                     string                  `json:"name"`
+	Networks                 []ContainerNetwork      `json:"networks"`
+	Ports                    []ContainerPort         `json:"ports"`
+	RestartMaximumRetryCount *int                    `json:"restart_maximum_retry_count,omitempty"`
+
+	// RestartPolicy API on_failure and unless_stopped map to persisted SQL on-failure and unless-stopped; unknown is preserved.
+	RestartPolicy ContainerRestartPolicy `json:"restart_policy"`
+	RuntimeId     string                 `json:"runtime_id"`
+	StartedAt     *Timestamp             `json:"started_at,omitempty"`
+	State         SnapshotContainerState `json:"state"`
 }
 
 // SnapshotContainerHealth defines model for SnapshotContainer.Health.
 type SnapshotContainerHealth string
 
-// SnapshotContainerRestartPolicy defines model for SnapshotContainer.RestartPolicy.
-type SnapshotContainerRestartPolicy string
-
 // SnapshotContainerState defines model for SnapshotContainer.State.
 type SnapshotContainerState string
 
-// Tag defines model for Tag.
+// SnapshotUnavailableSection defines model for SnapshotUnavailableSection.
+type SnapshotUnavailableSection string
+
+// StructuralFilesystemSnapshot defines model for StructuralFilesystemSnapshot.
+type StructuralFilesystemSnapshot struct {
+	Device     string `json:"device"`
+	Filesystem string `json:"filesystem"`
+	MountPoint string `json:"mount_point"`
+	TotalBytes int64  `json:"total_bytes"`
+}
+
+// Tag A mutable tag. revision is the tag's own monotonic revision; archived_at is null while active. Purging requires administrative scope, archival, and detachment from all tagged resources.
 type Tag struct {
 	ArchivedAt *Timestamp `json:"archived_at,omitempty"`
 
-	// CreatedAt Example: 2026-08-04T12:00:00Z
+	// CreatedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	CreatedAt   Timestamp `json:"created_at"`
 	DisplayName string    `json:"display_name"`
 
-	// Id Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+	// Id New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+	//
+	// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 	Id       UuidV7   `json:"id"`
 	Name     string   `json:"name"`
 	Revision Revision `json:"revision"`
 
-	// UpdatedAt Example: 2026-08-04T12:00:00Z
+	// UpdatedAt RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+	//
+	// Example: 2026-08-04T12:00:00Z
 	UpdatedAt Timestamp `json:"updated_at"`
 }
 
@@ -3389,10 +4905,14 @@ type TagWrite struct {
 	Name        string `json:"name"`
 }
 
-// Timestamp Example: 2026-08-04T12:00:00Z
+// Timestamp RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+//
+// Example: 2026-08-04T12:00:00Z
 type Timestamp = time.Time
 
-// UuidV7 Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+// UuidV7 New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+//
+// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 type UuidV7 = openapi_types.UUID
 
 // Violation defines model for Violation.
@@ -3402,16 +4922,38 @@ type Violation struct {
 	Message string `json:"message"`
 }
 
+// VolatileFilesystemMeasurement defines model for VolatileFilesystemMeasurement.
+type VolatileFilesystemMeasurement struct {
+	AvailableBytes int64  `json:"available_bytes"`
+	Device         string `json:"device"`
+	MountPoint     string `json:"mount_point"`
+}
+
+// VolatileMeasurementChange defines model for VolatileMeasurementChange.
+type VolatileMeasurementChange struct {
+	union json.RawMessage
+}
+
+// VolatileMeasurements defines model for VolatileMeasurements.
+type VolatileMeasurements struct {
+	Filesystems       []VolatileFilesystemMeasurement `json:"filesystems"`
+	HostUptimeSeconds *int64                          `json:"host_uptime_seconds,omitempty"`
+}
+
 // ActionFilter defines model for ActionFilter.
 type ActionFilter = string
 
-// ActorIdFilter Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+// ActorIdFilter New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+//
+// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 type ActorIdFilter = UuidV7
 
 // ActorTypeFilter defines model for ActorTypeFilter.
 type ActorTypeFilter = AuditActorType
 
-// AgentId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+// AgentId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+//
+// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 type AgentId = UuidV7
 
 // AgentStatusFilter defines model for AgentStatusFilter.
@@ -3420,28 +4962,48 @@ type AgentStatusFilter = AgentStatus
 // Archived defines model for Archived.
 type Archived string
 
-// ComputeFilter Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+// ComputeFilter New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+//
+// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 type ComputeFilter = UuidV7
 
-// ComputeId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+// ComputeId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+//
+// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 type ComputeId = UuidV7
 
-// ContainerFilter Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+// ContainerFilter New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+//
+// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 type ContainerFilter = UuidV7
 
-// ContainerId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+// ContainerId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+//
+// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 type ContainerId = UuidV7
 
-// CostId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+// CostId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+//
+// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 type CostId = UuidV7
 
 // CsrfToken defines model for CsrfToken.
 type CsrfToken = string
 
-// CurrencyFilter Example: EUR
+// CurrencyFilter Supported ISO 4217 currency codes from the pinned SIX List One catalog published 2026-09-17. The server derives currency_exponent; unsupported codes are rejected rather than assigned a guessed exponent.
 type CurrencyFilter = CurrencyCode
 
-// DnsNameId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+// DnsLinkTargetIdFilter New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+//
+// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+type DnsLinkTargetIdFilter = UuidV7
+
+// DnsLinkTargetTypeFilter defines model for DnsLinkTargetTypeFilter.
+type DnsLinkTargetTypeFilter = DnsLinkTargetType
+
+// DnsNameId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+//
+// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 type DnsNameId = UuidV7
 
 // DnsTypeFilter defines model for DnsTypeFilter.
@@ -3450,20 +5012,36 @@ type DnsTypeFilter = DnsRecordType
 // DnsViewFilter defines model for DnsViewFilter.
 type DnsViewFilter = DnsViewName
 
-// DomainFilter Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+// DomainExpiryStateFilter defines model for DomainExpiryStateFilter.
+type DomainExpiryStateFilter = DomainExpiryState
+
+// DomainFilter New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+//
+// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 type DomainFilter = UuidV7
 
-// DomainId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+// DomainId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+//
+// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 type DomainId = UuidV7
 
-// DraftId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+// DraftId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+//
+// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 type DraftId = UuidV7
 
 // FreshnessFilter defines model for FreshnessFilter.
 type FreshnessFilter string
 
-// FromTime Example: 2026-08-04T12:00:00Z
+// FromTime RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+//
+// Example: 2026-08-04T12:00:00Z
 type FromTime = Timestamp
+
+// HistoryReportId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+//
+// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+type HistoryReportId = UuidV7
 
 // IdempotencyKey defines model for IdempotencyKey.
 type IdempotencyKey = string
@@ -3474,13 +5052,24 @@ type IdempotencyKeyRequired = string
 // IfMatch Example: "revision-7"
 type IfMatch = EntityTag
 
-// IpAssignmentId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+// InventoryTreeParentId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+//
+// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+type InventoryTreeParentId = UuidV7
+
+// IpAssignmentId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+//
+// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 type IpAssignmentId = UuidV7
 
-// LocationFilter Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+// LocationFilter New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+//
+// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 type LocationFilter = UuidV7
 
-// LocationId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+// LocationId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+//
+// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 type LocationId = UuidV7
 
 // PageAfter defines model for PageAfter.
@@ -3492,25 +5081,35 @@ type PageSize = int
 // ProjectionStateFilter defines model for ProjectionStateFilter.
 type ProjectionStateFilter = DnsProjectionState
 
-// ProviderFilter Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+// ProviderFilter New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+//
+// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 type ProviderFilter = UuidV7
 
-// ProviderId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+// ProviderId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+//
+// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 type ProviderId = UuidV7
 
 // ProxiedFilter defines model for ProxiedFilter.
 type ProxiedFilter = bool
 
-// RegistrarFilter Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+// RegistrarFilter New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+//
+// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 type RegistrarFilter = UuidV7
 
-// ReportId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+// ReportId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+//
+// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 type ReportId = UuidV7
 
 // ReportResultFilter defines model for ReportResultFilter.
 type ReportResultFilter = DiscoveryReportResult
 
-// ResourceIdFilter Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+// ResourceIdFilter New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+//
+// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 type ResourceIdFilter = UuidV7
 
 // ResourceTypeFilter defines model for ResourceTypeFilter.
@@ -3525,22 +5124,32 @@ type SourceFilter = IpAssignmentSource
 // StaleFilter defines model for StaleFilter.
 type StaleFilter = bool
 
-// TagId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+// TagId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+//
+// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 type TagId = UuidV7
 
-// ToTime Example: 2026-08-04T12:00:00Z
+// ToTime RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
+//
+// Example: 2026-08-04T12:00:00Z
 type ToTime = Timestamp
 
-// TokenId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+// TokenId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+//
+// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 type TokenId = UuidV7
 
 // WildcardFilter defines model for WildcardFilter.
 type WildcardFilter = bool
 
-// ZoneFilter Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+// ZoneFilter New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+//
+// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 type ZoneFilter = UuidV7
 
-// ZoneId Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
+// ZoneId New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
+//
+// Example: 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
 type ZoneId = UuidV7
 
 // ZoneSelectionFilter defines model for ZoneSelectionFilter.
@@ -3567,6 +5176,9 @@ type ComputeResponse = Compute
 // Conflict Example: {"code":"validation_failed","request_id":"req_01J4ABCDEF","status":422,"title":"Request validation failed","type":"https://portinaia.invalid/problems/validation_failed","violations":[{"code":"required","field":"name","message":"Name is required."}]}
 type Conflict = Problem
 
+// ContainerHistoryPageResponse defines model for ContainerHistoryPageResponse.
+type ContainerHistoryPageResponse = ContainerHistoryPage
+
 // ContainerPageResponse defines model for ContainerPageResponse.
 type ContainerPageResponse = ContainerPage
 
@@ -3582,7 +5194,7 @@ type CostResponse = Cost
 // DiscoveryReportPageResponse defines model for DiscoveryReportPageResponse.
 type DiscoveryReportPageResponse = DiscoveryReportPage
 
-// DnsDraftResponse defines model for DnsDraftResponse.
+// DnsDraftResponse A mutable draft with a revision independent of the target DNS name's revision. If-Match on draft operations uses this draft revision; base_revision identifies the target DNS name revision captured by the draft.
 type DnsDraftResponse = DnsDraft
 
 // DnsNameResponse defines model for DnsNameResponse.
@@ -3602,6 +5214,9 @@ type EnrollmentTokenSecretResponse = EnrollmentTokenSecret
 
 // Forbidden Example: {"code":"validation_failed","request_id":"req_01J4ABCDEF","status":422,"title":"Request validation failed","type":"https://portinaia.invalid/problems/validation_failed","violations":[{"code":"required","field":"name","message":"Name is required."}]}
 type Forbidden = Problem
+
+// InventoryTreePageResponse defines model for InventoryTreePageResponse.
+type InventoryTreePageResponse = InventoryTree
 
 // IpAssignmentPageResponse defines model for IpAssignmentPageResponse.
 type IpAssignmentPageResponse = IpAssignmentPage
@@ -3639,6 +5254,9 @@ type ProviderResponse = Provider
 // ProviderUnavailable Example: {"code":"validation_failed","request_id":"req_01J4ABCDEF","status":422,"title":"Request validation failed","type":"https://portinaia.invalid/problems/validation_failed","violations":[{"code":"required","field":"name","message":"Name is required."}]}
 type ProviderUnavailable = Problem
 
+// PurgeConflict Example: {"code":"validation_failed","request_id":"req_01J4ABCDEF","status":422,"title":"Request validation failed","type":"https://portinaia.invalid/problems/validation_failed","violations":[{"code":"required","field":"name","message":"Name is required."}]}
+type PurgeConflict = Problem
+
 // ServiceUnavailable Example: {"code":"validation_failed","request_id":"req_01J4ABCDEF","status":422,"title":"Request validation failed","type":"https://portinaia.invalid/problems/validation_failed","violations":[{"code":"required","field":"name","message":"Name is required."}]}
 type ServiceUnavailable = Problem
 
@@ -3648,7 +5266,7 @@ type SessionResponse = Session
 // TagPageResponse defines model for TagPageResponse.
 type TagPageResponse = TagPage
 
-// TagResponse defines model for TagResponse.
+// TagResponse A mutable tag. revision is the tag's own monotonic revision; archived_at is null while active. Purging requires administrative scope, archival, and detachment from all tagged resources.
 type TagResponse = Tag
 
 // TooManyRequests Example: {"code":"validation_failed","request_id":"req_01J4ABCDEF","status":422,"title":"Request validation failed","type":"https://portinaia.invalid/problems/validation_failed","violations":[{"code":"required","field":"name","message":"Name is required."}]}
@@ -3698,10 +5316,6 @@ type RevokeAgentParams struct {
 type RotateAgentCredentialParams struct {
 	// IfMatch Strong ETag from the latest representation.
 	IfMatch IfMatch `json:"If-Match"`
-
-	// IdempotencyKey Caller-generated key scoped to the authenticated actor and operation.
-	// Reuse with a different request returns 409.
-	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Required for mutations authenticated by sessionCookie; omitted for bearer authentication.
 	XCSRFToken *CsrfToken `json:"X-CSRF-Token,omitempty"`
@@ -3802,10 +5416,6 @@ type ListComputeContainersParamsArchived string
 
 // CreateEnrollmentTokenParams defines parameters for CreateEnrollmentToken.
 type CreateEnrollmentTokenParams struct {
-	// IdempotencyKey Caller-generated key scoped to the authenticated actor and operation.
-	// Reuse with a different request returns 409.
-	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
-
 	// XCSRFToken Required for mutations authenticated by sessionCookie; omitted for bearer authentication.
 	XCSRFToken *CsrfToken `json:"X-CSRF-Token,omitempty"`
 }
@@ -3875,6 +5485,17 @@ type ArchiveContainerParams struct {
 
 	// XCSRFToken Required for mutations authenticated by sessionCookie; omitted for bearer authentication.
 	XCSRFToken *CsrfToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// ListContainerDiscoveryReportsParams defines parameters for ListContainerDiscoveryReports.
+type ListContainerDiscoveryReportsParams struct {
+	// PageAfter Opaque cursor returned by the previous page.
+	PageAfter *PageAfter `form:"page[after],omitempty" json:"page[after],omitempty"`
+
+	// PageSize Maximum number of items to return.
+	PageSize *PageSize `form:"page[size],omitempty" json:"page[size],omitempty"`
+	FromTime *FromTime `form:"from_time,omitempty" json:"from_time,omitempty"`
+	ToTime   *ToTime   `form:"to_time,omitempty" json:"to_time,omitempty"`
 }
 
 // PurgeContainerParams defines parameters for PurgeContainer.
@@ -4030,6 +5651,12 @@ type ListDnsNamesParams struct {
 	Wildcard        *WildcardFilter             `form:"wildcard,omitempty" json:"wildcard,omitempty"`
 	Proxied         *ProxiedFilter              `form:"proxied,omitempty" json:"proxied,omitempty"`
 	ProjectionState *ProjectionStateFilter      `form:"projection_state,omitempty" json:"projection_state,omitempty"`
+
+	// LinkTargetType Must be supplied together with link_target_id.
+	LinkTargetType *DnsLinkTargetTypeFilter `form:"link_target_type,omitempty" json:"link_target_type,omitempty"`
+
+	// LinkTargetId Must be supplied together with link_target_type.
+	LinkTargetId *DnsLinkTargetIdFilter `form:"link_target_id,omitempty" json:"link_target_id,omitempty"`
 }
 
 // ListDnsNamesParamsArchived defines parameters for ListDnsNames.
@@ -4149,6 +5776,9 @@ type ListDomainsParams struct {
 	// Archived Archived resources are excluded by default.
 	Archived            *ListDomainsParamsArchived `form:"archived,omitempty" json:"archived,omitempty"`
 	RegistrarProviderId *RegistrarFilter           `form:"registrar_provider_id,omitempty" json:"registrar_provider_id,omitempty"`
+
+	// ExpiryState Filter domains by the server-computed expiry state.
+	ExpiryState *DomainExpiryStateFilter `form:"expiry_state,omitempty" json:"expiry_state,omitempty"`
 }
 
 // ListDomainsParamsArchived defines parameters for ListDomains.
@@ -4221,12 +5851,30 @@ type GetInventoryTreeParams struct {
 	// Archived Archived resources are excluded by default.
 	Archived *GetInventoryTreeParamsArchived `form:"archived,omitempty" json:"archived,omitempty"`
 
-	// MaxDepth Maximum returned hierarchy depth.
-	MaxDepth *int `form:"max_depth,omitempty" json:"max_depth,omitempty"`
+	// PageAfter Opaque cursor returned by the previous page.
+	PageAfter *PageAfter `form:"page[after],omitempty" json:"page[after],omitempty"`
+
+	// PageSize Maximum number of items to return.
+	PageSize *PageSize `form:"page[size],omitempty" json:"page[size],omitempty"`
 }
 
 // GetInventoryTreeParamsArchived defines parameters for GetInventoryTree.
 type GetInventoryTreeParamsArchived string
+
+// ListInventoryTreeChildrenParams defines parameters for ListInventoryTreeChildren.
+type ListInventoryTreeChildrenParams struct {
+	// Archived Archived resources are excluded by default.
+	Archived *ListInventoryTreeChildrenParamsArchived `form:"archived,omitempty" json:"archived,omitempty"`
+
+	// PageAfter Opaque cursor returned by the previous page.
+	PageAfter *PageAfter `form:"page[after],omitempty" json:"page[after],omitempty"`
+
+	// PageSize Maximum number of items to return.
+	PageSize *PageSize `form:"page[size],omitempty" json:"page[size],omitempty"`
+}
+
+// ListInventoryTreeChildrenParamsArchived defines parameters for ListInventoryTreeChildren.
+type ListInventoryTreeChildrenParamsArchived string
 
 // ListIpAssignmentsParams defines parameters for ListIpAssignments.
 type ListIpAssignmentsParams struct {
@@ -4372,10 +6020,6 @@ type ListPersonalAccessTokensParams struct {
 
 // CreatePersonalAccessTokenParams defines parameters for CreatePersonalAccessToken.
 type CreatePersonalAccessTokenParams struct {
-	// IdempotencyKey Caller-generated key scoped to the authenticated actor and operation.
-	// Reuse with a different request returns 409.
-	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
-
 	// XCSRFToken Required for mutations authenticated by sessionCookie; omitted for bearer authentication.
 	XCSRFToken *CsrfToken `json:"X-CSRF-Token,omitempty"`
 }
@@ -4452,8 +6096,17 @@ type RestoreProviderParams struct {
 
 // CompareSnapshotsParams defines parameters for CompareSnapshots.
 type CompareSnapshotsParams struct {
+	// PageAfter Opaque cursor returned by the previous page.
+	PageAfter *PageAfter `form:"page[after],omitempty" json:"page[after],omitempty"`
+
+	// PageSize Maximum number of items to return.
+	PageSize *PageSize `form:"page[size],omitempty" json:"page[size],omitempty"`
+
+	// From Server-assigned history id of the earlier retained report.
 	From UuidV7 `form:"from" json:"from"`
-	To   UuidV7 `form:"to" json:"to"`
+
+	// To Server-assigned history id of the later retained report.
+	To UuidV7 `form:"to" json:"to"`
 }
 
 // ListTagsParams defines parameters for ListTags.
@@ -4889,6 +6542,194 @@ func (t *CostWrite) UnmarshalJSON(b []byte) error {
 	return err
 }
 
+// AsAcceptedDiscoveryReport returns the union data inside the DiscoveryReport as a AcceptedDiscoveryReport
+func (t DiscoveryReport) AsAcceptedDiscoveryReport() (AcceptedDiscoveryReport, error) {
+	var body AcceptedDiscoveryReport
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAcceptedDiscoveryReport overwrites any union data inside the DiscoveryReport as the provided AcceptedDiscoveryReport
+func (t *DiscoveryReport) FromAcceptedDiscoveryReport(v AcceptedDiscoveryReport) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAcceptedDiscoveryReport performs a merge with any union data inside the DiscoveryReport, using the provided AcceptedDiscoveryReport
+func (t *DiscoveryReport) MergeAcceptedDiscoveryReport(v AcceptedDiscoveryReport) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsRejectedDiscoveryReport returns the union data inside the DiscoveryReport as a RejectedDiscoveryReport
+func (t DiscoveryReport) AsRejectedDiscoveryReport() (RejectedDiscoveryReport, error) {
+	var body RejectedDiscoveryReport
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromRejectedDiscoveryReport overwrites any union data inside the DiscoveryReport as the provided RejectedDiscoveryReport
+func (t *DiscoveryReport) FromRejectedDiscoveryReport(v RejectedDiscoveryReport) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeRejectedDiscoveryReport performs a merge with any union data inside the DiscoveryReport, using the provided RejectedDiscoveryReport
+func (t *DiscoveryReport) MergeRejectedDiscoveryReport(v RejectedDiscoveryReport) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t DiscoveryReport) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"result"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t DiscoveryReport) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "accepted":
+		return t.AsAcceptedDiscoveryReport()
+	case "accepted_with_errors":
+		return t.AsAcceptedDiscoveryReport()
+	case "rejected":
+		return t.AsRejectedDiscoveryReport()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t DiscoveryReport) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *DiscoveryReport) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsDiskCollectionWriteSuccess returns the union data inside the DiskCollectionWrite as a DiskCollectionWriteSuccess
+func (t DiskCollectionWrite) AsDiskCollectionWriteSuccess() (DiskCollectionWriteSuccess, error) {
+	var body DiskCollectionWriteSuccess
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromDiskCollectionWriteSuccess overwrites any union data inside the DiskCollectionWrite as the provided DiskCollectionWriteSuccess
+func (t *DiskCollectionWrite) FromDiskCollectionWriteSuccess(v DiskCollectionWriteSuccess) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"status":"success"}`))
+	t.union = b
+	return err
+}
+
+// MergeDiskCollectionWriteSuccess performs a merge with any union data inside the DiskCollectionWrite, using the provided DiskCollectionWriteSuccess
+func (t *DiskCollectionWrite) MergeDiskCollectionWriteSuccess(v DiskCollectionWriteSuccess) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"status":"success"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsDiskCollectionWriteFailed returns the union data inside the DiskCollectionWrite as a DiskCollectionWriteFailed
+func (t DiskCollectionWrite) AsDiskCollectionWriteFailed() (DiskCollectionWriteFailed, error) {
+	var body DiskCollectionWriteFailed
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromDiskCollectionWriteFailed overwrites any union data inside the DiskCollectionWrite as the provided DiskCollectionWriteFailed
+func (t *DiskCollectionWrite) FromDiskCollectionWriteFailed(v DiskCollectionWriteFailed) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"status":"failed"}`))
+	t.union = b
+	return err
+}
+
+// MergeDiskCollectionWriteFailed performs a merge with any union data inside the DiskCollectionWrite, using the provided DiskCollectionWriteFailed
+func (t *DiskCollectionWrite) MergeDiskCollectionWriteFailed(v DiskCollectionWriteFailed) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"status":"failed"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t DiskCollectionWrite) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"status"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t DiskCollectionWrite) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "failed":
+		return t.AsDiskCollectionWriteFailed()
+	case "success":
+		return t.AsDiskCollectionWriteSuccess()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t DiskCollectionWrite) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *DiskCollectionWrite) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
 // AsDnsCreateDraftWrite returns the union data inside the DnsDraftWrite as a DnsCreateDraftWrite
 func (t DnsDraftWrite) AsDnsCreateDraftWrite() (DnsCreateDraftWrite, error) {
 	var body DnsCreateDraftWrite
@@ -5022,6 +6863,97 @@ func (t DnsDraftWrite) MarshalJSON() ([]byte, error) {
 }
 
 func (t *DnsDraftWrite) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsDnsImportableCandidate returns the union data inside the DnsImportCandidate as a DnsImportableCandidate
+func (t DnsImportCandidate) AsDnsImportableCandidate() (DnsImportableCandidate, error) {
+	var body DnsImportableCandidate
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromDnsImportableCandidate overwrites any union data inside the DnsImportCandidate as the provided DnsImportableCandidate
+func (t *DnsImportCandidate) FromDnsImportableCandidate(v DnsImportableCandidate) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeDnsImportableCandidate performs a merge with any union data inside the DnsImportCandidate, using the provided DnsImportableCandidate
+func (t *DnsImportCandidate) MergeDnsImportableCandidate(v DnsImportableCandidate) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsRejectedDnsImportCandidate returns the union data inside the DnsImportCandidate as a RejectedDnsImportCandidate
+func (t DnsImportCandidate) AsRejectedDnsImportCandidate() (RejectedDnsImportCandidate, error) {
+	var body RejectedDnsImportCandidate
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromRejectedDnsImportCandidate overwrites any union data inside the DnsImportCandidate as the provided RejectedDnsImportCandidate
+func (t *DnsImportCandidate) FromRejectedDnsImportCandidate(v RejectedDnsImportCandidate) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeRejectedDnsImportCandidate performs a merge with any union data inside the DnsImportCandidate, using the provided RejectedDnsImportCandidate
+func (t *DnsImportCandidate) MergeRejectedDnsImportCandidate(v RejectedDnsImportCandidate) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t DnsImportCandidate) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"status"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t DnsImportCandidate) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "already_managed":
+		return t.AsRejectedDnsImportCandidate()
+	case "conflicting":
+		return t.AsRejectedDnsImportCandidate()
+	case "importable":
+		return t.AsDnsImportableCandidate()
+	case "malformed":
+		return t.AsRejectedDnsImportCandidate()
+	case "unsupported":
+		return t.AsRejectedDnsImportCandidate()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t DnsImportCandidate) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *DnsImportCandidate) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -5300,15 +7232,15 @@ func (t *DnsRecordSet) UnmarshalJSON(b []byte) error {
 	return err
 }
 
-// AsPodmanCollectionSuccess returns the union data inside the PodmanCollection as a PodmanCollectionSuccess
-func (t PodmanCollection) AsPodmanCollectionSuccess() (PodmanCollectionSuccess, error) {
-	var body PodmanCollectionSuccess
+// AsFilesystemCollectionWriteSuccess returns the union data inside the FilesystemCollectionWrite as a FilesystemCollectionWriteSuccess
+func (t FilesystemCollectionWrite) AsFilesystemCollectionWriteSuccess() (FilesystemCollectionWriteSuccess, error) {
+	var body FilesystemCollectionWriteSuccess
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromPodmanCollectionSuccess overwrites any union data inside the PodmanCollection as the provided PodmanCollectionSuccess
-func (t *PodmanCollection) FromPodmanCollectionSuccess(v PodmanCollectionSuccess) error {
+// FromFilesystemCollectionWriteSuccess overwrites any union data inside the FilesystemCollectionWrite as the provided FilesystemCollectionWriteSuccess
+func (t *FilesystemCollectionWrite) FromFilesystemCollectionWriteSuccess(v FilesystemCollectionWriteSuccess) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5318,8 +7250,8 @@ func (t *PodmanCollection) FromPodmanCollectionSuccess(v PodmanCollectionSuccess
 	return err
 }
 
-// MergePodmanCollectionSuccess performs a merge with any union data inside the PodmanCollection, using the provided PodmanCollectionSuccess
-func (t *PodmanCollection) MergePodmanCollectionSuccess(v PodmanCollectionSuccess) error {
+// MergeFilesystemCollectionWriteSuccess performs a merge with any union data inside the FilesystemCollectionWrite, using the provided FilesystemCollectionWriteSuccess
+func (t *FilesystemCollectionWrite) MergeFilesystemCollectionWriteSuccess(v FilesystemCollectionWriteSuccess) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5334,15 +7266,15 @@ func (t *PodmanCollection) MergePodmanCollectionSuccess(v PodmanCollectionSucces
 	return err
 }
 
-// AsPodmanCollectionFailed returns the union data inside the PodmanCollection as a PodmanCollectionFailed
-func (t PodmanCollection) AsPodmanCollectionFailed() (PodmanCollectionFailed, error) {
-	var body PodmanCollectionFailed
+// AsFilesystemCollectionWriteFailed returns the union data inside the FilesystemCollectionWrite as a FilesystemCollectionWriteFailed
+func (t FilesystemCollectionWrite) AsFilesystemCollectionWriteFailed() (FilesystemCollectionWriteFailed, error) {
+	var body FilesystemCollectionWriteFailed
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromPodmanCollectionFailed overwrites any union data inside the PodmanCollection as the provided PodmanCollectionFailed
-func (t *PodmanCollection) FromPodmanCollectionFailed(v PodmanCollectionFailed) error {
+// FromFilesystemCollectionWriteFailed overwrites any union data inside the FilesystemCollectionWrite as the provided FilesystemCollectionWriteFailed
+func (t *FilesystemCollectionWrite) FromFilesystemCollectionWriteFailed(v FilesystemCollectionWriteFailed) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5352,8 +7284,8 @@ func (t *PodmanCollection) FromPodmanCollectionFailed(v PodmanCollectionFailed) 
 	return err
 }
 
-// MergePodmanCollectionFailed performs a merge with any union data inside the PodmanCollection, using the provided PodmanCollectionFailed
-func (t *PodmanCollection) MergePodmanCollectionFailed(v PodmanCollectionFailed) error {
+// MergeFilesystemCollectionWriteFailed performs a merge with any union data inside the FilesystemCollectionWrite, using the provided FilesystemCollectionWriteFailed
+func (t *FilesystemCollectionWrite) MergeFilesystemCollectionWriteFailed(v FilesystemCollectionWriteFailed) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -5368,7 +7300,7 @@ func (t *PodmanCollection) MergePodmanCollectionFailed(v PodmanCollectionFailed)
 	return err
 }
 
-func (t PodmanCollection) Discriminator() (string, error) {
+func (t FilesystemCollectionWrite) Discriminator() (string, error) {
 	var discriminator struct {
 		Discriminator string `json:"status"`
 	}
@@ -5376,27 +7308,330 @@ func (t PodmanCollection) Discriminator() (string, error) {
 	return discriminator.Discriminator, err
 }
 
-func (t PodmanCollection) ValueByDiscriminator() (interface{}, error) {
+func (t FilesystemCollectionWrite) ValueByDiscriminator() (interface{}, error) {
 	discriminator, err := t.Discriminator()
 	if err != nil {
 		return nil, err
 	}
 	switch discriminator {
 	case "failed":
-		return t.AsPodmanCollectionFailed()
+		return t.AsFilesystemCollectionWriteFailed()
 	case "success":
-		return t.AsPodmanCollectionSuccess()
+		return t.AsFilesystemCollectionWriteSuccess()
 	default:
 		return nil, errors.New("unknown discriminator value: " + discriminator)
 	}
 }
 
-func (t PodmanCollection) MarshalJSON() ([]byte, error) {
+func (t FilesystemCollectionWrite) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
 }
 
-func (t *PodmanCollection) UnmarshalJSON(b []byte) error {
+func (t *FilesystemCollectionWrite) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsHostCollectionWriteSuccess returns the union data inside the HostCollectionWrite as a HostCollectionWriteSuccess
+func (t HostCollectionWrite) AsHostCollectionWriteSuccess() (HostCollectionWriteSuccess, error) {
+	var body HostCollectionWriteSuccess
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromHostCollectionWriteSuccess overwrites any union data inside the HostCollectionWrite as the provided HostCollectionWriteSuccess
+func (t *HostCollectionWrite) FromHostCollectionWriteSuccess(v HostCollectionWriteSuccess) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"status":"success"}`))
+	t.union = b
+	return err
+}
+
+// MergeHostCollectionWriteSuccess performs a merge with any union data inside the HostCollectionWrite, using the provided HostCollectionWriteSuccess
+func (t *HostCollectionWrite) MergeHostCollectionWriteSuccess(v HostCollectionWriteSuccess) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"status":"success"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsHostCollectionWriteFailed returns the union data inside the HostCollectionWrite as a HostCollectionWriteFailed
+func (t HostCollectionWrite) AsHostCollectionWriteFailed() (HostCollectionWriteFailed, error) {
+	var body HostCollectionWriteFailed
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromHostCollectionWriteFailed overwrites any union data inside the HostCollectionWrite as the provided HostCollectionWriteFailed
+func (t *HostCollectionWrite) FromHostCollectionWriteFailed(v HostCollectionWriteFailed) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"status":"failed"}`))
+	t.union = b
+	return err
+}
+
+// MergeHostCollectionWriteFailed performs a merge with any union data inside the HostCollectionWrite, using the provided HostCollectionWriteFailed
+func (t *HostCollectionWrite) MergeHostCollectionWriteFailed(v HostCollectionWriteFailed) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"status":"failed"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t HostCollectionWrite) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"status"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t HostCollectionWrite) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "failed":
+		return t.AsHostCollectionWriteFailed()
+	case "success":
+		return t.AsHostCollectionWriteSuccess()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t HostCollectionWrite) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *HostCollectionWrite) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsInterfaceCollectionWriteSuccess returns the union data inside the InterfaceCollectionWrite as a InterfaceCollectionWriteSuccess
+func (t InterfaceCollectionWrite) AsInterfaceCollectionWriteSuccess() (InterfaceCollectionWriteSuccess, error) {
+	var body InterfaceCollectionWriteSuccess
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromInterfaceCollectionWriteSuccess overwrites any union data inside the InterfaceCollectionWrite as the provided InterfaceCollectionWriteSuccess
+func (t *InterfaceCollectionWrite) FromInterfaceCollectionWriteSuccess(v InterfaceCollectionWriteSuccess) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"status":"success"}`))
+	t.union = b
+	return err
+}
+
+// MergeInterfaceCollectionWriteSuccess performs a merge with any union data inside the InterfaceCollectionWrite, using the provided InterfaceCollectionWriteSuccess
+func (t *InterfaceCollectionWrite) MergeInterfaceCollectionWriteSuccess(v InterfaceCollectionWriteSuccess) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"status":"success"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsInterfaceCollectionWriteFailed returns the union data inside the InterfaceCollectionWrite as a InterfaceCollectionWriteFailed
+func (t InterfaceCollectionWrite) AsInterfaceCollectionWriteFailed() (InterfaceCollectionWriteFailed, error) {
+	var body InterfaceCollectionWriteFailed
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromInterfaceCollectionWriteFailed overwrites any union data inside the InterfaceCollectionWrite as the provided InterfaceCollectionWriteFailed
+func (t *InterfaceCollectionWrite) FromInterfaceCollectionWriteFailed(v InterfaceCollectionWriteFailed) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"status":"failed"}`))
+	t.union = b
+	return err
+}
+
+// MergeInterfaceCollectionWriteFailed performs a merge with any union data inside the InterfaceCollectionWrite, using the provided InterfaceCollectionWriteFailed
+func (t *InterfaceCollectionWrite) MergeInterfaceCollectionWriteFailed(v InterfaceCollectionWriteFailed) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"status":"failed"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t InterfaceCollectionWrite) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"status"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t InterfaceCollectionWrite) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "failed":
+		return t.AsInterfaceCollectionWriteFailed()
+	case "success":
+		return t.AsInterfaceCollectionWriteSuccess()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t InterfaceCollectionWrite) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *InterfaceCollectionWrite) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsPodmanCollectionWriteSuccess returns the union data inside the PodmanCollectionWrite as a PodmanCollectionWriteSuccess
+func (t PodmanCollectionWrite) AsPodmanCollectionWriteSuccess() (PodmanCollectionWriteSuccess, error) {
+	var body PodmanCollectionWriteSuccess
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromPodmanCollectionWriteSuccess overwrites any union data inside the PodmanCollectionWrite as the provided PodmanCollectionWriteSuccess
+func (t *PodmanCollectionWrite) FromPodmanCollectionWriteSuccess(v PodmanCollectionWriteSuccess) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"status":"success"}`))
+	t.union = b
+	return err
+}
+
+// MergePodmanCollectionWriteSuccess performs a merge with any union data inside the PodmanCollectionWrite, using the provided PodmanCollectionWriteSuccess
+func (t *PodmanCollectionWrite) MergePodmanCollectionWriteSuccess(v PodmanCollectionWriteSuccess) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"status":"success"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsPodmanCollectionWriteFailed returns the union data inside the PodmanCollectionWrite as a PodmanCollectionWriteFailed
+func (t PodmanCollectionWrite) AsPodmanCollectionWriteFailed() (PodmanCollectionWriteFailed, error) {
+	var body PodmanCollectionWriteFailed
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromPodmanCollectionWriteFailed overwrites any union data inside the PodmanCollectionWrite as the provided PodmanCollectionWriteFailed
+func (t *PodmanCollectionWrite) FromPodmanCollectionWriteFailed(v PodmanCollectionWriteFailed) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"status":"failed"}`))
+	t.union = b
+	return err
+}
+
+// MergePodmanCollectionWriteFailed performs a merge with any union data inside the PodmanCollectionWrite, using the provided PodmanCollectionWriteFailed
+func (t *PodmanCollectionWrite) MergePodmanCollectionWriteFailed(v PodmanCollectionWriteFailed) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"status":"failed"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t PodmanCollectionWrite) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"status"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t PodmanCollectionWrite) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "failed":
+		return t.AsPodmanCollectionWriteFailed()
+	case "success":
+		return t.AsPodmanCollectionWriteSuccess()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t PodmanCollectionWrite) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *PodmanCollectionWrite) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -5515,6 +7750,107 @@ func (t *ScalarValue) UnmarshalJSON(b []byte) error {
 	return err
 }
 
+// AsHostUptimeChange returns the union data inside the VolatileMeasurementChange as a HostUptimeChange
+func (t VolatileMeasurementChange) AsHostUptimeChange() (HostUptimeChange, error) {
+	var body HostUptimeChange
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromHostUptimeChange overwrites any union data inside the VolatileMeasurementChange as the provided HostUptimeChange
+func (t *VolatileMeasurementChange) FromHostUptimeChange(v HostUptimeChange) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"measurement":"host_uptime_seconds"}`))
+	t.union = b
+	return err
+}
+
+// MergeHostUptimeChange performs a merge with any union data inside the VolatileMeasurementChange, using the provided HostUptimeChange
+func (t *VolatileMeasurementChange) MergeHostUptimeChange(v HostUptimeChange) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"measurement":"host_uptime_seconds"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsFilesystemAvailableBytesChange returns the union data inside the VolatileMeasurementChange as a FilesystemAvailableBytesChange
+func (t VolatileMeasurementChange) AsFilesystemAvailableBytesChange() (FilesystemAvailableBytesChange, error) {
+	var body FilesystemAvailableBytesChange
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFilesystemAvailableBytesChange overwrites any union data inside the VolatileMeasurementChange as the provided FilesystemAvailableBytesChange
+func (t *VolatileMeasurementChange) FromFilesystemAvailableBytesChange(v FilesystemAvailableBytesChange) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"measurement":"filesystem_available_bytes"}`))
+	t.union = b
+	return err
+}
+
+// MergeFilesystemAvailableBytesChange performs a merge with any union data inside the VolatileMeasurementChange, using the provided FilesystemAvailableBytesChange
+func (t *VolatileMeasurementChange) MergeFilesystemAvailableBytesChange(v FilesystemAvailableBytesChange) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"measurement":"filesystem_available_bytes"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t VolatileMeasurementChange) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"measurement"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t VolatileMeasurementChange) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "filesystem_available_bytes":
+		return t.AsFilesystemAvailableBytesChange()
+	case "host_uptime_seconds":
+		return t.AsHostUptimeChange()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t VolatileMeasurementChange) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *VolatileMeasurementChange) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// EnrollAgentV1 Exchange a single-use enrollment token for an agent credential
@@ -5568,6 +7904,9 @@ type ServerInterface interface {
 	// ArchiveCompute Archive a compute
 	// (POST /computes/{compute_id}/archive)
 	ArchiveCompute(w http.ResponseWriter, r *http.Request, computeId ComputeId, params ArchiveComputeParams)
+	// ListComputeCollectorStatus Read independent discovery collector status for a compute
+	// (GET /computes/{compute_id}/collector-status)
+	ListComputeCollectorStatus(w http.ResponseWriter, r *http.Request, computeId ComputeId)
 	// ListComputeContainers List containers belonging to a compute
 	// (GET /computes/{compute_id}/containers)
 	ListComputeContainers(w http.ResponseWriter, r *http.Request, computeId ComputeId, params ListComputeContainersParams)
@@ -5598,6 +7937,9 @@ type ServerInterface interface {
 	// ArchiveContainer Archive a container
 	// (POST /containers/{container_id}/archive)
 	ArchiveContainer(w http.ResponseWriter, r *http.Request, containerId ContainerId, params ArchiveContainerParams)
+	// ListContainerDiscoveryReports List retained report history for a logical container
+	// (GET /containers/{container_id}/discovery-reports)
+	ListContainerDiscoveryReports(w http.ResponseWriter, r *http.Request, containerId ContainerId, params ListContainerDiscoveryReportsParams)
 	// PurgeContainer Permanently purge an archived container
 	// (DELETE /containers/{container_id}/purge)
 	PurgeContainer(w http.ResponseWriter, r *http.Request, containerId ContainerId, params PurgeContainerParams)
@@ -5630,10 +7972,10 @@ type ServerInterface interface {
 	GetDashboardSummary(w http.ResponseWriter, r *http.Request)
 	// GetDiscoveryReport Read discovery report metadata and collector results
 	// (GET /discovery-reports/{report_id})
-	GetDiscoveryReport(w http.ResponseWriter, r *http.Request, reportId ReportId)
+	GetDiscoveryReport(w http.ResponseWriter, r *http.Request, reportId HistoryReportId)
 	// GetDiscoveryReportSnapshot Stream a retained canonical snapshot
 	// (GET /discovery-reports/{report_id}/snapshot)
-	GetDiscoveryReportSnapshot(w http.ResponseWriter, r *http.Request, reportId ReportId)
+	GetDiscoveryReportSnapshot(w http.ResponseWriter, r *http.Request, reportId HistoryReportId)
 	// CreateDnsDraft Create a DNS create, update, or delete draft
 	// (POST /dns/drafts)
 	CreateDnsDraft(w http.ResponseWriter, r *http.Request, params CreateDnsDraftParams)
@@ -5727,9 +8069,15 @@ type ServerInterface interface {
 	// GetReadiness Check local mandatory dependencies
 	// (GET /health/ready)
 	GetReadiness(w http.ResponseWriter, r *http.Request)
-	// GetInventoryTree Read the bounded typed inventory hierarchy
+	// GetInventorySummary Read inventory compute and observed-container counts
+	// (GET /inventory/summary)
+	GetInventorySummary(w http.ResponseWriter, r *http.Request)
+	// GetInventoryTree List root nodes of the typed inventory hierarchy
 	// (GET /inventory/tree)
 	GetInventoryTree(w http.ResponseWriter, r *http.Request, params GetInventoryTreeParams)
+	// ListInventoryTreeChildren List a typed inventory node's children
+	// (GET /inventory/tree/{parent_id}/children)
+	ListInventoryTreeChildren(w http.ResponseWriter, r *http.Request, parentId InventoryTreeParentId, params ListInventoryTreeChildrenParams)
 	// ListIpAssignments List and search IP assignments
 	// (GET /ip-assignments)
 	ListIpAssignments(w http.ResponseWriter, r *http.Request, params ListIpAssignmentsParams)
@@ -5934,6 +8282,12 @@ func (_ Unimplemented) ArchiveCompute(w http.ResponseWriter, r *http.Request, co
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+// ListComputeCollectorStatus Read independent discovery collector status for a compute
+// (GET /computes/{compute_id}/collector-status)
+func (_ Unimplemented) ListComputeCollectorStatus(w http.ResponseWriter, r *http.Request, computeId ComputeId) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // ListComputeContainers List containers belonging to a compute
 // (GET /computes/{compute_id}/containers)
 func (_ Unimplemented) ListComputeContainers(w http.ResponseWriter, r *http.Request, computeId ComputeId, params ListComputeContainersParams) {
@@ -5991,6 +8345,12 @@ func (_ Unimplemented) UpdateContainer(w http.ResponseWriter, r *http.Request, c
 // ArchiveContainer Archive a container
 // (POST /containers/{container_id}/archive)
 func (_ Unimplemented) ArchiveContainer(w http.ResponseWriter, r *http.Request, containerId ContainerId, params ArchiveContainerParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListContainerDiscoveryReports List retained report history for a logical container
+// (GET /containers/{container_id}/discovery-reports)
+func (_ Unimplemented) ListContainerDiscoveryReports(w http.ResponseWriter, r *http.Request, containerId ContainerId, params ListContainerDiscoveryReportsParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -6056,13 +8416,13 @@ func (_ Unimplemented) GetDashboardSummary(w http.ResponseWriter, r *http.Reques
 
 // GetDiscoveryReport Read discovery report metadata and collector results
 // (GET /discovery-reports/{report_id})
-func (_ Unimplemented) GetDiscoveryReport(w http.ResponseWriter, r *http.Request, reportId ReportId) {
+func (_ Unimplemented) GetDiscoveryReport(w http.ResponseWriter, r *http.Request, reportId HistoryReportId) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
 // GetDiscoveryReportSnapshot Stream a retained canonical snapshot
 // (GET /discovery-reports/{report_id}/snapshot)
-func (_ Unimplemented) GetDiscoveryReportSnapshot(w http.ResponseWriter, r *http.Request, reportId ReportId) {
+func (_ Unimplemented) GetDiscoveryReportSnapshot(w http.ResponseWriter, r *http.Request, reportId HistoryReportId) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -6252,9 +8612,21 @@ func (_ Unimplemented) GetReadiness(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// GetInventoryTree Read the bounded typed inventory hierarchy
+// GetInventorySummary Read inventory compute and observed-container counts
+// (GET /inventory/summary)
+func (_ Unimplemented) GetInventorySummary(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetInventoryTree List root nodes of the typed inventory hierarchy
 // (GET /inventory/tree)
 func (_ Unimplemented) GetInventoryTree(w http.ResponseWriter, r *http.Request, params GetInventoryTreeParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListInventoryTreeChildren List a typed inventory node's children
+// (GET /inventory/tree/{parent_id}/children)
+func (_ Unimplemented) ListInventoryTreeChildren(w http.ResponseWriter, r *http.Request, parentId InventoryTreeParentId, params ListInventoryTreeChildrenParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -6819,25 +9191,6 @@ func (siw *ServerInterfaceWrapper) RotateAgentCredential(w http.ResponseWriter, 
 		err := fmt.Errorf("Header parameter If-Match is required, but not found")
 		siw.ErrorHandlerFunc(w, r, &RequiredHeaderError{ParamName: "If-Match", Err: err})
 		return
-	}
-
-	// ------------- Optional header parameter "Idempotency-Key" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
-		var IdempotencyKey IdempotencyKey
-		n := len(valueList)
-		if n != 1 {
-			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
-			return
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
-		if err != nil {
-			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
-			return
-		}
-
-		params.IdempotencyKey = &IdempotencyKey
-
 	}
 
 	// ------------- Optional header parameter "X-CSRF-Token" -------------
@@ -7419,6 +9772,32 @@ func (siw *ServerInterfaceWrapper) ArchiveCompute(w http.ResponseWriter, r *http
 	handler.ServeHTTP(w, r)
 }
 
+// ListComputeCollectorStatus operation middleware
+func (siw *ServerInterfaceWrapper) ListComputeCollectorStatus(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "compute_id" -------------
+	var computeId ComputeId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "compute_id", chi.URLParam(r, "compute_id"), &computeId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "compute_id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListComputeCollectorStatus(w, r, computeId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // ListComputeContainers operation middleware
 func (siw *ServerInterfaceWrapper) ListComputeContainers(w http.ResponseWriter, r *http.Request) {
 
@@ -7532,25 +9911,6 @@ func (siw *ServerInterfaceWrapper) CreateEnrollmentToken(w http.ResponseWriter, 
 	var params CreateEnrollmentTokenParams
 
 	headers := r.Header
-
-	// ------------- Optional header parameter "Idempotency-Key" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
-		var IdempotencyKey IdempotencyKey
-		n := len(valueList)
-		if n != 1 {
-			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
-			return
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
-		if err != nil {
-			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
-			return
-		}
-
-		params.IdempotencyKey = &IdempotencyKey
-
-	}
 
 	// ------------- Optional header parameter "X-CSRF-Token" -------------
 	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
@@ -8096,6 +10456,87 @@ func (siw *ServerInterfaceWrapper) ArchiveContainer(w http.ResponseWriter, r *ht
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.ArchiveContainer(w, r, containerId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListContainerDiscoveryReports operation middleware
+func (siw *ServerInterfaceWrapper) ListContainerDiscoveryReports(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "container_id" -------------
+	var containerId ContainerId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "container_id", chi.URLParam(r, "container_id"), &containerId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "container_id", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListContainerDiscoveryReportsParams
+
+	// ------------- Optional query parameter "page[after]" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "page[after]", r.URL.Query(), &params.PageAfter, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "page[after]"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "page[after]", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "page[size]" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "page[size]", r.URL.Query(), &params.PageSize, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "page[size]"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "page[size]", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "from_time" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "from_time", r.URL.Query(), &params.FromTime, runtime.BindQueryParameterOptions{Type: "string", Format: "date-time"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "from_time"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "from_time", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "to_time" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "to_time", r.URL.Query(), &params.ToTime, runtime.BindQueryParameterOptions{Type: "string", Format: "date-time"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "to_time"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "to_time", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListContainerDiscoveryReports(w, r, containerId, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -8761,7 +11202,7 @@ func (siw *ServerInterfaceWrapper) GetDiscoveryReport(w http.ResponseWriter, r *
 	_ = err
 
 	// ------------- Path parameter "report_id" -------------
-	var reportId ReportId
+	var reportId HistoryReportId
 
 	err = runtime.BindStyledParameterWithOptions("simple", "report_id", chi.URLParam(r, "report_id"), &reportId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
 	if err != nil {
@@ -8787,7 +11228,7 @@ func (siw *ServerInterfaceWrapper) GetDiscoveryReportSnapshot(w http.ResponseWri
 	_ = err
 
 	// ------------- Path parameter "report_id" -------------
-	var reportId ReportId
+	var reportId HistoryReportId
 
 	err = runtime.BindStyledParameterWithOptions("simple", "report_id", chi.URLParam(r, "report_id"), &reportId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
 	if err != nil {
@@ -9342,6 +11783,32 @@ func (siw *ServerInterfaceWrapper) ListDnsNames(w http.ResponseWriter, r *http.R
 			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "projection_state"})
 		} else {
 			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projection_state", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "link_target_type" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "link_target_type", r.URL.Query(), &params.LinkTargetType, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "link_target_type"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "link_target_type", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "link_target_id" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "link_target_id", r.URL.Query(), &params.LinkTargetId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "link_target_id"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "link_target_id", Err: err})
 		}
 		return
 	}
@@ -10203,6 +12670,19 @@ func (siw *ServerInterfaceWrapper) ListDomains(w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	// ------------- Optional query parameter "expiry_state" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "expiry_state", r.URL.Query(), &params.ExpiryState, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "expiry_state"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "expiry_state", Err: err})
+		}
+		return
+	}
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.ListDomains(w, r, params)
 	}))
@@ -10729,6 +13209,20 @@ func (siw *ServerInterfaceWrapper) GetReadiness(w http.ResponseWriter, r *http.R
 	handler.ServeHTTP(w, r)
 }
 
+// GetInventorySummary operation middleware
+func (siw *ServerInterfaceWrapper) GetInventorySummary(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetInventorySummary(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // GetInventoryTree operation middleware
 func (siw *ServerInterfaceWrapper) GetInventoryTree(w http.ResponseWriter, r *http.Request) {
 
@@ -10751,21 +13245,102 @@ func (siw *ServerInterfaceWrapper) GetInventoryTree(w http.ResponseWriter, r *ht
 		return
 	}
 
-	// ------------- Optional query parameter "max_depth" -------------
+	// ------------- Optional query parameter "page[after]" -------------
 
-	err = runtime.BindQueryParameterWithOptions("form", true, false, "max_depth", r.URL.Query(), &params.MaxDepth, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "page[after]", r.URL.Query(), &params.PageAfter, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
 	if err != nil {
 		var requiredError *runtime.RequiredParameterError
 		if errors.As(err, &requiredError) {
-			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "max_depth"})
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "page[after]"})
 		} else {
-			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "max_depth", Err: err})
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "page[after]", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "page[size]" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "page[size]", r.URL.Query(), &params.PageSize, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "page[size]"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "page[size]", Err: err})
 		}
 		return
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetInventoryTree(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListInventoryTreeChildren operation middleware
+func (siw *ServerInterfaceWrapper) ListInventoryTreeChildren(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "parent_id" -------------
+	var parentId InventoryTreeParentId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "parent_id", chi.URLParam(r, "parent_id"), &parentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "parent_id", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListInventoryTreeChildrenParams
+
+	// ------------- Optional query parameter "archived" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "archived", r.URL.Query(), &params.Archived, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "archived"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "archived", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "page[after]" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "page[after]", r.URL.Query(), &params.PageAfter, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "page[after]"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "page[after]", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "page[size]" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "page[size]", r.URL.Query(), &params.PageSize, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "page[size]"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "page[size]", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListInventoryTreeChildren(w, r, parentId, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -11797,25 +14372,6 @@ func (siw *ServerInterfaceWrapper) CreatePersonalAccessToken(w http.ResponseWrit
 
 	headers := r.Header
 
-	// ------------- Optional header parameter "Idempotency-Key" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
-		var IdempotencyKey IdempotencyKey
-		n := len(valueList)
-		if n != 1 {
-			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
-			return
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
-		if err != nil {
-			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
-			return
-		}
-
-		params.IdempotencyKey = &IdempotencyKey
-
-	}
-
 	// ------------- Optional header parameter "X-CSRF-Token" -------------
 	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
 		var XCSRFToken CsrfToken
@@ -12354,6 +14910,32 @@ func (siw *ServerInterfaceWrapper) CompareSnapshots(w http.ResponseWriter, r *ht
 
 	// Parameter object where we will unmarshal all parameters from the context
 	var params CompareSnapshotsParams
+
+	// ------------- Optional query parameter "page[after]" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "page[after]", r.URL.Query(), &params.PageAfter, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "page[after]"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "page[after]", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "page[size]" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "page[size]", r.URL.Query(), &params.PageSize, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "page[size]"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "page[size]", Err: err})
+		}
+		return
+	}
 
 	// ------------- Required query parameter "from" -------------
 
@@ -13046,6 +15628,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Put(options.BaseURL+"/containers/{container_id}", wrapper.UpdateContainer)
 	})
 	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/containers/{container_id}/discovery-reports", wrapper.ListContainerDiscoveryReports)
+	})
+	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/containers/{container_id}/archive", wrapper.ArchiveContainer)
 	})
 	r.Group(func(r chi.Router) {
@@ -13142,7 +15727,16 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Get(options.BaseURL+"/inventory/tree", wrapper.GetInventoryTree)
 	})
 	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/inventory/tree/{parent_id}/children", wrapper.ListInventoryTreeChildren)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/inventory/summary", wrapper.GetInventorySummary)
+	})
+	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/computes/{compute_id}/summary", wrapper.GetComputeSummary)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/computes/{compute_id}/collector-status", wrapper.ListComputeCollectorStatus)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/computes/{compute_id}/containers", wrapper.ListComputeContainers)
@@ -13303,6 +15897,8 @@ type ComputeResponseJSONResponse struct {
 
 type ConflictApplicationProblemPlusJSONResponse Problem
 
+type ContainerHistoryPageResponseJSONResponse ContainerHistoryPage
+
 type ContainerPageResponseJSONResponse ContainerPage
 
 type ContainerResponseResponseHeaders struct {
@@ -13376,6 +15972,8 @@ type EnrollmentTokenSecretResponseJSONResponse struct {
 }
 
 type ForbiddenApplicationProblemPlusJSONResponse Problem
+
+type InventoryTreePageResponseJSONResponse InventoryTree
 
 type IpAssignmentPageResponseJSONResponse IpAssignmentPage
 
@@ -13455,6 +16053,8 @@ type ProviderResponseJSONResponse struct {
 }
 
 type ProviderUnavailableApplicationProblemPlusJSONResponse Problem
+
+type PurgeConflictApplicationProblemPlusJSONResponse Problem
 
 type ServiceUnavailableApplicationProblemPlusJSONResponse Problem
 
@@ -14092,6 +16692,22 @@ func (response RevokeAgent200JSONResponse) VisitRevokeAgentResponse(w http.Respo
 	return err
 }
 
+type RevokeAgent400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response RevokeAgent400ApplicationProblemPlusJSONResponse) VisitRevokeAgentResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type RevokeAgent401ApplicationProblemPlusJSONResponse struct {
 	UnauthorizedApplicationProblemPlusJSONResponse
 }
@@ -14296,6 +16912,38 @@ func (response RotateAgentCredential412ApplicationProblemPlusJSONResponse) Visit
 	return err
 }
 
+type RotateAgentCredential413ApplicationProblemPlusJSONResponse struct {
+	PayloadTooLargeApplicationProblemPlusJSONResponse
+}
+
+func (response RotateAgentCredential413ApplicationProblemPlusJSONResponse) VisitRotateAgentCredentialResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(413)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RotateAgentCredential422ApplicationProblemPlusJSONResponse struct {
+	ValidationFailedApplicationProblemPlusJSONResponse
+}
+
+func (response RotateAgentCredential422ApplicationProblemPlusJSONResponse) VisitRotateAgentCredentialResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(422)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type ListAuditEventsRequestObject struct {
 	Params ListAuditEventsParams
 }
@@ -14404,6 +17052,22 @@ func (response Login401ApplicationProblemPlusJSONResponse) VisitLoginResponse(w 
 	}
 	w.Header().Set("Content-Type", "application/problem+json")
 	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type Login413ApplicationProblemPlusJSONResponse struct {
+	PayloadTooLargeApplicationProblemPlusJSONResponse
+}
+
+func (response Login413ApplicationProblemPlusJSONResponse) VisitLoginResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(413)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -14658,6 +17322,22 @@ func (response CreateCompute409ApplicationProblemPlusJSONResponse) VisitCreateCo
 	return err
 }
 
+type CreateCompute413ApplicationProblemPlusJSONResponse struct {
+	PayloadTooLargeApplicationProblemPlusJSONResponse
+}
+
+func (response CreateCompute413ApplicationProblemPlusJSONResponse) VisitCreateComputeResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(413)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type CreateCompute422ApplicationProblemPlusJSONResponse struct {
 	ValidationFailedApplicationProblemPlusJSONResponse
 }
@@ -14866,6 +17546,22 @@ func (response UpdateCompute412ApplicationProblemPlusJSONResponse) VisitUpdateCo
 	return err
 }
 
+type UpdateCompute413ApplicationProblemPlusJSONResponse struct {
+	PayloadTooLargeApplicationProblemPlusJSONResponse
+}
+
+func (response UpdateCompute413ApplicationProblemPlusJSONResponse) VisitUpdateComputeResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(413)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type UpdateCompute422ApplicationProblemPlusJSONResponse struct {
 	ValidationFailedApplicationProblemPlusJSONResponse
 }
@@ -14902,6 +17598,22 @@ func (response ArchiveCompute200JSONResponse) VisitArchiveComputeResponse(w http
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("ETag", fmt.Sprint(response.Headers.ETag))
 	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ArchiveCompute400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response ArchiveCompute400ApplicationProblemPlusJSONResponse) VisitArchiveComputeResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -14982,6 +17694,76 @@ func (response ArchiveCompute412ApplicationProblemPlusJSONResponse) VisitArchive
 	}
 	w.Header().Set("Content-Type", "application/problem+json")
 	w.WriteHeader(412)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListComputeCollectorStatusRequestObject struct {
+	ComputeId ComputeId `json:"compute_id"`
+}
+
+type ListComputeCollectorStatusResponseObject interface {
+	VisitListComputeCollectorStatusResponse(w http.ResponseWriter) error
+}
+
+type ListComputeCollectorStatus200JSONResponse ComputeCollectorStatus
+
+func (response ListComputeCollectorStatus200JSONResponse) VisitListComputeCollectorStatusResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListComputeCollectorStatus401ApplicationProblemPlusJSONResponse struct {
+	UnauthorizedApplicationProblemPlusJSONResponse
+}
+
+func (response ListComputeCollectorStatus401ApplicationProblemPlusJSONResponse) VisitListComputeCollectorStatusResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListComputeCollectorStatus403ApplicationProblemPlusJSONResponse struct {
+	ForbiddenApplicationProblemPlusJSONResponse
+}
+
+func (response ListComputeCollectorStatus403ApplicationProblemPlusJSONResponse) VisitListComputeCollectorStatusResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListComputeCollectorStatus404ApplicationProblemPlusJSONResponse struct {
+	NotFoundApplicationProblemPlusJSONResponse
+}
+
+func (response ListComputeCollectorStatus404ApplicationProblemPlusJSONResponse) VisitListComputeCollectorStatusResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(404)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -15167,6 +17949,22 @@ func (response CreateEnrollmentToken409ApplicationProblemPlusJSONResponse) Visit
 	return err
 }
 
+type CreateEnrollmentToken413ApplicationProblemPlusJSONResponse struct {
+	PayloadTooLargeApplicationProblemPlusJSONResponse
+}
+
+func (response CreateEnrollmentToken413ApplicationProblemPlusJSONResponse) VisitCreateEnrollmentTokenResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(413)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type CreateEnrollmentToken422ApplicationProblemPlusJSONResponse struct {
 	ValidationFailedApplicationProblemPlusJSONResponse
 }
@@ -15197,6 +17995,22 @@ type PurgeCompute204Response = NoContentResponse
 func (response PurgeCompute204Response) VisitPurgeComputeResponse(w http.ResponseWriter) error {
 	w.WriteHeader(204)
 	return nil
+}
+
+type PurgeCompute400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response PurgeCompute400ApplicationProblemPlusJSONResponse) VisitPurgeComputeResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
 }
 
 type PurgeCompute401ApplicationProblemPlusJSONResponse struct {
@@ -15248,7 +18062,7 @@ func (response PurgeCompute404ApplicationProblemPlusJSONResponse) VisitPurgeComp
 }
 
 type PurgeCompute409ApplicationProblemPlusJSONResponse struct {
-	ConflictApplicationProblemPlusJSONResponse
+	PurgeConflictApplicationProblemPlusJSONResponse
 }
 
 func (response PurgeCompute409ApplicationProblemPlusJSONResponse) VisitPurgeComputeResponse(w http.ResponseWriter) error {
@@ -15299,6 +18113,22 @@ func (response RestoreCompute200JSONResponse) VisitRestoreComputeResponse(w http
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("ETag", fmt.Sprint(response.Headers.ETag))
 	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RestoreCompute400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response RestoreCompute400ApplicationProblemPlusJSONResponse) VisitRestoreComputeResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -15774,6 +18604,22 @@ func (response UpdateContainer412ApplicationProblemPlusJSONResponse) VisitUpdate
 	return err
 }
 
+type UpdateContainer413ApplicationProblemPlusJSONResponse struct {
+	PayloadTooLargeApplicationProblemPlusJSONResponse
+}
+
+func (response UpdateContainer413ApplicationProblemPlusJSONResponse) VisitUpdateContainerResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(413)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type UpdateContainer422ApplicationProblemPlusJSONResponse struct {
 	ValidationFailedApplicationProblemPlusJSONResponse
 }
@@ -15810,6 +18656,22 @@ func (response ArchiveContainer200JSONResponse) VisitArchiveContainerResponse(w 
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("ETag", fmt.Sprint(response.Headers.ETag))
 	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ArchiveContainer400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response ArchiveContainer400ApplicationProblemPlusJSONResponse) VisitArchiveContainerResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -15894,6 +18756,95 @@ func (response ArchiveContainer412ApplicationProblemPlusJSONResponse) VisitArchi
 	return err
 }
 
+type ListContainerDiscoveryReportsRequestObject struct {
+	ContainerId ContainerId `json:"container_id"`
+	Params      ListContainerDiscoveryReportsParams
+}
+
+type ListContainerDiscoveryReportsResponseObject interface {
+	VisitListContainerDiscoveryReportsResponse(w http.ResponseWriter) error
+}
+
+type ListContainerDiscoveryReports200JSONResponse struct {
+	ContainerHistoryPageResponseJSONResponse
+}
+
+func (response ListContainerDiscoveryReports200JSONResponse) VisitListContainerDiscoveryReportsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListContainerDiscoveryReports400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response ListContainerDiscoveryReports400ApplicationProblemPlusJSONResponse) VisitListContainerDiscoveryReportsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListContainerDiscoveryReports401ApplicationProblemPlusJSONResponse struct {
+	UnauthorizedApplicationProblemPlusJSONResponse
+}
+
+func (response ListContainerDiscoveryReports401ApplicationProblemPlusJSONResponse) VisitListContainerDiscoveryReportsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListContainerDiscoveryReports403ApplicationProblemPlusJSONResponse struct {
+	ForbiddenApplicationProblemPlusJSONResponse
+}
+
+func (response ListContainerDiscoveryReports403ApplicationProblemPlusJSONResponse) VisitListContainerDiscoveryReportsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListContainerDiscoveryReports404ApplicationProblemPlusJSONResponse struct {
+	NotFoundApplicationProblemPlusJSONResponse
+}
+
+func (response ListContainerDiscoveryReports404ApplicationProblemPlusJSONResponse) VisitListContainerDiscoveryReportsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type PurgeContainerRequestObject struct {
 	ContainerId ContainerId `json:"container_id"`
 	Params      PurgeContainerParams
@@ -15908,6 +18859,22 @@ type PurgeContainer204Response = NoContentResponse
 func (response PurgeContainer204Response) VisitPurgeContainerResponse(w http.ResponseWriter) error {
 	w.WriteHeader(204)
 	return nil
+}
+
+type PurgeContainer400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response PurgeContainer400ApplicationProblemPlusJSONResponse) VisitPurgeContainerResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
 }
 
 type PurgeContainer401ApplicationProblemPlusJSONResponse struct {
@@ -15959,7 +18926,7 @@ func (response PurgeContainer404ApplicationProblemPlusJSONResponse) VisitPurgeCo
 }
 
 type PurgeContainer409ApplicationProblemPlusJSONResponse struct {
-	ConflictApplicationProblemPlusJSONResponse
+	PurgeConflictApplicationProblemPlusJSONResponse
 }
 
 func (response PurgeContainer409ApplicationProblemPlusJSONResponse) VisitPurgeContainerResponse(w http.ResponseWriter) error {
@@ -16010,6 +18977,22 @@ func (response RestoreContainer200JSONResponse) VisitRestoreContainerResponse(w 
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("ETag", fmt.Sprint(response.Headers.ETag))
 	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RestoreContainer400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response RestoreContainer400ApplicationProblemPlusJSONResponse) VisitRestoreContainerResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -16236,6 +19219,22 @@ func (response CreateCost409ApplicationProblemPlusJSONResponse) VisitCreateCostR
 	return err
 }
 
+type CreateCost413ApplicationProblemPlusJSONResponse struct {
+	PayloadTooLargeApplicationProblemPlusJSONResponse
+}
+
+func (response CreateCost413ApplicationProblemPlusJSONResponse) VisitCreateCostResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(413)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type CreateCost422ApplicationProblemPlusJSONResponse struct {
 	ValidationFailedApplicationProblemPlusJSONResponse
 }
@@ -16444,6 +19443,22 @@ func (response UpdateCost412ApplicationProblemPlusJSONResponse) VisitUpdateCostR
 	return err
 }
 
+type UpdateCost413ApplicationProblemPlusJSONResponse struct {
+	PayloadTooLargeApplicationProblemPlusJSONResponse
+}
+
+func (response UpdateCost413ApplicationProblemPlusJSONResponse) VisitUpdateCostResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(413)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type UpdateCost422ApplicationProblemPlusJSONResponse struct {
 	ValidationFailedApplicationProblemPlusJSONResponse
 }
@@ -16480,6 +19495,22 @@ func (response ArchiveCost200JSONResponse) VisitArchiveCostResponse(w http.Respo
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("ETag", fmt.Sprint(response.Headers.ETag))
 	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ArchiveCost400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response ArchiveCost400ApplicationProblemPlusJSONResponse) VisitArchiveCostResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -16580,6 +19611,22 @@ func (response PurgeCost204Response) VisitPurgeCostResponse(w http.ResponseWrite
 	return nil
 }
 
+type PurgeCost400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response PurgeCost400ApplicationProblemPlusJSONResponse) VisitPurgeCostResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type PurgeCost401ApplicationProblemPlusJSONResponse struct {
 	UnauthorizedApplicationProblemPlusJSONResponse
 }
@@ -16629,7 +19676,7 @@ func (response PurgeCost404ApplicationProblemPlusJSONResponse) VisitPurgeCostRes
 }
 
 type PurgeCost409ApplicationProblemPlusJSONResponse struct {
-	ConflictApplicationProblemPlusJSONResponse
+	PurgeConflictApplicationProblemPlusJSONResponse
 }
 
 func (response PurgeCost409ApplicationProblemPlusJSONResponse) VisitPurgeCostResponse(w http.ResponseWriter) error {
@@ -16680,6 +19727,22 @@ func (response RestoreCost200JSONResponse) VisitRestoreCostResponse(w http.Respo
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("ETag", fmt.Sprint(response.Headers.ETag))
 	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RestoreCost400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response RestoreCost400ApplicationProblemPlusJSONResponse) VisitRestoreCostResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -16818,7 +19881,7 @@ func (response GetDashboardSummary403ApplicationProblemPlusJSONResponse) VisitGe
 }
 
 type GetDiscoveryReportRequestObject struct {
-	ReportId ReportId `json:"report_id"`
+	ReportId HistoryReportId `json:"report_id"`
 }
 
 type GetDiscoveryReportResponseObject interface {
@@ -16826,6 +19889,14 @@ type GetDiscoveryReportResponseObject interface {
 }
 
 type GetDiscoveryReport200JSONResponse DiscoveryReport
+
+func (t GetDiscoveryReport200JSONResponse) MarshalJSON() ([]byte, error) {
+	return DiscoveryReport(t).MarshalJSON()
+}
+
+func (t *GetDiscoveryReport200JSONResponse) UnmarshalJSON(b []byte) error {
+	return (*DiscoveryReport)(t).UnmarshalJSON(b)
+}
 
 func (response GetDiscoveryReport200JSONResponse) VisitGetDiscoveryReportResponse(w http.ResponseWriter) error {
 
@@ -16888,7 +19959,7 @@ func (response GetDiscoveryReport404ApplicationProblemPlusJSONResponse) VisitGet
 }
 
 type GetDiscoveryReportSnapshotRequestObject struct {
-	ReportId ReportId `json:"report_id"`
+	ReportId HistoryReportId `json:"report_id"`
 }
 
 type GetDiscoveryReportSnapshotResponseObject interface {
@@ -17057,6 +20128,22 @@ func (response CreateDnsDraft409ApplicationProblemPlusJSONResponse) VisitCreateD
 	return err
 }
 
+type CreateDnsDraft413ApplicationProblemPlusJSONResponse struct {
+	PayloadTooLargeApplicationProblemPlusJSONResponse
+}
+
+func (response CreateDnsDraft413ApplicationProblemPlusJSONResponse) VisitCreateDnsDraftResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(413)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type CreateDnsDraft422ApplicationProblemPlusJSONResponse struct {
 	ValidationFailedApplicationProblemPlusJSONResponse
 }
@@ -17087,6 +20174,22 @@ type DiscardDnsDraft204Response = NoContentResponse
 func (response DiscardDnsDraft204Response) VisitDiscardDnsDraftResponse(w http.ResponseWriter) error {
 	w.WriteHeader(204)
 	return nil
+}
+
+type DiscardDnsDraft400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response DiscardDnsDraft400ApplicationProblemPlusJSONResponse) VisitDiscardDnsDraftResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
 }
 
 type DiscardDnsDraft401ApplicationProblemPlusJSONResponse struct {
@@ -17361,6 +20464,22 @@ func (response UpdateDnsDraft412ApplicationProblemPlusJSONResponse) VisitUpdateD
 	return err
 }
 
+type UpdateDnsDraft413ApplicationProblemPlusJSONResponse struct {
+	PayloadTooLargeApplicationProblemPlusJSONResponse
+}
+
+func (response UpdateDnsDraft413ApplicationProblemPlusJSONResponse) VisitUpdateDnsDraftResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(413)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type UpdateDnsDraft422ApplicationProblemPlusJSONResponse struct {
 	ValidationFailedApplicationProblemPlusJSONResponse
 }
@@ -17505,6 +20624,22 @@ func (response ApplyDnsDraft412ApplicationProblemPlusJSONResponse) VisitApplyDns
 	return err
 }
 
+type ApplyDnsDraft413ApplicationProblemPlusJSONResponse struct {
+	PayloadTooLargeApplicationProblemPlusJSONResponse
+}
+
+func (response ApplyDnsDraft413ApplicationProblemPlusJSONResponse) VisitApplyDnsDraftResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(413)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type ApplyDnsDraft422ApplicationProblemPlusJSONResponse struct {
 	ValidationFailedApplicationProblemPlusJSONResponse
 }
@@ -17540,6 +20675,22 @@ func (response PreviewDnsDraft200JSONResponse) VisitPreviewDnsDraftResponse(w ht
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PreviewDnsDraft400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response PreviewDnsDraft400ApplicationProblemPlusJSONResponse) VisitPreviewDnsDraftResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -17620,6 +20771,22 @@ func (response PreviewDnsDraft412ApplicationProblemPlusJSONResponse) VisitPrevie
 	}
 	w.Header().Set("Content-Type", "application/problem+json")
 	w.WriteHeader(412)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PreviewDnsDraft413ApplicationProblemPlusJSONResponse struct {
+	PayloadTooLargeApplicationProblemPlusJSONResponse
+}
+
+func (response PreviewDnsDraft413ApplicationProblemPlusJSONResponse) VisitPreviewDnsDraftResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(413)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -18175,6 +21342,22 @@ func (response DisableDnsZone200JSONResponse) VisitDisableDnsZoneResponse(w http
 	return err
 }
 
+type DisableDnsZone400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response DisableDnsZone400ApplicationProblemPlusJSONResponse) VisitDisableDnsZoneResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type DisableDnsZone401ApplicationProblemPlusJSONResponse struct {
 	UnauthorizedApplicationProblemPlusJSONResponse
 }
@@ -18446,6 +21629,22 @@ func (response ApplyDnsImport409ApplicationProblemPlusJSONResponse) VisitApplyDn
 	return err
 }
 
+type ApplyDnsImport413ApplicationProblemPlusJSONResponse struct {
+	PayloadTooLargeApplicationProblemPlusJSONResponse
+}
+
+func (response ApplyDnsImport413ApplicationProblemPlusJSONResponse) VisitApplyDnsImportResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(413)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type ApplyDnsImport422ApplicationProblemPlusJSONResponse struct {
 	ValidationFailedApplicationProblemPlusJSONResponse
 }
@@ -18578,6 +21777,22 @@ func (response PreviewDnsImport409ApplicationProblemPlusJSONResponse) VisitPrevi
 	}
 	w.Header().Set("Content-Type", "application/problem+json")
 	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PreviewDnsImport413ApplicationProblemPlusJSONResponse struct {
+	PayloadTooLargeApplicationProblemPlusJSONResponse
+}
+
+func (response PreviewDnsImport413ApplicationProblemPlusJSONResponse) VisitPreviewDnsImportResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(413)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -18822,6 +22037,22 @@ func (response SelectDnsZone412ApplicationProblemPlusJSONResponse) VisitSelectDn
 	return err
 }
 
+type SelectDnsZone413ApplicationProblemPlusJSONResponse struct {
+	PayloadTooLargeApplicationProblemPlusJSONResponse
+}
+
+func (response SelectDnsZone413ApplicationProblemPlusJSONResponse) VisitSelectDnsZoneResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(413)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type SelectDnsZone422ApplicationProblemPlusJSONResponse struct {
 	ValidationFailedApplicationProblemPlusJSONResponse
 }
@@ -19046,6 +22277,22 @@ func (response CreateDomain409ApplicationProblemPlusJSONResponse) VisitCreateDom
 	}
 	w.Header().Set("Content-Type", "application/problem+json")
 	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateDomain413ApplicationProblemPlusJSONResponse struct {
+	PayloadTooLargeApplicationProblemPlusJSONResponse
+}
+
+func (response CreateDomain413ApplicationProblemPlusJSONResponse) VisitCreateDomainResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(413)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -19312,6 +22559,22 @@ func (response UpdateDomain412ApplicationProblemPlusJSONResponse) VisitUpdateDom
 	return err
 }
 
+type UpdateDomain413ApplicationProblemPlusJSONResponse struct {
+	PayloadTooLargeApplicationProblemPlusJSONResponse
+}
+
+func (response UpdateDomain413ApplicationProblemPlusJSONResponse) VisitUpdateDomainResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(413)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type UpdateDomain422ApplicationProblemPlusJSONResponse struct {
 	ValidationFailedApplicationProblemPlusJSONResponse
 }
@@ -19348,6 +22611,22 @@ func (response ArchiveDomain200JSONResponse) VisitArchiveDomainResponse(w http.R
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("ETag", fmt.Sprint(response.Headers.ETag))
 	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ArchiveDomain400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response ArchiveDomain400ApplicationProblemPlusJSONResponse) VisitArchiveDomainResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -19448,6 +22727,22 @@ func (response PurgeDomain204Response) VisitPurgeDomainResponse(w http.ResponseW
 	return nil
 }
 
+type PurgeDomain400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response PurgeDomain400ApplicationProblemPlusJSONResponse) VisitPurgeDomainResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type PurgeDomain401ApplicationProblemPlusJSONResponse struct {
 	UnauthorizedApplicationProblemPlusJSONResponse
 }
@@ -19497,7 +22792,7 @@ func (response PurgeDomain404ApplicationProblemPlusJSONResponse) VisitPurgeDomai
 }
 
 type PurgeDomain409ApplicationProblemPlusJSONResponse struct {
-	ConflictApplicationProblemPlusJSONResponse
+	PurgeConflictApplicationProblemPlusJSONResponse
 }
 
 func (response PurgeDomain409ApplicationProblemPlusJSONResponse) VisitPurgeDomainResponse(w http.ResponseWriter) error {
@@ -19548,6 +22843,22 @@ func (response RestoreDomain200JSONResponse) VisitRestoreDomainResponse(w http.R
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("ETag", fmt.Sprint(response.Headers.ETag))
 	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RestoreDomain400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response RestoreDomain400ApplicationProblemPlusJSONResponse) VisitRestoreDomainResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -19769,6 +23080,59 @@ func (response GetReadiness503ApplicationProblemPlusJSONResponse) VisitGetReadin
 	return err
 }
 
+type GetInventorySummaryRequestObject struct {
+}
+
+type GetInventorySummaryResponseObject interface {
+	VisitGetInventorySummaryResponse(w http.ResponseWriter) error
+}
+
+type GetInventorySummary200JSONResponse InventorySummary
+
+func (response GetInventorySummary200JSONResponse) VisitGetInventorySummaryResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetInventorySummary401ApplicationProblemPlusJSONResponse struct {
+	UnauthorizedApplicationProblemPlusJSONResponse
+}
+
+func (response GetInventorySummary401ApplicationProblemPlusJSONResponse) VisitGetInventorySummaryResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetInventorySummary403ApplicationProblemPlusJSONResponse struct {
+	ForbiddenApplicationProblemPlusJSONResponse
+}
+
+func (response GetInventorySummary403ApplicationProblemPlusJSONResponse) VisitGetInventorySummaryResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type GetInventoryTreeRequestObject struct {
 	Params GetInventoryTreeParams
 }
@@ -19819,6 +23183,111 @@ func (response GetInventoryTree403ApplicationProblemPlusJSONResponse) VisitGetIn
 	}
 	w.Header().Set("Content-Type", "application/problem+json")
 	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListInventoryTreeChildrenRequestObject struct {
+	ParentId InventoryTreeParentId `json:"parent_id"`
+	Params   ListInventoryTreeChildrenParams
+}
+
+type ListInventoryTreeChildrenResponseObject interface {
+	VisitListInventoryTreeChildrenResponse(w http.ResponseWriter) error
+}
+
+type ListInventoryTreeChildren200JSONResponse struct {
+	InventoryTreePageResponseJSONResponse
+}
+
+func (response ListInventoryTreeChildren200JSONResponse) VisitListInventoryTreeChildrenResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListInventoryTreeChildren400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response ListInventoryTreeChildren400ApplicationProblemPlusJSONResponse) VisitListInventoryTreeChildrenResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListInventoryTreeChildren401ApplicationProblemPlusJSONResponse struct {
+	UnauthorizedApplicationProblemPlusJSONResponse
+}
+
+func (response ListInventoryTreeChildren401ApplicationProblemPlusJSONResponse) VisitListInventoryTreeChildrenResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListInventoryTreeChildren403ApplicationProblemPlusJSONResponse struct {
+	ForbiddenApplicationProblemPlusJSONResponse
+}
+
+func (response ListInventoryTreeChildren403ApplicationProblemPlusJSONResponse) VisitListInventoryTreeChildrenResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListInventoryTreeChildren404ApplicationProblemPlusJSONResponse struct {
+	NotFoundApplicationProblemPlusJSONResponse
+}
+
+func (response ListInventoryTreeChildren404ApplicationProblemPlusJSONResponse) VisitListInventoryTreeChildrenResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListInventoryTreeChildren422ApplicationProblemPlusJSONResponse struct {
+	ValidationFailedApplicationProblemPlusJSONResponse
+}
+
+func (response ListInventoryTreeChildren422ApplicationProblemPlusJSONResponse) VisitListInventoryTreeChildrenResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(422)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -19965,6 +23434,22 @@ func (response CreateIpAssignment409ApplicationProblemPlusJSONResponse) VisitCre
 	}
 	w.Header().Set("Content-Type", "application/problem+json")
 	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateIpAssignment413ApplicationProblemPlusJSONResponse struct {
+	PayloadTooLargeApplicationProblemPlusJSONResponse
+}
+
+func (response CreateIpAssignment413ApplicationProblemPlusJSONResponse) VisitCreateIpAssignmentResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(413)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -20181,6 +23666,22 @@ func (response UpdateIpAssignment412ApplicationProblemPlusJSONResponse) VisitUpd
 	return err
 }
 
+type UpdateIpAssignment413ApplicationProblemPlusJSONResponse struct {
+	PayloadTooLargeApplicationProblemPlusJSONResponse
+}
+
+func (response UpdateIpAssignment413ApplicationProblemPlusJSONResponse) VisitUpdateIpAssignmentResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(413)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type UpdateIpAssignment422ApplicationProblemPlusJSONResponse struct {
 	ValidationFailedApplicationProblemPlusJSONResponse
 }
@@ -20219,6 +23720,22 @@ func (response ArchiveIpAssignment200JSONResponse) VisitArchiveIpAssignmentRespo
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("ETag", fmt.Sprint(response.Headers.ETag))
 	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ArchiveIpAssignment400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response ArchiveIpAssignment400ApplicationProblemPlusJSONResponse) VisitArchiveIpAssignmentResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -20319,6 +23836,22 @@ func (response PurgeIpAssignment204Response) VisitPurgeIpAssignmentResponse(w ht
 	return nil
 }
 
+type PurgeIpAssignment400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response PurgeIpAssignment400ApplicationProblemPlusJSONResponse) VisitPurgeIpAssignmentResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type PurgeIpAssignment401ApplicationProblemPlusJSONResponse struct {
 	UnauthorizedApplicationProblemPlusJSONResponse
 }
@@ -20368,7 +23901,7 @@ func (response PurgeIpAssignment404ApplicationProblemPlusJSONResponse) VisitPurg
 }
 
 type PurgeIpAssignment409ApplicationProblemPlusJSONResponse struct {
-	ConflictApplicationProblemPlusJSONResponse
+	PurgeConflictApplicationProblemPlusJSONResponse
 }
 
 func (response PurgeIpAssignment409ApplicationProblemPlusJSONResponse) VisitPurgeIpAssignmentResponse(w http.ResponseWriter) error {
@@ -20421,6 +23954,22 @@ func (response RestoreIpAssignment200JSONResponse) VisitRestoreIpAssignmentRespo
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("ETag", fmt.Sprint(response.Headers.ETag))
 	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RestoreIpAssignment400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response RestoreIpAssignment400ApplicationProblemPlusJSONResponse) VisitRestoreIpAssignmentResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -20649,6 +24198,22 @@ func (response CreateLocation409ApplicationProblemPlusJSONResponse) VisitCreateL
 	return err
 }
 
+type CreateLocation413ApplicationProblemPlusJSONResponse struct {
+	PayloadTooLargeApplicationProblemPlusJSONResponse
+}
+
+func (response CreateLocation413ApplicationProblemPlusJSONResponse) VisitCreateLocationResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(413)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type CreateLocation422ApplicationProblemPlusJSONResponse struct {
 	ValidationFailedApplicationProblemPlusJSONResponse
 }
@@ -20857,6 +24422,22 @@ func (response UpdateLocation412ApplicationProblemPlusJSONResponse) VisitUpdateL
 	return err
 }
 
+type UpdateLocation413ApplicationProblemPlusJSONResponse struct {
+	PayloadTooLargeApplicationProblemPlusJSONResponse
+}
+
+func (response UpdateLocation413ApplicationProblemPlusJSONResponse) VisitUpdateLocationResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(413)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type UpdateLocation422ApplicationProblemPlusJSONResponse struct {
 	ValidationFailedApplicationProblemPlusJSONResponse
 }
@@ -20893,6 +24474,22 @@ func (response ArchiveLocation200JSONResponse) VisitArchiveLocationResponse(w ht
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("ETag", fmt.Sprint(response.Headers.ETag))
 	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ArchiveLocation400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response ArchiveLocation400ApplicationProblemPlusJSONResponse) VisitArchiveLocationResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -20993,6 +24590,22 @@ func (response PurgeLocation204Response) VisitPurgeLocationResponse(w http.Respo
 	return nil
 }
 
+type PurgeLocation400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response PurgeLocation400ApplicationProblemPlusJSONResponse) VisitPurgeLocationResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type PurgeLocation401ApplicationProblemPlusJSONResponse struct {
 	UnauthorizedApplicationProblemPlusJSONResponse
 }
@@ -21042,7 +24655,7 @@ func (response PurgeLocation404ApplicationProblemPlusJSONResponse) VisitPurgeLoc
 }
 
 type PurgeLocation409ApplicationProblemPlusJSONResponse struct {
-	ConflictApplicationProblemPlusJSONResponse
+	PurgeConflictApplicationProblemPlusJSONResponse
 }
 
 func (response PurgeLocation409ApplicationProblemPlusJSONResponse) VisitPurgeLocationResponse(w http.ResponseWriter) error {
@@ -21093,6 +24706,22 @@ func (response RestoreLocation200JSONResponse) VisitRestoreLocationResponse(w ht
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("ETag", fmt.Sprint(response.Headers.ETag))
 	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RestoreLocation400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response RestoreLocation400ApplicationProblemPlusJSONResponse) VisitRestoreLocationResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -21322,6 +24951,22 @@ func (response CreatePersonalAccessToken409ApplicationProblemPlusJSONResponse) V
 	return err
 }
 
+type CreatePersonalAccessToken413ApplicationProblemPlusJSONResponse struct {
+	PayloadTooLargeApplicationProblemPlusJSONResponse
+}
+
+func (response CreatePersonalAccessToken413ApplicationProblemPlusJSONResponse) VisitCreatePersonalAccessTokenResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(413)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type CreatePersonalAccessToken422ApplicationProblemPlusJSONResponse struct {
 	ValidationFailedApplicationProblemPlusJSONResponse
 }
@@ -21547,6 +25192,22 @@ func (response CreateProvider409ApplicationProblemPlusJSONResponse) VisitCreateP
 	return err
 }
 
+type CreateProvider413ApplicationProblemPlusJSONResponse struct {
+	PayloadTooLargeApplicationProblemPlusJSONResponse
+}
+
+func (response CreateProvider413ApplicationProblemPlusJSONResponse) VisitCreateProviderResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(413)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type CreateProvider422ApplicationProblemPlusJSONResponse struct {
 	ValidationFailedApplicationProblemPlusJSONResponse
 }
@@ -21739,6 +25400,22 @@ func (response UpdateProvider412ApplicationProblemPlusJSONResponse) VisitUpdateP
 	return err
 }
 
+type UpdateProvider413ApplicationProblemPlusJSONResponse struct {
+	PayloadTooLargeApplicationProblemPlusJSONResponse
+}
+
+func (response UpdateProvider413ApplicationProblemPlusJSONResponse) VisitUpdateProviderResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(413)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type UpdateProvider422ApplicationProblemPlusJSONResponse struct {
 	ValidationFailedApplicationProblemPlusJSONResponse
 }
@@ -21775,6 +25452,22 @@ func (response ArchiveProvider200JSONResponse) VisitArchiveProviderResponse(w ht
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("ETag", fmt.Sprint(response.Headers.ETag))
 	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ArchiveProvider400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response ArchiveProvider400ApplicationProblemPlusJSONResponse) VisitArchiveProviderResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -21859,6 +25552,38 @@ func (response ArchiveProvider412ApplicationProblemPlusJSONResponse) VisitArchiv
 	return err
 }
 
+type ArchiveProvider413ApplicationProblemPlusJSONResponse struct {
+	PayloadTooLargeApplicationProblemPlusJSONResponse
+}
+
+func (response ArchiveProvider413ApplicationProblemPlusJSONResponse) VisitArchiveProviderResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(413)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ArchiveProvider422ApplicationProblemPlusJSONResponse struct {
+	ValidationFailedApplicationProblemPlusJSONResponse
+}
+
+func (response ArchiveProvider422ApplicationProblemPlusJSONResponse) VisitArchiveProviderResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(422)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type PurgeProviderRequestObject struct {
 	ProviderId ProviderId `json:"provider_id"`
 	Params     PurgeProviderParams
@@ -21873,6 +25598,22 @@ type PurgeProvider204Response = NoContentResponse
 func (response PurgeProvider204Response) VisitPurgeProviderResponse(w http.ResponseWriter) error {
 	w.WriteHeader(204)
 	return nil
+}
+
+type PurgeProvider400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response PurgeProvider400ApplicationProblemPlusJSONResponse) VisitPurgeProviderResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
 }
 
 type PurgeProvider401ApplicationProblemPlusJSONResponse struct {
@@ -21924,7 +25665,7 @@ func (response PurgeProvider404ApplicationProblemPlusJSONResponse) VisitPurgePro
 }
 
 type PurgeProvider409ApplicationProblemPlusJSONResponse struct {
-	ConflictApplicationProblemPlusJSONResponse
+	PurgeConflictApplicationProblemPlusJSONResponse
 }
 
 func (response PurgeProvider409ApplicationProblemPlusJSONResponse) VisitPurgeProviderResponse(w http.ResponseWriter) error {
@@ -21975,6 +25716,22 @@ func (response RestoreProvider200JSONResponse) VisitRestoreProviderResponse(w ht
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("ETag", fmt.Sprint(response.Headers.ETag))
 	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RestoreProvider400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response RestoreProvider400ApplicationProblemPlusJSONResponse) VisitRestoreProviderResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -22055,6 +25812,38 @@ func (response RestoreProvider412ApplicationProblemPlusJSONResponse) VisitRestor
 	}
 	w.Header().Set("Content-Type", "application/problem+json")
 	w.WriteHeader(412)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RestoreProvider413ApplicationProblemPlusJSONResponse struct {
+	PayloadTooLargeApplicationProblemPlusJSONResponse
+}
+
+func (response RestoreProvider413ApplicationProblemPlusJSONResponse) VisitRestoreProviderResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(413)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RestoreProvider422ApplicationProblemPlusJSONResponse struct {
+	ValidationFailedApplicationProblemPlusJSONResponse
+}
+
+func (response RestoreProvider422ApplicationProblemPlusJSONResponse) VisitRestoreProviderResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(422)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -22303,6 +26092,22 @@ func (response CreateTag409ApplicationProblemPlusJSONResponse) VisitCreateTagRes
 	return err
 }
 
+type CreateTag413ApplicationProblemPlusJSONResponse struct {
+	PayloadTooLargeApplicationProblemPlusJSONResponse
+}
+
+func (response CreateTag413ApplicationProblemPlusJSONResponse) VisitCreateTagResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(413)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type CreateTag422ApplicationProblemPlusJSONResponse struct {
 	ValidationFailedApplicationProblemPlusJSONResponse
 }
@@ -22511,6 +26316,22 @@ func (response UpdateTag412ApplicationProblemPlusJSONResponse) VisitUpdateTagRes
 	return err
 }
 
+type UpdateTag413ApplicationProblemPlusJSONResponse struct {
+	PayloadTooLargeApplicationProblemPlusJSONResponse
+}
+
+func (response UpdateTag413ApplicationProblemPlusJSONResponse) VisitUpdateTagResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(413)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type UpdateTag422ApplicationProblemPlusJSONResponse struct {
 	ValidationFailedApplicationProblemPlusJSONResponse
 }
@@ -22547,6 +26368,22 @@ func (response ArchiveTag200JSONResponse) VisitArchiveTagResponse(w http.Respons
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("ETag", fmt.Sprint(response.Headers.ETag))
 	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ArchiveTag400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response ArchiveTag400ApplicationProblemPlusJSONResponse) VisitArchiveTagResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -22647,6 +26484,22 @@ func (response PurgeTag204Response) VisitPurgeTagResponse(w http.ResponseWriter)
 	return nil
 }
 
+type PurgeTag400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response PurgeTag400ApplicationProblemPlusJSONResponse) VisitPurgeTagResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type PurgeTag401ApplicationProblemPlusJSONResponse struct {
 	UnauthorizedApplicationProblemPlusJSONResponse
 }
@@ -22696,7 +26549,7 @@ func (response PurgeTag404ApplicationProblemPlusJSONResponse) VisitPurgeTagRespo
 }
 
 type PurgeTag409ApplicationProblemPlusJSONResponse struct {
-	ConflictApplicationProblemPlusJSONResponse
+	PurgeConflictApplicationProblemPlusJSONResponse
 }
 
 func (response PurgeTag409ApplicationProblemPlusJSONResponse) VisitPurgeTagResponse(w http.ResponseWriter) error {
@@ -22747,6 +26600,22 @@ func (response RestoreTag200JSONResponse) VisitRestoreTagResponse(w http.Respons
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("ETag", fmt.Sprint(response.Headers.ETag))
 	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RestoreTag400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response RestoreTag400ApplicationProblemPlusJSONResponse) VisitRestoreTagResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -22884,6 +26753,9 @@ type StrictServerInterface interface {
 	// ArchiveCompute Archive a compute
 	// (POST /computes/{compute_id}/archive)
 	ArchiveCompute(ctx context.Context, request ArchiveComputeRequestObject) (ArchiveComputeResponseObject, error)
+	// ListComputeCollectorStatus Read independent discovery collector status for a compute
+	// (GET /computes/{compute_id}/collector-status)
+	ListComputeCollectorStatus(ctx context.Context, request ListComputeCollectorStatusRequestObject) (ListComputeCollectorStatusResponseObject, error)
 	// ListComputeContainers List containers belonging to a compute
 	// (GET /computes/{compute_id}/containers)
 	ListComputeContainers(ctx context.Context, request ListComputeContainersRequestObject) (ListComputeContainersResponseObject, error)
@@ -22914,6 +26786,9 @@ type StrictServerInterface interface {
 	// ArchiveContainer Archive a container
 	// (POST /containers/{container_id}/archive)
 	ArchiveContainer(ctx context.Context, request ArchiveContainerRequestObject) (ArchiveContainerResponseObject, error)
+	// ListContainerDiscoveryReports List retained report history for a logical container
+	// (GET /containers/{container_id}/discovery-reports)
+	ListContainerDiscoveryReports(ctx context.Context, request ListContainerDiscoveryReportsRequestObject) (ListContainerDiscoveryReportsResponseObject, error)
 	// PurgeContainer Permanently purge an archived container
 	// (DELETE /containers/{container_id}/purge)
 	PurgeContainer(ctx context.Context, request PurgeContainerRequestObject) (PurgeContainerResponseObject, error)
@@ -23043,9 +26918,15 @@ type StrictServerInterface interface {
 	// GetReadiness Check local mandatory dependencies
 	// (GET /health/ready)
 	GetReadiness(ctx context.Context, request GetReadinessRequestObject) (GetReadinessResponseObject, error)
-	// GetInventoryTree Read the bounded typed inventory hierarchy
+	// GetInventorySummary Read inventory compute and observed-container counts
+	// (GET /inventory/summary)
+	GetInventorySummary(ctx context.Context, request GetInventorySummaryRequestObject) (GetInventorySummaryResponseObject, error)
+	// GetInventoryTree List root nodes of the typed inventory hierarchy
 	// (GET /inventory/tree)
 	GetInventoryTree(ctx context.Context, request GetInventoryTreeRequestObject) (GetInventoryTreeResponseObject, error)
+	// ListInventoryTreeChildren List a typed inventory node's children
+	// (GET /inventory/tree/{parent_id}/children)
+	ListInventoryTreeChildren(ctx context.Context, request ListInventoryTreeChildrenRequestObject) (ListInventoryTreeChildrenResponseObject, error)
 	// ListIpAssignments List and search IP assignments
 	// (GET /ip-assignments)
 	ListIpAssignments(ctx context.Context, request ListIpAssignmentsRequestObject) (ListIpAssignmentsResponseObject, error)
@@ -23671,6 +27552,32 @@ func (sh *strictHandler) ArchiveCompute(w http.ResponseWriter, r *http.Request, 
 	}
 }
 
+// ListComputeCollectorStatus operation middleware
+func (sh *strictHandler) ListComputeCollectorStatus(w http.ResponseWriter, r *http.Request, computeId ComputeId) {
+	var request ListComputeCollectorStatusRequestObject
+
+	request.ComputeId = computeId
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.ListComputeCollectorStatus(ctx, request.(ListComputeCollectorStatusRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "ListComputeCollectorStatus")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(ListComputeCollectorStatusResponseObject); ok {
+		if err := validResponse.VisitListComputeCollectorStatusResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // ListComputeContainers operation middleware
 func (sh *strictHandler) ListComputeContainers(w http.ResponseWriter, r *http.Request, computeId ComputeId, params ListComputeContainersParams) {
 	var request ListComputeContainersRequestObject
@@ -23945,6 +27852,33 @@ func (sh *strictHandler) ArchiveContainer(w http.ResponseWriter, r *http.Request
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(ArchiveContainerResponseObject); ok {
 		if err := validResponse.VisitArchiveContainerResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// ListContainerDiscoveryReports operation middleware
+func (sh *strictHandler) ListContainerDiscoveryReports(w http.ResponseWriter, r *http.Request, containerId ContainerId, params ListContainerDiscoveryReportsParams) {
+	var request ListContainerDiscoveryReportsRequestObject
+
+	request.ContainerId = containerId
+	request.Params = params
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.ListContainerDiscoveryReports(ctx, request.(ListContainerDiscoveryReportsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "ListContainerDiscoveryReports")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(ListContainerDiscoveryReportsResponseObject); ok {
+		if err := validResponse.VisitListContainerDiscoveryReportsResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -24231,7 +28165,7 @@ func (sh *strictHandler) GetDashboardSummary(w http.ResponseWriter, r *http.Requ
 }
 
 // GetDiscoveryReport operation middleware
-func (sh *strictHandler) GetDiscoveryReport(w http.ResponseWriter, r *http.Request, reportId ReportId) {
+func (sh *strictHandler) GetDiscoveryReport(w http.ResponseWriter, r *http.Request, reportId HistoryReportId) {
 	var request GetDiscoveryReportRequestObject
 
 	request.ReportId = reportId
@@ -24257,7 +28191,7 @@ func (sh *strictHandler) GetDiscoveryReport(w http.ResponseWriter, r *http.Reque
 }
 
 // GetDiscoveryReportSnapshot operation middleware
-func (sh *strictHandler) GetDiscoveryReportSnapshot(w http.ResponseWriter, r *http.Request, reportId ReportId) {
+func (sh *strictHandler) GetDiscoveryReportSnapshot(w http.ResponseWriter, r *http.Request, reportId HistoryReportId) {
 	var request GetDiscoveryReportSnapshotRequestObject
 
 	request.ReportId = reportId
@@ -25157,6 +29091,30 @@ func (sh *strictHandler) GetReadiness(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetInventorySummary operation middleware
+func (sh *strictHandler) GetInventorySummary(w http.ResponseWriter, r *http.Request) {
+	var request GetInventorySummaryRequestObject
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetInventorySummary(ctx, request.(GetInventorySummaryRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetInventorySummary")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetInventorySummaryResponseObject); ok {
+		if err := validResponse.VisitGetInventorySummaryResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // GetInventoryTree operation middleware
 func (sh *strictHandler) GetInventoryTree(w http.ResponseWriter, r *http.Request, params GetInventoryTreeParams) {
 	var request GetInventoryTreeRequestObject
@@ -25176,6 +29134,33 @@ func (sh *strictHandler) GetInventoryTree(w http.ResponseWriter, r *http.Request
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(GetInventoryTreeResponseObject); ok {
 		if err := validResponse.VisitGetInventoryTreeResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// ListInventoryTreeChildren operation middleware
+func (sh *strictHandler) ListInventoryTreeChildren(w http.ResponseWriter, r *http.Request, parentId InventoryTreeParentId, params ListInventoryTreeChildrenParams) {
+	var request ListInventoryTreeChildrenRequestObject
+
+	request.ParentId = parentId
+	request.Params = params
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.ListInventoryTreeChildren(ctx, request.(ListInventoryTreeChildrenRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "ListInventoryTreeChildren")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(ListInventoryTreeChildrenResponseObject); ok {
+		if err := validResponse.VisitListInventoryTreeChildrenResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {

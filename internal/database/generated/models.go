@@ -92,24 +92,84 @@ type Compute struct {
 	ArchivedAt         sql.NullString `db:"archived_at" json:"archived_at"`
 }
 
-type ComputeObservation struct {
+type ComputeCollectorObservation struct {
+	ComputeID              string         `db:"compute_id" json:"compute_id"`
+	CollectorKey           string         `db:"collector_key" json:"collector_key"`
+	CollectorName          string         `db:"collector_name" json:"collector_name"`
+	OwnerUid               sql.NullInt64  `db:"owner_uid" json:"owner_uid"`
+	ConnectionName         sql.NullString `db:"connection_name" json:"connection_name"`
+	LastStatus             string         `db:"last_status" json:"last_status"`
+	LastReceivedAt         string         `db:"last_received_at" json:"last_received_at"`
+	LastReportID           sql.NullString `db:"last_report_id" json:"last_report_id"`
+	LastSuccessfulAt       sql.NullString `db:"last_successful_at" json:"last_successful_at"`
+	LastSuccessfulReportID sql.NullString `db:"last_successful_report_id" json:"last_successful_report_id"`
+	LastFailedAt           sql.NullString `db:"last_failed_at" json:"last_failed_at"`
+	LastFailedReportID     sql.NullString `db:"last_failed_report_id" json:"last_failed_report_id"`
+	LastErrorCode          sql.NullString `db:"last_error_code" json:"last_error_code"`
+	LastErrorMessage       sql.NullString `db:"last_error_message" json:"last_error_message"`
+}
+
+type ComputeDisk struct {
 	ComputeID       string         `db:"compute_id" json:"compute_id"`
-	MachineID       string         `db:"machine_id" json:"machine_id"`
-	Hostname        string         `db:"hostname" json:"hostname"`
-	OsName          string         `db:"os_name" json:"os_name"`
-	OsVersion       string         `db:"os_version" json:"os_version"`
-	KernelVersion   string         `db:"kernel_version" json:"kernel_version"`
-	Architecture    string         `db:"architecture" json:"architecture"`
-	CpuModel        string         `db:"cpu_model" json:"cpu_model"`
-	LogicalCpuCount sql.NullInt64  `db:"logical_cpu_count" json:"logical_cpu_count"`
-	MemoryBytes     sql.NullInt64  `db:"memory_bytes" json:"memory_bytes"`
-	BootID          string         `db:"boot_id" json:"boot_id"`
-	BootedAt        sql.NullString `db:"booted_at" json:"booted_at"`
-	UptimeSeconds   sql.NullInt64  `db:"uptime_seconds" json:"uptime_seconds"`
-	CurrentAgentID  sql.NullString `db:"current_agent_id" json:"current_agent_id"`
-	CurrentReportID sql.NullString `db:"current_report_id" json:"current_report_id"`
-	ObservedAt      string         `db:"observed_at" json:"observed_at"`
-	ReceivedAt      string         `db:"received_at" json:"received_at"`
+	DeviceName      string         `db:"device_name" json:"device_name"`
+	Model           sql.NullString `db:"model" json:"model"`
+	SizeBytes       int64          `db:"size_bytes" json:"size_bytes"`
+	FirstObservedAt string         `db:"first_observed_at" json:"first_observed_at"`
+	LastObservedAt  string         `db:"last_observed_at" json:"last_observed_at"`
+	LastReportID    sql.NullString `db:"last_report_id" json:"last_report_id"`
+	PresenceState   string         `db:"presence_state" json:"presence_state"`
+	AbsentAt        sql.NullString `db:"absent_at" json:"absent_at"`
+	AbsenceReportID sql.NullString `db:"absence_report_id" json:"absence_report_id"`
+}
+
+type ComputeFilesystem struct {
+	ComputeID       string         `db:"compute_id" json:"compute_id"`
+	DeviceName      string         `db:"device_name" json:"device_name"`
+	MountPoint      string         `db:"mount_point" json:"mount_point"`
+	FilesystemType  string         `db:"filesystem_type" json:"filesystem_type"`
+	TotalBytes      int64          `db:"total_bytes" json:"total_bytes"`
+	AvailableBytes  sql.NullInt64  `db:"available_bytes" json:"available_bytes"`
+	FirstObservedAt string         `db:"first_observed_at" json:"first_observed_at"`
+	LastObservedAt  string         `db:"last_observed_at" json:"last_observed_at"`
+	LastReportID    sql.NullString `db:"last_report_id" json:"last_report_id"`
+	PresenceState   string         `db:"presence_state" json:"presence_state"`
+	AbsentAt        sql.NullString `db:"absent_at" json:"absent_at"`
+	AbsenceReportID sql.NullString `db:"absence_report_id" json:"absence_report_id"`
+}
+
+type ComputeInterface struct {
+	ComputeID       string         `db:"compute_id" json:"compute_id"`
+	InterfaceName   string         `db:"interface_name" json:"interface_name"`
+	MacAddress      sql.NullString `db:"mac_address" json:"mac_address"`
+	Mtu             sql.NullInt64  `db:"mtu" json:"mtu"`
+	IsUp            sql.NullInt64  `db:"is_up" json:"is_up"`
+	FirstObservedAt string         `db:"first_observed_at" json:"first_observed_at"`
+	LastObservedAt  string         `db:"last_observed_at" json:"last_observed_at"`
+	LastReportID    sql.NullString `db:"last_report_id" json:"last_report_id"`
+	PresenceState   string         `db:"presence_state" json:"presence_state"`
+	AbsentAt        sql.NullString `db:"absent_at" json:"absent_at"`
+	AbsenceReportID sql.NullString `db:"absence_report_id" json:"absence_report_id"`
+}
+
+type ComputeObservation struct {
+	ComputeID          string         `db:"compute_id" json:"compute_id"`
+	MachineID          string         `db:"machine_id" json:"machine_id"`
+	Hostname           string         `db:"hostname" json:"hostname"`
+	OsName             string         `db:"os_name" json:"os_name"`
+	OsVersion          string         `db:"os_version" json:"os_version"`
+	KernelVersion      string         `db:"kernel_version" json:"kernel_version"`
+	Architecture       string         `db:"architecture" json:"architecture"`
+	CpuModel           string         `db:"cpu_model" json:"cpu_model"`
+	LogicalCpuCount    sql.NullInt64  `db:"logical_cpu_count" json:"logical_cpu_count"`
+	MemoryBytes        sql.NullInt64  `db:"memory_bytes" json:"memory_bytes"`
+	BootID             string         `db:"boot_id" json:"boot_id"`
+	BootedAt           sql.NullString `db:"booted_at" json:"booted_at"`
+	UptimeSeconds      sql.NullInt64  `db:"uptime_seconds" json:"uptime_seconds"`
+	CurrentAgentID     sql.NullString `db:"current_agent_id" json:"current_agent_id"`
+	CurrentReportID    sql.NullString `db:"current_report_id" json:"current_report_id"`
+	ObservedAt         string         `db:"observed_at" json:"observed_at"`
+	ReceivedAt         string         `db:"received_at" json:"received_at"`
+	VirtualizationRole sql.NullString `db:"virtualization_role" json:"virtualization_role"`
 }
 
 type ComputeTag struct {
@@ -120,7 +180,7 @@ type ComputeTag struct {
 type Container struct {
 	ID                 string         `db:"id" json:"id"`
 	ComputeID          string         `db:"compute_id" json:"compute_id"`
-	PodmanOwner        string         `db:"podman_owner" json:"podman_owner"`
+	PodmanOwnerUid     int64          `db:"podman_owner_uid" json:"podman_owner_uid"`
 	PodmanConnection   string         `db:"podman_connection" json:"podman_connection"`
 	Name               string         `db:"name" json:"name"`
 	RuntimeID          string         `db:"runtime_id" json:"runtime_id"`
@@ -145,12 +205,12 @@ type Container struct {
 }
 
 type ContainerAddress struct {
-	ID           int64  `db:"id" json:"id"`
-	ContainerID  string `db:"container_id" json:"container_id"`
-	NetworkID    int64  `db:"network_id" json:"network_id"`
-	Address      string `db:"address" json:"address"`
-	Family       int64  `db:"family" json:"family"`
-	PrefixLength int64  `db:"prefix_length" json:"prefix_length"`
+	ID           int64         `db:"id" json:"id"`
+	ContainerID  string        `db:"container_id" json:"container_id"`
+	NetworkID    int64         `db:"network_id" json:"network_id"`
+	Address      string        `db:"address" json:"address"`
+	Family       int64         `db:"family" json:"family"`
+	PrefixLength sql.NullInt64 `db:"prefix_length" json:"prefix_length"`
 }
 
 type ContainerLabel struct {
@@ -201,7 +261,7 @@ type Cost struct {
 	CurrencyCode       string         `db:"currency_code" json:"currency_code"`
 	CurrencyExponent   int64          `db:"currency_exponent" json:"currency_exponent"`
 	BillingInterval    sql.NullString `db:"billing_interval" json:"billing_interval"`
-	EffectiveStartDate string         `db:"effective_start_date" json:"effective_start_date"`
+	EffectiveStartDate sql.NullString `db:"effective_start_date" json:"effective_start_date"`
 	EffectiveEndDate   sql.NullString `db:"effective_end_date" json:"effective_end_date"`
 	ChargeDate         sql.NullString `db:"charge_date" json:"charge_date"`
 	Description        string         `db:"description" json:"description"`
@@ -211,6 +271,11 @@ type Cost struct {
 	CreatedAt          string         `db:"created_at" json:"created_at"`
 	UpdatedAt          string         `db:"updated_at" json:"updated_at"`
 	ArchivedAt         sql.NullString `db:"archived_at" json:"archived_at"`
+}
+
+type CurrencyUnit struct {
+	CurrencyCode      string `db:"currency_code" json:"currency_code"`
+	MinorUnitExponent int64  `db:"minor_unit_exponent" json:"minor_unit_exponent"`
 }
 
 type DiscoveryCollectorResult struct {
@@ -225,11 +290,29 @@ type DiscoveryReport struct {
 	ReportID               string         `db:"report_id" json:"report_id"`
 	AgentID                string         `db:"agent_id" json:"agent_id"`
 	ProtocolVersion        int64          `db:"protocol_version" json:"protocol_version"`
+	ClientVersion          sql.NullString `db:"client_version" json:"client_version"`
 	ReceivedAt             string         `db:"received_at" json:"received_at"`
 	ClientCollectedAt      string         `db:"client_collected_at" json:"client_collected_at"`
+	CollectionStartedAt    sql.NullString `db:"collection_started_at" json:"collection_started_at"`
+	CollectionFinishedAt   sql.NullString `db:"collection_finished_at" json:"collection_finished_at"`
 	SnapshotContentID      sql.NullString `db:"snapshot_content_id" json:"snapshot_content_id"`
 	Result                 string         `db:"result" json:"result"`
+	ContentReused          sql.NullInt64  `db:"content_reused" json:"content_reused"`
+	RequestFingerprint     sql.NullString `db:"request_fingerprint" json:"request_fingerprint"`
+	EnvelopeVersion        int64          `db:"envelope_version" json:"envelope_version"`
 	CollectionErrorSummary sql.NullString `db:"collection_error_summary" json:"collection_error_summary"`
+}
+
+type DiscoveryReportFilesystemMeasurement struct {
+	ReportID       string `db:"report_id" json:"report_id"`
+	Device         string `db:"device" json:"device"`
+	MountPoint     string `db:"mount_point" json:"mount_point"`
+	AvailableBytes int64  `db:"available_bytes" json:"available_bytes"`
+}
+
+type DiscoveryReportMeasurement struct {
+	ReportID          string        `db:"report_id" json:"report_id"`
+	HostUptimeSeconds sql.NullInt64 `db:"host_uptime_seconds" json:"host_uptime_seconds"`
 }
 
 type DnsDraft struct {
@@ -250,6 +333,7 @@ type DnsDraft struct {
 	UpdatedAt          string         `db:"updated_at" json:"updated_at"`
 	AppliedAt          sql.NullString `db:"applied_at" json:"applied_at"`
 	DiscardedAt        sql.NullString `db:"discarded_at" json:"discarded_at"`
+	Revision           int64          `db:"revision" json:"revision"`
 }
 
 type DnsDriftEvent struct {
@@ -305,18 +389,21 @@ type DnsProjection struct {
 	LeaseExpiresAt   sql.NullString `db:"lease_expires_at" json:"lease_expires_at"`
 	LeasedRevision   sql.NullInt64  `db:"leased_revision" json:"leased_revision"`
 	UpdatedAt        string         `db:"updated_at" json:"updated_at"`
+	Retryable        int64          `db:"retryable" json:"retryable"`
 }
 
 type DnsPublication struct {
-	ID              string         `db:"id" json:"id"`
-	ZoneID          string         `db:"zone_id" json:"zone_id"`
-	DesiredRevision int64          `db:"desired_revision" json:"desired_revision"`
-	Serial          int64          `db:"serial" json:"serial"`
-	Checksum        string         `db:"checksum" json:"checksum"`
-	FileName        string         `db:"file_name" json:"file_name"`
-	CreatedAt       string         `db:"created_at" json:"created_at"`
-	Result          string         `db:"result" json:"result"`
-	SanitizedError  sql.NullString `db:"sanitized_error" json:"sanitized_error"`
+	ID                    string         `db:"id" json:"id"`
+	ZoneID                string         `db:"zone_id" json:"zone_id"`
+	ZoneGeneration        sql.NullInt64  `db:"zone_generation" json:"zone_generation"`
+	LegacyDesiredRevision sql.NullInt64  `db:"legacy_desired_revision" json:"legacy_desired_revision"`
+	Serial                sql.NullInt64  `db:"serial" json:"serial"`
+	Checksum              sql.NullString `db:"checksum" json:"checksum"`
+	FileName              sql.NullString `db:"file_name" json:"file_name"`
+	FencingToken          sql.NullInt64  `db:"fencing_token" json:"fencing_token"`
+	CreatedAt             string         `db:"created_at" json:"created_at"`
+	Result                string         `db:"result" json:"result"`
+	SanitizedError        sql.NullString `db:"sanitized_error" json:"sanitized_error"`
 }
 
 type DnsRecordSet struct {
@@ -353,6 +440,29 @@ type DnsZone struct {
 	UpdatedAt        string         `db:"updated_at" json:"updated_at"`
 }
 
+type DnsZonePublicationState struct {
+	ZoneID              string         `db:"zone_id" json:"zone_id"`
+	DesiredGeneration   int64          `db:"desired_generation" json:"desired_generation"`
+	PublishedGeneration sql.NullInt64  `db:"published_generation" json:"published_generation"`
+	PublicationState    string         `db:"publication_state" json:"publication_state"`
+	NextSerial          int64          `db:"next_serial" json:"next_serial"`
+	PublishedSerial     sql.NullInt64  `db:"published_serial" json:"published_serial"`
+	PublishedChecksum   sql.NullString `db:"published_checksum" json:"published_checksum"`
+	PublishedFileName   sql.NullString `db:"published_file_name" json:"published_file_name"`
+	PublishedAt         sql.NullString `db:"published_at" json:"published_at"`
+	AttemptCount        int64          `db:"attempt_count" json:"attempt_count"`
+	NextRetryAt         sql.NullString `db:"next_retry_at" json:"next_retry_at"`
+	LastAttemptAt       sql.NullString `db:"last_attempt_at" json:"last_attempt_at"`
+	LastSuccessAt       sql.NullString `db:"last_success_at" json:"last_success_at"`
+	LastErrorCode       sql.NullString `db:"last_error_code" json:"last_error_code"`
+	LastErrorMessage    sql.NullString `db:"last_error_message" json:"last_error_message"`
+	LeaseOwner          sql.NullString `db:"lease_owner" json:"lease_owner"`
+	LeaseExpiresAt      sql.NullString `db:"lease_expires_at" json:"lease_expires_at"`
+	LeasedGeneration    sql.NullInt64  `db:"leased_generation" json:"leased_generation"`
+	FencingToken        int64          `db:"fencing_token" json:"fencing_token"`
+	LeaseFencingToken   sql.NullInt64  `db:"lease_fencing_token" json:"lease_fencing_token"`
+}
+
 type Domain struct {
 	ID                  string         `db:"id" json:"id"`
 	NormalizedName      string         `db:"normalized_name" json:"normalized_name"`
@@ -386,6 +496,32 @@ type IdempotencyKey struct {
 	ResponseBody       []byte         `db:"response_body" json:"response_body"`
 	CreatedAt          string         `db:"created_at" json:"created_at"`
 	ExpiresAt          string         `db:"expires_at" json:"expires_at"`
+}
+
+type IdempotencyRecord struct {
+	ActorID             string `db:"actor_id" json:"actor_id"`
+	OperationID         string `db:"operation_id" json:"operation_id"`
+	KeyHash             string `db:"key_hash" json:"key_hash"`
+	RequestHash         string `db:"request_hash" json:"request_hash"`
+	ResponseStatus      int64  `db:"response_status" json:"response_status"`
+	ResponseHeadersJson string `db:"response_headers_json" json:"response_headers_json"`
+	ResponseBodyJson    string `db:"response_body_json" json:"response_body_json"`
+	CreatedAt           string `db:"created_at" json:"created_at"`
+	ExpiresAt           string `db:"expires_at" json:"expires_at"`
+}
+
+type InterfaceAddress struct {
+	ComputeID       string         `db:"compute_id" json:"compute_id"`
+	InterfaceName   string         `db:"interface_name" json:"interface_name"`
+	Address         string         `db:"address" json:"address"`
+	PrefixLength    sql.NullInt64  `db:"prefix_length" json:"prefix_length"`
+	Scope           sql.NullString `db:"scope" json:"scope"`
+	FirstObservedAt string         `db:"first_observed_at" json:"first_observed_at"`
+	LastObservedAt  string         `db:"last_observed_at" json:"last_observed_at"`
+	LastReportID    sql.NullString `db:"last_report_id" json:"last_report_id"`
+	PresenceState   string         `db:"presence_state" json:"presence_state"`
+	AbsentAt        sql.NullString `db:"absent_at" json:"absent_at"`
+	AbsenceReportID sql.NullString `db:"absence_report_id" json:"absence_report_id"`
 }
 
 type IpAssignment struct {
@@ -486,8 +622,11 @@ type SnapshotContent struct {
 }
 
 type Tag struct {
-	ID             string `db:"id" json:"id"`
-	NormalizedName string `db:"normalized_name" json:"normalized_name"`
-	DisplayName    string `db:"display_name" json:"display_name"`
-	CreatedAt      string `db:"created_at" json:"created_at"`
+	ID             string         `db:"id" json:"id"`
+	NormalizedName string         `db:"normalized_name" json:"normalized_name"`
+	DisplayName    string         `db:"display_name" json:"display_name"`
+	Revision       int64          `db:"revision" json:"revision"`
+	CreatedAt      string         `db:"created_at" json:"created_at"`
+	UpdatedAt      string         `db:"updated_at" json:"updated_at"`
+	ArchivedAt     sql.NullString `db:"archived_at" json:"archived_at"`
 }

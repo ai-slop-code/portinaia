@@ -65,7 +65,10 @@ export interface paths {
     /** List personal access tokens */
     get: operations["listPersonalAccessTokens"];
     put?: never;
-    /** Create a personal access token */
+    /**
+     * Create a personal access token
+     * @description The plaintext token is returned once and is never replayed. If the response is lost, locate and revoke the newly created token, then create a replacement.
+     */
     post: operations["createPersonalAccessToken"];
     delete?: never;
     options?: never;
@@ -407,6 +410,28 @@ export interface paths {
     get: operations["getContainer"];
     /** Replace manually owned container fields */
     put: operations["updateContainer"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/containers/{container_id}/discovery-reports": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        container_id: components["parameters"]["ContainerId"];
+      };
+      cookie?: never;
+    };
+    /**
+     * List retained report history for a logical container
+     * @description Lists reports for this container's compute, verified Podman owner, and exact name. Each entry reports whether it was present, authoritatively absent, or unavailable because the relevant collector failed. Results use receipt-descending order with a server history ID tie-breaker.
+     */
+    get: operations["listContainerDiscoveryReports"];
+    put?: never;
     post?: never;
     delete?: never;
     options?: never;
@@ -769,7 +794,10 @@ export interface paths {
     /** List and search tags */
     get: operations["listTags"];
     put?: never;
-    /** Create a tag */
+    /**
+     * Create a tag
+     * @description Creates an active tag with revision 1.
+     */
     post: operations["createTag"];
     delete?: never;
     options?: never;
@@ -788,7 +816,10 @@ export interface paths {
     };
     /** Read a tag */
     get: operations["getTag"];
-    /** Replace writable tag fields */
+    /**
+     * Replace writable tag fields
+     * @description Replaces the tag name and display name. The tag revision advances by one.
+     */
     put: operations["updateTag"];
     post?: never;
     delete?: never;
@@ -808,7 +839,10 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Archive a tag */
+    /**
+     * Archive a tag
+     * @description Archives the tag without detaching it from resources. The tag revision advances by one.
+     */
     post: operations["archiveTag"];
     delete?: never;
     options?: never;
@@ -827,7 +861,10 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Restore an archived tag */
+    /**
+     * Restore an archived tag
+     * @description Restores an archived tag. The tag revision advances by one.
+     */
     post: operations["restoreTag"];
     delete?: never;
     options?: never;
@@ -847,7 +884,10 @@ export interface paths {
     get?: never;
     put?: never;
     post?: never;
-    /** Permanently purge an archived tag */
+    /**
+     * Permanently purge an archived tag
+     * @description Permanently removes an archived tag only after it has been detached from every resource. An active or attached tag returns 409. This administrative purge is irreversible.
+     */
     delete: operations["purgeTag"];
     options?: never;
     head?: never;
@@ -861,8 +901,51 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Read the bounded typed inventory hierarchy */
+    /**
+     * List root nodes of the typed inventory hierarchy
+     * @description Returns only root locations and root computes. Child nodes are fetched lazily through /inventory/tree/{parent_id}/children; this avoids returning a truncated hierarchy without a way to continue. Containment is limited to location -> location/compute and compute -> VM compute/container.
+     */
     get: operations["getInventoryTree"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/inventory/tree/{parent_id}/children": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description ID of a location or compute node whose typed containment children are requested. */
+        parent_id: components["parameters"]["InventoryTreeParentId"];
+      };
+      cookie?: never;
+    };
+    /**
+     * List a typed inventory node's children
+     * @description Returns one bounded child page for a location or compute. Only the product's typed containment edges are returned; arbitrary relationships are not part of the inventory tree.
+     */
+    get: operations["listInventoryTreeChildren"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/inventory/summary": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Read inventory compute and observed-container counts */
+    get: operations["getInventorySummary"];
     put?: never;
     post?: never;
     delete?: never;
@@ -882,6 +965,25 @@ export interface paths {
     };
     /** Read compute overview counts and status */
     get: operations["getComputeSummary"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/computes/{compute_id}/collector-status": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        compute_id: components["parameters"]["ComputeId"];
+      };
+      cookie?: never;
+    };
+    /** Read independent discovery collector status for a compute */
+    get: operations["listComputeCollectorStatus"];
     put?: never;
     post?: never;
     delete?: never;
@@ -952,7 +1054,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Read dashboard aggregate metrics */
+    /**
+     * Read dashboard aggregate metrics
+     * @description Dashboard source filters: offline computes use /computes?freshness=offline; stale resources use /containers?stale=true and /ip-assignments?stale=true; expiring domains use /domains?expiry_state=expiring; DNS pending counts use /dns/names?projection_state=pending and DNS failures use /dns/names?projection_state=failed; recurring costs use /costs?currency={currency}.
+     */
     get: operations["getDashboardSummary"];
     put?: never;
     post?: never;
@@ -1009,7 +1114,10 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Create a single-use enrollment token bound to a compute */
+    /**
+     * Create a single-use enrollment token bound to a compute
+     * @description The plaintext token is returned once and is never replayed. If the response is lost, issue a replacement token for the same compute; the replacement revokes the prior outstanding token.
+     */
     post: operations["createEnrollmentToken"];
     delete?: never;
     options?: never;
@@ -1066,7 +1174,10 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Revoke the agent credential and issue a new enrollment token */
+    /**
+     * Revoke the agent credential and issue a new enrollment token
+     * @description Rotation immediately revokes the current agent credential and returns a one-time enrollment token. The token is never replayed; if the response is lost, issue a replacement enrollment token for the bound compute and enroll again.
+     */
     post: operations["rotateAgentCredential"];
     delete?: never;
     options?: never;
@@ -1083,7 +1194,10 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Exchange a single-use enrollment token for an agent credential */
+    /**
+     * Exchange a single-use enrollment token for an agent credential
+     * @description Enrollment consumes the token exactly once and returns the agent credential only in this no-store response. A lost response cannot be replayed; issue a fresh credential by explicitly rotating the agent, then enroll with the returned one-time token. If the rotation response is also lost, replace its outstanding token for the bound compute.
+     */
     post: operations["enrollAgentV1"];
     delete?: never;
     options?: never;
@@ -1157,7 +1271,8 @@ export interface paths {
       query?: never;
       header?: never;
       path: {
-        report_id: components["parameters"]["ReportId"];
+        /** @description Server-assigned immutable history id (DiscoveryReport.id), not the client-supplied report_id. */
+        report_id: components["parameters"]["HistoryReportId"];
       };
       cookie?: never;
     };
@@ -1176,7 +1291,8 @@ export interface paths {
       query?: never;
       header?: never;
       path: {
-        report_id: components["parameters"]["ReportId"];
+        /** @description Server-assigned immutable history id (DiscoveryReport.id), not the client-supplied report_id. */
+        report_id: components["parameters"]["HistoryReportId"];
       };
       cookie?: never;
     };
@@ -1184,7 +1300,9 @@ export interface paths {
      * Stream a retained canonical snapshot
      * @description Streams the stored gzip-compressed canonical JSON without materializing
      *     the complete document in memory. The decompressed JSON conforms to
-     *     CanonicalSnapshot and is bounded by the snapshot ingestion limits.
+     *     SnapshotDownload and is bounded by the snapshot ingestion limits. It
+     *     combines the requested report envelope and volatile measurements with
+     *     shared structural content. structural_sha256 hashes only structural bytes.
      */
     get: operations["getDiscoveryReportSnapshot"];
     put?: never;
@@ -1202,7 +1320,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Compare two retained discovery snapshots */
+    /**
+     * Compare two retained discovery snapshots
+     * @description Returns one bounded page of structured differences. Results are ordered by change kind and stable resource key; continue with page[after] until page.has_more is false. All pages refer to the same two retained reports.
+     */
     get: operations["compareSnapshots"];
     put?: never;
     post?: never;
@@ -1312,7 +1433,10 @@ export interface paths {
       };
       cookie?: never;
     };
-    /** List grouped Cloudflare import candidates */
+    /**
+     * List grouped Cloudflare import candidates
+     * @description Returns importable records as supported sets and all unsupported, malformed, conflicting, or already-managed records as rejected summaries. Only the importable discriminator variant may be selected for preview.
+     */
     get: operations["listDnsImportCandidates"];
     put?: never;
     post?: never;
@@ -1333,7 +1457,10 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Preview selected provider records for import */
+    /**
+     * Preview selected provider records for import
+     * @description Only importable candidate IDs from the current observation are accepted. At most 10 candidates may be selected so every proposed provider change fits in the complete preview response; oversized selections return 422.
+     */
     post: operations["previewDnsImport"];
     delete?: never;
     options?: never;
@@ -1352,7 +1479,10 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Adopt selected provider records as desired state */
+    /**
+     * Adopt selected provider records as desired state
+     * @description Applies exactly the candidate IDs and preview fingerprint returned by a complete, non-truncated preview; the selection is limited to 10 candidates.
+     */
     post: operations["applyDnsImport"];
     delete?: never;
     options?: never;
@@ -1367,7 +1497,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** List and search DNS-name aggregates */
+    /**
+     * List and search DNS-name aggregates
+     * @description link_target_type and link_target_id are an all-or-none exact-target filter. Supported target types are compute, container, and ip_assignment only.
+     */
     get: operations["listDnsNames"];
     put?: never;
     post?: never;
@@ -1424,10 +1557,16 @@ export interface paths {
     };
     /** Read a draft and its latest preview */
     get: operations["getDnsDraft"];
-    /** Replace draft content */
+    /**
+     * Replace draft content
+     * @description Requires If-Match with the current draft revision. This does not use the target DNS name's base revision.
+     */
     put: operations["updateDnsDraft"];
     post?: never;
-    /** Discard an unapplied draft */
+    /**
+     * Discard an unapplied draft
+     * @description Requires If-Match with the current draft revision; discarding does not change the target DNS name.
+     */
     delete: operations["discardDnsDraft"];
     options?: never;
     head?: never;
@@ -1445,7 +1584,10 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Validate a draft and calculate provider diffs */
+    /**
+     * Validate a draft and calculate provider diffs
+     * @description Requires If-Match with the current draft revision. The preview is tied to the draft content and target-name base revision.
+     */
     post: operations["previewDnsDraft"];
     delete?: never;
     options?: never;
@@ -1464,7 +1606,10 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Commit desired state and enqueue independent projections */
+    /**
+     * Commit desired state and enqueue independent projections
+     * @description Requires If-Match with the current draft revision. The request body's expected_base_revision is the target DNS name revision (zero for create).
+     */
     post: operations["applyDnsDraft"];
     delete?: never;
     options?: never;
@@ -1608,26 +1753,200 @@ export interface components {
   schemas: {
     /**
      * Format: uuid
+     * @description New identifiers are UUIDv7. Existing UUIDv4 resource identifiers and references remain accepted for backward compatibility; records are not re-keyed during migration or update.
      * @example 0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73b4
      */
     UuidV7: string;
     /**
      * Format: date-time
+     * @description RFC 3339 UTC; fractional seconds may be sent and are normalized to whole seconds before persistence. Responses may serialize whole seconds.
      * @example 2026-08-04T12:00:00Z
      */
     Timestamp: string;
-    /** Format: date */
+    /**
+     * Format: date
+     * @description Calendar date in YYYY-MM-DD form with no timezone conversion.
+     */
     Date: string;
     /** Format: int64 */
     Revision: number;
     /** @example "revision-7" */
     EntityTag: string;
-    /** @example EUR */
-    CurrencyCode: string;
+    /**
+     * @description Supported ISO 4217 currency codes from the pinned SIX List One catalog published 2026-09-17. The server derives currency_exponent; unsupported codes are rejected rather than assigned a guessed exponent.
+     * @enum {string}
+     */
+    CurrencyCode:
+      | "AED"
+      | "AFN"
+      | "ALL"
+      | "AMD"
+      | "AOA"
+      | "ARS"
+      | "AUD"
+      | "AWG"
+      | "AZN"
+      | "BAM"
+      | "BBD"
+      | "BDT"
+      | "BHD"
+      | "BIF"
+      | "BMD"
+      | "BND"
+      | "BOB"
+      | "BOV"
+      | "BRL"
+      | "BSD"
+      | "BTN"
+      | "BWP"
+      | "BYN"
+      | "BZD"
+      | "CAD"
+      | "CDF"
+      | "CHE"
+      | "CHF"
+      | "CHW"
+      | "CLF"
+      | "CLP"
+      | "CNY"
+      | "COP"
+      | "COU"
+      | "CRC"
+      | "CUP"
+      | "CVE"
+      | "CZK"
+      | "DJF"
+      | "DKK"
+      | "DOP"
+      | "DZD"
+      | "EGP"
+      | "ERN"
+      | "ETB"
+      | "EUR"
+      | "FJD"
+      | "FKP"
+      | "GBP"
+      | "GEL"
+      | "GHS"
+      | "GIP"
+      | "GMD"
+      | "GNF"
+      | "GTQ"
+      | "GYD"
+      | "HKD"
+      | "HNL"
+      | "HTG"
+      | "HUF"
+      | "IDR"
+      | "ILS"
+      | "INR"
+      | "IQD"
+      | "IRR"
+      | "ISK"
+      | "JMD"
+      | "JOD"
+      | "JPY"
+      | "KES"
+      | "KGS"
+      | "KHR"
+      | "KMF"
+      | "KPW"
+      | "KRW"
+      | "KWD"
+      | "KYD"
+      | "KZT"
+      | "LAK"
+      | "LBP"
+      | "LKR"
+      | "LRD"
+      | "LSL"
+      | "LYD"
+      | "MAD"
+      | "MDL"
+      | "MGA"
+      | "MKD"
+      | "MMK"
+      | "MNT"
+      | "MOP"
+      | "MRU"
+      | "MUR"
+      | "MVR"
+      | "MWK"
+      | "MXN"
+      | "MXV"
+      | "MYR"
+      | "MZN"
+      | "NAD"
+      | "NGN"
+      | "NIO"
+      | "NOK"
+      | "NPR"
+      | "NZD"
+      | "OMR"
+      | "PAB"
+      | "PEN"
+      | "PGK"
+      | "PHP"
+      | "PKR"
+      | "PLN"
+      | "PYG"
+      | "QAR"
+      | "RON"
+      | "RSD"
+      | "RUB"
+      | "RWF"
+      | "SAR"
+      | "SBD"
+      | "SCR"
+      | "SDG"
+      | "SEK"
+      | "SGD"
+      | "SHP"
+      | "SLE"
+      | "SOS"
+      | "SRD"
+      | "SSP"
+      | "STN"
+      | "SVC"
+      | "SYP"
+      | "SZL"
+      | "THB"
+      | "TJS"
+      | "TMT"
+      | "TND"
+      | "TOP"
+      | "TRY"
+      | "TTD"
+      | "TWD"
+      | "TZS"
+      | "UAH"
+      | "UGX"
+      | "USD"
+      | "USN"
+      | "UYI"
+      | "UYU"
+      | "UYW"
+      | "UZS"
+      | "VED"
+      | "VES"
+      | "VND"
+      | "VUV"
+      | "WST"
+      | "XAD"
+      | "XAF"
+      | "XCD"
+      | "XCG"
+      | "XOF"
+      | "XPF"
+      | "YER"
+      | "ZAR"
+      | "ZMW"
+      | "ZWG";
     Money: {
       /** Format: int64 */
       amount_minor: number;
       currency: components["schemas"]["CurrencyCode"];
+      /** @description Server-derived ISO 4217 minor-unit exponent; never supplied by clients. */
       readonly currency_exponent?: number;
     };
     PageInfo: {
@@ -1674,6 +1993,10 @@ export interface components {
       code: string;
       request_id: string;
       violations?: components["schemas"]["Violation"][];
+      /** @description Present on dependency_conflict responses from permanent purge operations. */
+      dependency_details?: components["schemas"]["PurgeDependencyDetails"];
+      /** @description Readiness time and checks included with a 503 from /health/ready. */
+      readiness?: components["schemas"]["ReadinessStatus"];
     };
     LoginRequest: {
       username: string;
@@ -1717,7 +2040,10 @@ export interface components {
       items: components["schemas"]["PersonalAccessToken"][];
       page: components["schemas"]["PageInfo"];
     };
-    /** @enum {string} */
+    /**
+     * @description hosting_provider is persisted as SQL role hosting.
+     * @enum {string}
+     */
     ProviderRole:
       "hosting_provider" | "registrar" | "hardware_vendor" | "other";
     ProviderWrite: {
@@ -1730,8 +2056,21 @@ export interface components {
       notes?: string;
       tag_ids: components["schemas"]["UuidV7"][];
     };
-    Provider: components["schemas"]["ResourceMetadata"] &
-      components["schemas"]["ProviderWrite"];
+    Provider: {
+      id: components["schemas"]["UuidV7"];
+      created_at: components["schemas"]["Timestamp"];
+      updated_at: components["schemas"]["Timestamp"];
+      revision: number;
+      archived_at?: components["schemas"]["Timestamp"] | null;
+      name: string;
+      /** Format: uri */
+      website?: string | null;
+      roles: components["schemas"]["ProviderRole"][];
+      external_account_reference?: string | null;
+      description?: string;
+      notes?: string;
+      tag_ids: components["schemas"]["UuidV7"][];
+    };
     ProviderPage: {
       items: components["schemas"]["Provider"][];
       page: components["schemas"]["PageInfo"];
@@ -1782,7 +2121,8 @@ export interface components {
     InterfaceAddress: {
       /** Format: ip */
       address: string;
-      prefix_length: number;
+      /** @description Unknown prefix remains null; the server does not fabricate a network prefix. */
+      prefix_length?: number | null;
       scope?: components["schemas"]["IpScope"];
     };
     NetworkInterfaceObservation: {
@@ -1815,6 +2155,26 @@ export interface components {
     };
     /** @enum {string} */
     AgentStatus: "online" | "offline" | "revoked";
+    CollectorObservation: {
+      collector_key: string;
+      /** @enum {string} */
+      collector: "host" | "interfaces" | "disks" | "filesystems" | "podman";
+      owner_uid?: number | null;
+      connection_name?: string | null;
+      /** @enum {string} */
+      last_status: "success" | "failed";
+      last_received_at: components["schemas"]["Timestamp"];
+      last_report_id?: components["schemas"]["UuidV7"];
+      last_successful_at?: components["schemas"]["Timestamp"];
+      last_successful_report_id?: components["schemas"]["UuidV7"];
+      last_failed_at?: components["schemas"]["Timestamp"];
+      last_failed_report_id?: components["schemas"]["UuidV7"];
+      last_error_code?: string;
+      last_error_message?: string;
+    };
+    ComputeCollectorStatus: {
+      items: components["schemas"]["CollectorObservation"][];
+    };
     /** @enum {string} */
     ComputeAgentStatus: "unenrolled" | "online" | "offline" | "revoked";
     Compute: components["schemas"]["ResourceMetadata"] &
@@ -1843,7 +2203,13 @@ export interface components {
     ContainerNetwork: {
       name: string;
       network_id?: string;
-      addresses: string[];
+      addresses: components["schemas"]["ContainerAddress"][];
+    };
+    ContainerAddress: {
+      /** Format: ip */
+      address: string;
+      /** @description Unknown prefix remains null; the server does not fabricate a network prefix. */
+      prefix_length?: number | null;
     };
     ContainerMount: {
       /** @enum {string} */
@@ -1856,6 +2222,12 @@ export interface components {
       key: string;
       value: string;
     };
+    /**
+     * @description API on_failure and unless_stopped map to persisted SQL on-failure and unless-stopped; unknown is preserved.
+     * @enum {string}
+     */
+    ContainerRestartPolicy:
+      "no" | "always" | "on_failure" | "unless_stopped" | "unknown";
     ContainerObservation: {
       runtime_id: string;
       image_name: string;
@@ -1868,9 +2240,7 @@ export interface components {
       health: "none" | "starting" | "healthy" | "unhealthy" | "unknown";
       created_at?: components["schemas"]["Timestamp"];
       started_at?: components["schemas"]["Timestamp"];
-      /** @enum {string} */
-      restart_policy:
-        "no" | "always" | "on_failure" | "unless_stopped" | "unknown";
+      restart_policy: components["schemas"]["ContainerRestartPolicy"];
       restart_maximum_retry_count?: number;
       ports: components["schemas"]["ContainerPort"][];
       networks: components["schemas"]["ContainerNetwork"][];
@@ -1883,7 +2253,8 @@ export interface components {
     Container: components["schemas"]["ResourceMetadata"] & {
       compute_id: components["schemas"]["UuidV7"];
       podman_connection?: string;
-      podman_owner: string;
+      /** Format: int64 */
+      podman_owner_uid: number;
       name: string;
       description?: string;
       notes?: string;
@@ -1925,6 +2296,7 @@ export interface components {
       page: components["schemas"]["PageInfo"];
     };
     DomainWrite: {
+      /** @description Unicode or ASCII domain input; the server removes a trailing dot and stores lowercase IDNA ASCII. */
       name: string;
       registrar_provider_id?: components["schemas"]["UuidV7"];
       registered_on?: components["schemas"]["Date"];
@@ -1935,10 +2307,11 @@ export interface components {
       notes?: string;
       tag_ids: components["schemas"]["UuidV7"][];
     };
+    /** @enum {string} */
+    DomainExpiryState: "unknown" | "current" | "expiring" | "expired";
     Domain: components["schemas"]["ResourceMetadata"] &
       components["schemas"]["DomainWrite"] & {
-        /** @enum {string} */
-        expiry_state: "unknown" | "current" | "expiring" | "expired";
+        expiry_state: components["schemas"]["DomainExpiryState"];
         dns_zone_id?: components["schemas"]["UuidV7"];
       };
     DomainPage: {
@@ -1994,6 +2367,7 @@ export interface components {
       name: string;
       display_name: string;
     };
+    /** @description A mutable tag. revision is the tag's own monotonic revision; archived_at is null while active. Purging requires administrative scope, archival, and detachment from all tagged resources. */
     Tag: components["schemas"]["ResourceMetadata"] &
       components["schemas"]["TagWrite"];
     TagPage: {
@@ -2006,11 +2380,19 @@ export interface components {
       kind: "location" | "compute" | "container";
       name: string;
       archived: boolean;
-      children: components["schemas"]["InventoryTreeNode"][];
+      has_children: boolean;
     };
     InventoryTree: {
-      roots: components["schemas"]["InventoryTreeNode"][];
-      truncated: boolean;
+      items: components["schemas"]["InventoryTreeNode"][];
+      page: components["schemas"]["PageInfo"];
+    };
+    InventorySummary: {
+      compute_count: number;
+      physical_compute_count: number;
+      vps_count: number;
+      vm_count: number;
+      observed_container_count: number;
+      stale_container_count: number;
     };
     ComputeSummary: {
       compute: components["schemas"]["Compute"];
@@ -2134,12 +2516,56 @@ export interface components {
       /** @enum {string} */
       virtualization_role?: "none" | "host" | "guest" | "unknown";
     };
+    /** @description A complete authoritative host fact result; missing optional scalars remain unknown. */
+    HostCollectionWriteSuccess: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      status: "success";
+      host: components["schemas"]["HostSnapshot"];
+    };
+    /** @description Failed host collection; contains no authoritative host facts. */
+    HostCollectionWriteFailed: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      status: "failed";
+      /** @description Sanitized collector error. */
+      error: string;
+    };
+    HostCollectionWrite:
+      | components["schemas"]["HostCollectionWriteSuccess"]
+      | components["schemas"]["HostCollectionWriteFailed"];
     DiskSnapshot: {
       name: string;
       model?: string;
       /** Format: int64 */
       size_bytes: number;
     };
+    /** @description A complete authoritative disk inventory; an empty array means no disks were observed. */
+    DiskCollectionWriteSuccess: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      status: "success";
+      disks: components["schemas"]["DiskSnapshot"][];
+    };
+    /** @description Failed disk collection; contains no authoritative disk inventory. */
+    DiskCollectionWriteFailed: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      status: "failed";
+      /** @description Sanitized collector error. */
+      error: string;
+    };
+    DiskCollectionWrite:
+      | components["schemas"]["DiskCollectionWriteSuccess"]
+      | components["schemas"]["DiskCollectionWriteFailed"];
     FilesystemSnapshot: {
       device: string;
       filesystem: string;
@@ -2149,6 +2575,28 @@ export interface components {
       /** Format: int64 */
       available_bytes: number;
     };
+    /** @description A complete authoritative filesystem inventory; an empty array means no filesystems were observed. */
+    FilesystemCollectionWriteSuccess: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      status: "success";
+      filesystems: components["schemas"]["FilesystemSnapshot"][];
+    };
+    /** @description Failed filesystem collection; contains no authoritative filesystem inventory. */
+    FilesystemCollectionWriteFailed: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      status: "failed";
+      /** @description Sanitized collector error. */
+      error: string;
+    };
+    FilesystemCollectionWrite:
+      | components["schemas"]["FilesystemCollectionWriteSuccess"]
+      | components["schemas"]["FilesystemCollectionWriteFailed"];
     SnapshotContainer: {
       name: string;
       runtime_id: string;
@@ -2162,18 +2610,18 @@ export interface components {
       health: "none" | "starting" | "healthy" | "unhealthy" | "unknown";
       created_at?: components["schemas"]["Timestamp"];
       started_at?: components["schemas"]["Timestamp"];
-      /** @enum {string} */
-      restart_policy:
-        "no" | "always" | "on_failure" | "unless_stopped" | "unknown";
+      restart_policy: components["schemas"]["ContainerRestartPolicy"];
       restart_maximum_retry_count?: number;
       ports: components["schemas"]["ContainerPort"][];
       networks: components["schemas"]["ContainerNetwork"][];
       mounts: components["schemas"]["ContainerMount"][];
       labels: components["schemas"]["ContainerLabel"][];
     };
-    PodmanCollectionSuccess: {
+    /** @description A complete authoritative container inventory for this connection and numeric owner UID. */
+    PodmanCollectionWriteSuccess: {
       connection: string;
-      owner: string;
+      /** Format: int64 */
+      owner_uid: number;
       /**
        * @description discriminator enum property added by openapi-typescript
        * @enum {string}
@@ -2181,38 +2629,203 @@ export interface components {
       status: "success";
       containers: components["schemas"]["SnapshotContainer"][];
     };
-    PodmanCollectionFailed: {
+    /** @description Failed Podman collection for a numeric owner UID; partial container inventories are discarded. */
+    PodmanCollectionWriteFailed: {
       connection: string;
-      owner: string;
+      /** Format: int64 */
+      owner_uid: number;
       /**
        * @description discriminator enum property added by openapi-typescript
        * @enum {string}
        */
       status: "failed";
+      /** @description Sanitized collector error. */
       error: string;
     };
-    PodmanCollection:
-      | components["schemas"]["PodmanCollectionSuccess"]
-      | components["schemas"]["PodmanCollectionFailed"];
+    PodmanCollectionWrite:
+      | components["schemas"]["PodmanCollectionWriteSuccess"]
+      | components["schemas"]["PodmanCollectionWriteFailed"];
+    /** @description A complete authoritative interface inventory; an empty array means no interfaces were observed. */
+    InterfaceCollectionWriteSuccess: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      status: "success";
+      interfaces: components["schemas"]["NetworkInterfaceObservation"][];
+    };
+    /** @description Failed interface collection; contains no authoritative interface inventory. */
+    InterfaceCollectionWriteFailed: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      status: "failed";
+      /** @description Sanitized collector error. */
+      error: string;
+    };
+    InterfaceCollectionWrite:
+      | components["schemas"]["InterfaceCollectionWriteSuccess"]
+      | components["schemas"]["InterfaceCollectionWriteFailed"];
+    /** @description Stable sanitized code included in structural content; diagnostic text belongs to the per-report envelope. */
+    CollectorErrorCode: string;
+    StructuralHostSnapshot: {
+      machine_id: string;
+      hostname: string;
+      os_name: string;
+      os_version: string;
+      kernel_version: string;
+      architecture: string;
+      cpu_model?: string;
+      logical_cpu_count: number;
+      /** Format: int64 */
+      memory_bytes: number;
+      boot_id?: string;
+      booted_at?: components["schemas"]["Timestamp"];
+      /** @enum {string} */
+      virtualization_role?: "none" | "host" | "guest" | "unknown";
+    };
+    StructuralFilesystemSnapshot: {
+      device: string;
+      filesystem: string;
+      mount_point: string;
+      /** Format: int64 */
+      total_bytes: number;
+    };
+    HostCollectionSuccess: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      status: "success";
+      host: components["schemas"]["StructuralHostSnapshot"];
+    };
+    HostCollectionFailed: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      status: "failed";
+      error_code: components["schemas"]["CollectorErrorCode"];
+    };
+    HostCollection:
+      | components["schemas"]["HostCollectionSuccess"]
+      | components["schemas"]["HostCollectionFailed"];
+    DiskCollectionSuccess: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      status: "success";
+      disks: components["schemas"]["DiskSnapshot"][];
+    };
+    DiskCollectionFailed: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      status: "failed";
+      error_code: components["schemas"]["CollectorErrorCode"];
+    };
+    DiskCollection:
+      | components["schemas"]["DiskCollectionSuccess"]
+      | components["schemas"]["DiskCollectionFailed"];
+    InterfaceCollectionSuccess: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      status: "success";
+      interfaces: components["schemas"]["NetworkInterfaceObservation"][];
+    };
+    InterfaceCollectionFailed: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      status: "failed";
+      error_code: components["schemas"]["CollectorErrorCode"];
+    };
+    InterfaceCollection:
+      | components["schemas"]["InterfaceCollectionSuccess"]
+      | components["schemas"]["InterfaceCollectionFailed"];
+    FilesystemCollectionSuccess: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      status: "success";
+      filesystems: components["schemas"]["StructuralFilesystemSnapshot"][];
+    };
+    FilesystemCollectionFailed: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      status: "failed";
+      error_code: components["schemas"]["CollectorErrorCode"];
+    };
+    FilesystemCollection:
+      | components["schemas"]["FilesystemCollectionSuccess"]
+      | components["schemas"]["FilesystemCollectionFailed"];
+    /** @description A complete authoritative snapshot for this connection and numeric owner UID. */
+    StructuralPodmanCollectionSuccess: {
+      connection: string;
+      /** Format: int64 */
+      owner_uid: number;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      status: "success";
+      containers: components["schemas"]["SnapshotContainer"][];
+    };
+    /** @description Failed collection for this connection and numeric owner UID. */
+    StructuralPodmanCollectionFailed: {
+      connection: string;
+      /** Format: int64 */
+      owner_uid: number;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      status: "failed";
+      error_code: components["schemas"]["CollectorErrorCode"];
+    };
+    StructuralPodmanCollection:
+      | components["schemas"]["StructuralPodmanCollectionSuccess"]
+      | components["schemas"]["StructuralPodmanCollectionFailed"];
+    /** @description Agent report retries retain the same report ID and payload for at most 90 days from collection start. Older reports are rejected and cannot reapply stale observations after report-retention cleanup. */
     DiscoverySnapshotWrite: {
       report_id: components["schemas"]["UuidV7"];
       protocol_version: number;
       client_version: string;
       collection_started_at: components["schemas"]["Timestamp"];
       collection_finished_at: components["schemas"]["Timestamp"];
-      host: components["schemas"]["HostSnapshot"];
-      disks: components["schemas"]["DiskSnapshot"][];
-      interfaces: components["schemas"]["NetworkInterfaceObservation"][];
-      filesystems: components["schemas"]["FilesystemSnapshot"][];
-      podman: components["schemas"]["PodmanCollection"][];
+      host: components["schemas"]["HostCollectionWrite"];
+      disks: components["schemas"]["DiskCollectionWrite"];
+      interfaces: components["schemas"]["InterfaceCollectionWrite"];
+      filesystems: components["schemas"]["FilesystemCollectionWrite"];
+      podman: components["schemas"]["PodmanCollectionWrite"][];
+      /** @description Additional sanitized diagnostics only. Host, disk, interface, filesystem, and Podman outcomes are represented by their own collector unions. */
       errors: components["schemas"]["CollectionError"][];
     };
     SnapshotAcceptance: {
+      /** @description Server-assigned immutable history id for this accepted report. */
+      id: components["schemas"]["UuidV7"];
       report_id: components["schemas"]["UuidV7"];
+      protocol_version: number;
+      /** @description Null for schema-1 reports where client version was not retained. */
+      client_version: string | null;
+      /** @description Null for schema-1 reports without a stored collection-start value. */
+      collection_started_at: components["schemas"]["Timestamp"] | null;
+      /** @description Null for schema-1 reports without a stored collection-finish value. */
+      collection_finished_at: components["schemas"]["Timestamp"] | null;
       /** @enum {string} */
       result: "accepted" | "accepted_with_errors";
       received_at: components["schemas"]["Timestamp"];
-      content_reused: boolean;
+      /** @description Null when reuse status predates report-envelope storage. */
+      content_reused: boolean | null;
       server_time: components["schemas"]["Timestamp"];
       accepted_protocol: components["schemas"]["ProtocolRange"];
       schedule: components["schemas"]["AgentSchedule"];
@@ -2225,35 +2838,101 @@ export interface components {
       status: "success" | "failed";
       error?: string | null;
     };
-    DiscoveryReport: {
+    DiscoveryReport:
+      | components["schemas"]["AcceptedDiscoveryReport"]
+      | components["schemas"]["RejectedDiscoveryReport"];
+    AcceptedDiscoveryReport: {
+      /** @description Server-assigned immutable history id used in history paths. */
       id: components["schemas"]["UuidV7"];
+      /** @description Client-supplied idempotency identity used in the snapshot PUT path. */
+      report_id: components["schemas"]["UuidV7"];
       agent_id: components["schemas"]["UuidV7"];
       compute_id: components["schemas"]["UuidV7"];
       protocol_version: number;
-      client_version: string;
+      client_version: string | null;
       received_at: components["schemas"]["Timestamp"];
-      collection_started_at: components["schemas"]["Timestamp"];
-      collection_finished_at: components["schemas"]["Timestamp"];
-      result: components["schemas"]["DiscoveryReportResult"];
+      /** @description Null for schema-1 reports without a stored collection-start value. */
+      collection_started_at: components["schemas"]["Timestamp"] | null;
+      /** @description Null for schema-1 reports without a stored collection-finish value. */
+      collection_finished_at: components["schemas"]["Timestamp"] | null;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      result: "accepted" | "accepted_with_errors";
       content_id: components["schemas"]["UuidV7"];
-      content_reused: boolean;
+      /** @description Null when schema-1 history did not retain the content-reuse flag. */
+      content_reused: boolean | null;
+      /** @description Null for schema-1 history without separately retained volatile samples. */
+      volatile_measurements:
+        components["schemas"]["VolatileMeasurements"] | null;
+      collection_error_summary: string | null;
       collector_results: components["schemas"]["CollectorResult"][];
+      diagnostics: components["schemas"]["CollectionError"][];
+    };
+    RejectedDiscoveryReport: {
+      /** @description Server-assigned immutable history id used in history paths. */
+      id: components["schemas"]["UuidV7"];
+      /** @description Client-supplied report identity from the snapshot PUT request. */
+      report_id: components["schemas"]["UuidV7"];
+      agent_id: components["schemas"]["UuidV7"];
+      compute_id: components["schemas"]["UuidV7"];
+      protocol_version: number;
+      client_version: string | null;
+      received_at: components["schemas"]["Timestamp"];
+      /** @description Null for schema-1 reports without a stored collection-start value. */
+      collection_started_at: components["schemas"]["Timestamp"] | null;
+      /** @description Null for schema-1 reports without a stored collection-finish value. */
+      collection_finished_at: components["schemas"]["Timestamp"] | null;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      result: "rejected";
+      collection_error_summary: string | null;
+      collector_results: components["schemas"]["CollectorResult"][];
+      diagnostics: components["schemas"]["CollectionError"][];
     };
     DiscoveryReportPage: {
       items: components["schemas"]["DiscoveryReport"][];
       page: components["schemas"]["PageInfo"];
     };
-    CanonicalSnapshot: {
-      /** @description Report identity retained in the canonical document but excluded from infrastructure-state content hashing. */
-      report_id: components["schemas"]["UuidV7"];
+    /** @enum {string} */
+    ContainerHistoryPresence: "present" | "absent" | "unavailable";
+    ContainerHistoryEntry: {
+      report: components["schemas"]["DiscoveryReport"];
+      /** @description unavailable means the report was rejected or the relevant Podman collector failed. */
+      presence: components["schemas"]["ContainerHistoryPresence"];
+    };
+    ContainerHistoryPage: {
+      items: components["schemas"]["ContainerHistoryEntry"][];
+      page: components["schemas"]["PageInfo"];
+    };
+    VolatileFilesystemMeasurement: {
+      device: string;
+      mount_point: string;
+      /** Format: int64 */
+      available_bytes: number;
+    };
+    VolatileMeasurements: {
+      /** Format: int64 */
+      host_uptime_seconds?: number | null;
+      filesystems: components["schemas"]["VolatileFilesystemMeasurement"][];
+    };
+    StructuralSnapshot: {
       format_version: number;
-      sha256: string;
-      host: components["schemas"]["HostSnapshot"];
-      disks: components["schemas"]["DiskSnapshot"][];
-      interfaces: components["schemas"]["NetworkInterfaceObservation"][];
-      filesystems: components["schemas"]["FilesystemSnapshot"][];
-      podman: components["schemas"]["PodmanCollection"][];
-      errors: components["schemas"]["CollectionError"][];
+      host: components["schemas"]["HostCollection"];
+      disks: components["schemas"]["DiskCollection"];
+      interfaces: components["schemas"]["InterfaceCollection"];
+      filesystems: components["schemas"]["FilesystemCollection"];
+      podman: components["schemas"]["StructuralPodmanCollection"][];
+    };
+    /** @description Reconstructed report-specific envelope and shared structural state; this document itself is not the hashed structural content. */
+    SnapshotDownload: {
+      report: components["schemas"]["AcceptedDiscoveryReport"];
+      /** @description SHA-256 of canonical structural bytes only, excluding report envelope and volatile measurements. */
+      structural_sha256: string;
+      structural: components["schemas"]["StructuralSnapshot"];
     };
     ScalarValue: (string | null) | number | boolean;
     FieldChange: {
@@ -2275,13 +2954,23 @@ export interface components {
       key: string;
       /** @enum {string} */
       change: "added" | "removed" | "changed";
-      before?: components["schemas"]["FilesystemSnapshot"];
-      after?: components["schemas"]["FilesystemSnapshot"];
+      before?: components["schemas"]["StructuralFilesystemSnapshot"];
+      after?: components["schemas"]["StructuralFilesystemSnapshot"];
+      fields?: components["schemas"]["FieldChange"][];
+    };
+    DiskChange: {
+      /** @description Disk device name. */
+      key: string;
+      /** @enum {string} */
+      change: "added" | "removed" | "changed";
+      before?: components["schemas"]["DiskSnapshot"];
+      after?: components["schemas"]["DiskSnapshot"];
       fields?: components["schemas"]["FieldChange"][];
     };
     ContainerChange: {
       connection: string;
-      owner: string;
+      /** Format: int64 */
+      owner_uid: number;
       name: string;
       /** @enum {string} */
       change: "added" | "removed" | "changed";
@@ -2296,15 +2985,54 @@ export interface components {
       /** @enum {string} */
       after: "success" | "failed" | "absent";
     };
+    HostUptimeChange: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      measurement: "host_uptime_seconds";
+      /** Format: int64 */
+      before: number | null;
+      /** Format: int64 */
+      after: number | null;
+    };
+    FilesystemAvailableBytesChange: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      measurement: "filesystem_available_bytes";
+      device: string;
+      mount_point: string;
+      /** Format: int64 */
+      before: number | null;
+      /** Format: int64 */
+      after: number | null;
+    };
+    VolatileMeasurementChange:
+      | components["schemas"]["HostUptimeChange"]
+      | components["schemas"]["FilesystemAvailableBytesChange"];
+    /** @enum {string} */
+    SnapshotUnavailableSection:
+      "host" | "interfaces" | "disks" | "filesystems" | "containers";
+    /** @description One globally ordered page of differences. The service MUST NOT infer child removals when the corresponding collector failed; such sections are listed in unavailable_sections instead. Differences sort by section in this order: host, interfaces, disks, filesystems, containers, collectors, measurements; within a section they sort by stable resource key. The total number of entries across all section arrays equals page.size and never exceeds the requested page size. */
     SnapshotComparison: {
+      /** @description Server-assigned history id of the source report. */
       from_report_id: components["schemas"]["UuidV7"];
+      /** @description Server-assigned history id of the target report. */
       to_report_id: components["schemas"]["UuidV7"];
+      /** @description Structural host fact changes only; uptime is reported under measurements. */
       host: components["schemas"]["FieldChange"][];
       interfaces: components["schemas"]["InterfaceChange"][];
+      disks: components["schemas"]["DiskChange"][];
+      /** @description Structural filesystem differences only; available_bytes is reported under measurements. */
       filesystems: components["schemas"]["FilesystemChange"][];
       containers: components["schemas"]["ContainerChange"][];
       collectors: components["schemas"]["CollectorStatusChange"][];
-      truncated: boolean;
+      measurements: components["schemas"]["VolatileMeasurementChange"][];
+      unavailable_sections: components["schemas"]["SnapshotUnavailableSection"][];
+      /** @description Continuation state for the globally ordered difference sequence. */
+      page: components["schemas"]["PageInfo"];
     };
     /** @enum {string} */
     DnsZoneSelection: "available" | "managed" | "disabled";
@@ -2341,13 +3069,21 @@ export interface components {
       /** @enum {string} */
       state: "not_applicable" | "pending" | "synchronized" | "failed";
       /** Format: int64 */
-      desired_revision?: number;
+      desired_generation: number;
       /** Format: int64 */
-      applied_revision?: number;
-      /** Format: int64 */
-      serial?: number;
+      published_generation?: number | null;
+      next_serial: number;
+      serial?: number | null;
       checksum?: string | null;
-      published_at?: components["schemas"]["Timestamp"];
+      file_name?: string | null;
+      published_at?: components["schemas"]["Timestamp"] | null;
+      next_retry_at?: components["schemas"]["Timestamp"] | null;
+      last_attempt_at?: components["schemas"]["Timestamp"] | null;
+      last_success_at?: components["schemas"]["Timestamp"] | null;
+      attempt_count: number;
+      lease_expires_at?: components["schemas"]["Timestamp"] | null;
+      /** Format: int64 */
+      fencing_token: number;
       error_code?: string | null;
       error_message?: string | null;
     };
@@ -2360,6 +3096,8 @@ export interface components {
       failed_projection_count: number;
       drift_count: number;
     };
+    /** @enum {string} */
+    DnsLinkTargetType: "compute" | "container" | "ip_assignment";
     /** @enum {string} */
     DnsViewName: "public" | "internal";
     /** @enum {string} */
@@ -2498,14 +3236,7 @@ export interface components {
       items: components["schemas"]["DnsName"][];
       page: components["schemas"]["PageInfo"];
     };
-    /** @enum {string} */
-    DnsImportCandidateStatus:
-      | "importable"
-      | "unsupported"
-      | "malformed"
-      | "conflicting"
-      | "already_managed";
-    DnsImportCandidate: {
+    DnsImportableCandidate: {
       /** @description Opaque refresh-scoped candidate identifier. */
       id: string;
       name: string;
@@ -2513,10 +3244,36 @@ export interface components {
       ttl: number;
       values: string[];
       proxied: boolean;
-      status: components["schemas"]["DnsImportCandidateStatus"];
-      reason_code?: string | null;
-      reason?: string | null;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      status: "importable";
     };
+    RejectedDnsImportCandidate: {
+      /** @description Opaque refresh-scoped candidate identifier. */
+      id: string;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      status: "unsupported" | "malformed" | "conflicting" | "already_managed";
+      reason_code: string;
+      reason: string;
+      record_count: number;
+      /** @description Unnormalized provider owner name when available. */
+      raw_name: string | null;
+      /** @description Provider record type without asserting it is supported. */
+      raw_type: string | null;
+      /**
+       * Format: int64
+       * @description Provider TTL summary without asserting it satisfies supported bounds.
+       */
+      raw_ttl: number | null;
+    };
+    DnsImportCandidate:
+      | components["schemas"]["DnsImportableCandidate"]
+      | components["schemas"]["RejectedDnsImportCandidate"];
     DnsImportCandidatePage: {
       provider_observed_at: components["schemas"]["Timestamp"];
       observation_fingerprint: string;
@@ -2563,9 +3320,11 @@ export interface components {
       provider_state_changed: boolean;
       valid: boolean;
       issues: components["schemas"]["DnsValidationIssue"][];
+      /** @description Complete preview change set; responses are never silently truncated. Each selected candidate is bounded to 100 values and selections to 10 candidates. */
       changes: components["schemas"]["DnsPreviewChange"][];
       unmanaged_conflicts: components["schemas"]["DnsUnmanagedConflict"][];
     };
+    /** @description Complete, non-truncated preview tied to the exact candidate selection and provider observation. */
     DnsImportPreview: {
       selection: components["schemas"]["DnsImportSelection"];
       preview: components["schemas"]["DnsPreview"];
@@ -2615,12 +3374,17 @@ export interface components {
     DnsDraftStatus: "active" | "applied" | "discarded";
     /** @enum {string} */
     DnsDraftValidation: "unvalidated" | "valid" | "invalid";
+    /** @description A mutable draft with a revision independent of the target DNS name's revision. If-Match on draft operations uses this draft revision; base_revision identifies the target DNS name revision captured by the draft. */
     DnsDraft: {
       id: components["schemas"]["UuidV7"];
+      /** @description Monotonic revision of this draft, independent of the DNS name revision. */
       revision: components["schemas"]["Revision"];
       operation: components["schemas"]["DnsDraftOperation"];
       target_name_id?: components["schemas"]["UuidV7"];
-      /** Format: int64 */
+      /**
+       * Format: int64
+       * @description Target DNS name revision captured when this update/delete draft was created.
+       */
       base_revision?: number | null;
       proposed?: components["schemas"]["DnsNameWrite"];
       status: components["schemas"]["DnsDraftStatus"];
@@ -2634,7 +3398,10 @@ export interface components {
       latest_preview?: components["schemas"]["DnsPreview"];
     };
     DnsDraftApply: {
-      /** Format: int64 */
+      /**
+       * Format: int64
+       * @description Current target DNS name revision; zero is required for a create draft.
+       */
       expected_base_revision: number;
       preview_fingerprint: string;
     };
@@ -2648,10 +3415,54 @@ export interface components {
       aggregate_count: number;
     };
     /** @enum {string} */
+    PurgeDependencyKind:
+      | "provider_role"
+      | "location"
+      | "compute"
+      | "container"
+      | "ip_assignment"
+      | "domain"
+      | "cost"
+      | "tag"
+      | "agent"
+      | "enrollment_token"
+      | "discovery_report"
+      | "dns_zone"
+      | "dns_name"
+      | "dns_link"
+      | "other";
+    PurgeDependencyGroup: {
+      kind: components["schemas"]["PurgeDependencyKind"];
+      count: number;
+      /**
+       * Format: uri-reference
+       * @description Paginated route/filter for listing every dependency in this group.
+       */
+      list_href: string;
+    };
+    PurgeDependencyReference: {
+      kind: components["schemas"]["PurgeDependencyKind"];
+      id: components["schemas"]["UuidV7"];
+      /** Format: uri-reference */
+      href: string;
+      display_name?: string;
+    };
+    /** @description Complete typed counts plus a bounded navigable sample. Group list_href values provide paged access to every dependency for explicit cleanup. */
+    PurgeDependencyDetails: {
+      groups: components["schemas"]["PurgeDependencyGroup"][];
+      references: components["schemas"]["PurgeDependencyReference"][];
+      references_truncated: boolean;
+    };
+    /** @enum {string} */
     AuditActorType:
       "administrator" | "personal_access_token" | "agent" | "system";
     /** @enum {string} */
-    AuditResult: "success" | "rejected";
+    AuditResult: "success" | "rejected" | "failure";
+    /**
+     * @description Fixed persisted UUIDv7 identity used for CLI and worker audit events.
+     * @enum {string}
+     */
+    SystemActorId: "0190d7b6-8ef9-7ca1-a8c4-6bcbca5d73c0";
     AuditField: {
       path: string;
       before?: string | null;
@@ -2664,7 +3475,8 @@ export interface components {
       sequence: number;
       occurred_at: components["schemas"]["Timestamp"];
       actor_type: components["schemas"]["AuditActorType"];
-      actor_id?: components["schemas"]["UuidV7"];
+      /** @description For actor_type system, MUST equal SystemActorId. */
+      actor_id: components["schemas"]["UuidV7"];
       action: string;
       resource_type: string;
       resource_id?: components["schemas"]["UuidV7"];
@@ -2689,7 +3501,7 @@ export interface components {
     };
     ReadinessStatus: {
       /** @enum {string} */
-      status: "ready";
+      status: "ready" | "not_ready";
       time: components["schemas"]["Timestamp"];
       checks: components["schemas"]["ReadinessCheck"][];
     };
@@ -2733,6 +3545,15 @@ export interface components {
     };
     /** @description State, dependency, uniqueness, idempotency, or unmanaged-provider conflict */
     Conflict: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        "application/problem+json": components["schemas"]["Problem"];
+      };
+    };
+    /** @description Purge requires an archived target with all dependent resources, DNS links, retained reports, and other blocking references explicitly removed. A dependency_conflict problem includes bounded typed counts and navigable references. */
+    PurgeConflict: {
       headers: {
         [name: string]: unknown;
       };
@@ -3073,6 +3894,24 @@ export interface components {
         "application/json": components["schemas"]["DiscoveryReportPage"];
       };
     };
+    /** @description Paged typed inventory tree children. */
+    InventoryTreePageResponse: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        "application/json": components["schemas"]["InventoryTree"];
+      };
+    };
+    /** @description Paged retained history for one logical container. */
+    ContainerHistoryPageResponse: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        "application/json": components["schemas"]["ContainerHistoryPage"];
+      };
+    };
     /** @description Audit event page */
     AuditEventPageResponse: {
       headers: {
@@ -3106,6 +3945,8 @@ export interface components {
     ProviderId: components["schemas"]["UuidV7"];
     LocationId: components["schemas"]["UuidV7"];
     ComputeId: components["schemas"]["UuidV7"];
+    /** @description ID of a location or compute node whose typed containment children are requested. */
+    InventoryTreeParentId: components["schemas"]["UuidV7"];
     ContainerId: components["schemas"]["UuidV7"];
     IpAssignmentId: components["schemas"]["UuidV7"];
     DomainId: components["schemas"]["UuidV7"];
@@ -3114,6 +3955,8 @@ export interface components {
     AgentId: components["schemas"]["UuidV7"];
     TokenId: components["schemas"]["UuidV7"];
     ReportId: components["schemas"]["UuidV7"];
+    /** @description Server-assigned immutable history id (DiscoveryReport.id), not the client-supplied report_id. */
+    HistoryReportId: components["schemas"]["UuidV7"];
     ZoneId: components["schemas"]["UuidV7"];
     DnsNameId: components["schemas"]["UuidV7"];
     DraftId: components["schemas"]["UuidV7"];
@@ -3122,6 +3965,8 @@ export interface components {
     LocationFilter: components["schemas"]["UuidV7"];
     ComputeFilter: components["schemas"]["UuidV7"];
     ContainerFilter: components["schemas"]["UuidV7"];
+    /** @description Filter domains by the server-computed expiry state. */
+    DomainExpiryStateFilter: components["schemas"]["DomainExpiryState"];
     DomainFilter: components["schemas"]["UuidV7"];
     ZoneFilter: components["schemas"]["UuidV7"];
     CurrencyFilter: components["schemas"]["CurrencyCode"];
@@ -3136,6 +3981,10 @@ export interface components {
     WildcardFilter: boolean;
     ProxiedFilter: boolean;
     ProjectionStateFilter: components["schemas"]["DnsProjectionState"];
+    /** @description Must be supplied together with link_target_id. */
+    DnsLinkTargetTypeFilter: components["schemas"]["DnsLinkTargetType"];
+    /** @description Must be supplied together with link_target_type. */
+    DnsLinkTargetIdFilter: components["schemas"]["UuidV7"];
     FromTime: components["schemas"]["Timestamp"];
     ToTime: components["schemas"]["Timestamp"];
     ActorTypeFilter: components["schemas"]["AuditActorType"];
@@ -3218,6 +4067,7 @@ export interface operations {
       200: components["responses"]["LoginResponse"];
       400: components["responses"]["BadRequest"];
       401: components["responses"]["Unauthorized"];
+      413: components["responses"]["PayloadTooLarge"];
       429: components["responses"]["TooManyRequests"];
     };
   };
@@ -3282,11 +4132,6 @@ export interface operations {
     parameters: {
       query?: never;
       header?: {
-        /**
-         * @description Caller-generated key scoped to the authenticated actor and operation.
-         *     Reuse with a different request returns 409.
-         */
-        "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
         /** @description Required for mutations authenticated by sessionCookie; omitted for bearer authentication. */
         "X-CSRF-Token"?: components["parameters"]["CsrfToken"];
       };
@@ -3304,6 +4149,7 @@ export interface operations {
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       409: components["responses"]["Conflict"];
+      413: components["responses"]["PayloadTooLarge"];
       422: components["responses"]["ValidationFailed"];
     };
   };
@@ -3372,6 +4218,7 @@ export interface operations {
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       409: components["responses"]["Conflict"];
+      413: components["responses"]["PayloadTooLarge"];
       422: components["responses"]["ValidationFailed"];
     };
   };
@@ -3414,6 +4261,7 @@ export interface operations {
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
       412: components["responses"]["PreconditionFailed"];
+      413: components["responses"]["PayloadTooLarge"];
       422: components["responses"]["ValidationFailed"];
     };
   };
@@ -3434,11 +4282,14 @@ export interface operations {
     requestBody?: never;
     responses: {
       200: components["responses"]["ProviderResponse"];
+      400: components["responses"]["BadRequest"];
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
       409: components["responses"]["Conflict"];
       412: components["responses"]["PreconditionFailed"];
+      413: components["responses"]["PayloadTooLarge"];
+      422: components["responses"]["ValidationFailed"];
     };
   };
   restoreProvider: {
@@ -3458,11 +4309,14 @@ export interface operations {
     requestBody?: never;
     responses: {
       200: components["responses"]["ProviderResponse"];
+      400: components["responses"]["BadRequest"];
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
       409: components["responses"]["Conflict"];
       412: components["responses"]["PreconditionFailed"];
+      413: components["responses"]["PayloadTooLarge"];
+      422: components["responses"]["ValidationFailed"];
     };
   };
   purgeProvider: {
@@ -3482,10 +4336,11 @@ export interface operations {
     requestBody?: never;
     responses: {
       204: components["responses"]["NoContent"];
+      400: components["responses"]["BadRequest"];
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
-      409: components["responses"]["Conflict"];
+      409: components["responses"]["PurgeConflict"];
       412: components["responses"]["PreconditionFailed"];
     };
   };
@@ -3535,6 +4390,7 @@ export interface operations {
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       409: components["responses"]["Conflict"];
+      413: components["responses"]["PayloadTooLarge"];
       422: components["responses"]["ValidationFailed"];
     };
   };
@@ -3578,6 +4434,7 @@ export interface operations {
       404: components["responses"]["NotFound"];
       409: components["responses"]["Conflict"];
       412: components["responses"]["PreconditionFailed"];
+      413: components["responses"]["PayloadTooLarge"];
       422: components["responses"]["ValidationFailed"];
     };
   };
@@ -3598,6 +4455,7 @@ export interface operations {
     requestBody?: never;
     responses: {
       200: components["responses"]["LocationResponse"];
+      400: components["responses"]["BadRequest"];
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
@@ -3622,6 +4480,7 @@ export interface operations {
     requestBody?: never;
     responses: {
       200: components["responses"]["LocationResponse"];
+      400: components["responses"]["BadRequest"];
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
@@ -3646,10 +4505,11 @@ export interface operations {
     requestBody?: never;
     responses: {
       204: components["responses"]["NoContent"];
+      400: components["responses"]["BadRequest"];
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
-      409: components["responses"]["Conflict"];
+      409: components["responses"]["PurgeConflict"];
       412: components["responses"]["PreconditionFailed"];
     };
   };
@@ -3701,6 +4561,7 @@ export interface operations {
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       409: components["responses"]["Conflict"];
+      413: components["responses"]["PayloadTooLarge"];
       422: components["responses"]["ValidationFailed"];
     };
   };
@@ -3744,6 +4605,7 @@ export interface operations {
       404: components["responses"]["NotFound"];
       409: components["responses"]["Conflict"];
       412: components["responses"]["PreconditionFailed"];
+      413: components["responses"]["PayloadTooLarge"];
       422: components["responses"]["ValidationFailed"];
     };
   };
@@ -3764,6 +4626,7 @@ export interface operations {
     requestBody?: never;
     responses: {
       200: components["responses"]["ComputeResponse"];
+      400: components["responses"]["BadRequest"];
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
@@ -3788,6 +4651,7 @@ export interface operations {
     requestBody?: never;
     responses: {
       200: components["responses"]["ComputeResponse"];
+      400: components["responses"]["BadRequest"];
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
@@ -3812,10 +4676,11 @@ export interface operations {
     requestBody?: never;
     responses: {
       204: components["responses"]["NoContent"];
+      400: components["responses"]["BadRequest"];
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
-      409: components["responses"]["Conflict"];
+      409: components["responses"]["PurgeConflict"];
       412: components["responses"]["PreconditionFailed"];
     };
   };
@@ -3884,7 +4749,33 @@ export interface operations {
       404: components["responses"]["NotFound"];
       409: components["responses"]["Conflict"];
       412: components["responses"]["PreconditionFailed"];
+      413: components["responses"]["PayloadTooLarge"];
       422: components["responses"]["ValidationFailed"];
+    };
+  };
+  listContainerDiscoveryReports: {
+    parameters: {
+      query?: {
+        /** @description Opaque cursor returned by the previous page. */
+        "page[after]"?: components["parameters"]["PageAfter"];
+        /** @description Maximum number of items to return. */
+        "page[size]"?: components["parameters"]["PageSize"];
+        from_time?: components["parameters"]["FromTime"];
+        to_time?: components["parameters"]["ToTime"];
+      };
+      header?: never;
+      path: {
+        container_id: components["parameters"]["ContainerId"];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: components["responses"]["ContainerHistoryPageResponse"];
+      400: components["responses"]["BadRequest"];
+      401: components["responses"]["Unauthorized"];
+      403: components["responses"]["Forbidden"];
+      404: components["responses"]["NotFound"];
     };
   };
   archiveContainer: {
@@ -3904,6 +4795,7 @@ export interface operations {
     requestBody?: never;
     responses: {
       200: components["responses"]["ContainerResponse"];
+      400: components["responses"]["BadRequest"];
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
@@ -3928,6 +4820,7 @@ export interface operations {
     requestBody?: never;
     responses: {
       200: components["responses"]["ContainerResponse"];
+      400: components["responses"]["BadRequest"];
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
@@ -3952,10 +4845,11 @@ export interface operations {
     requestBody?: never;
     responses: {
       204: components["responses"]["NoContent"];
+      400: components["responses"]["BadRequest"];
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
-      409: components["responses"]["Conflict"];
+      409: components["responses"]["PurgeConflict"];
       412: components["responses"]["PreconditionFailed"];
     };
   };
@@ -4008,6 +4902,7 @@ export interface operations {
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       409: components["responses"]["Conflict"];
+      413: components["responses"]["PayloadTooLarge"];
       422: components["responses"]["ValidationFailed"];
     };
   };
@@ -4051,6 +4946,7 @@ export interface operations {
       404: components["responses"]["NotFound"];
       409: components["responses"]["Conflict"];
       412: components["responses"]["PreconditionFailed"];
+      413: components["responses"]["PayloadTooLarge"];
       422: components["responses"]["ValidationFailed"];
     };
   };
@@ -4071,6 +4967,7 @@ export interface operations {
     requestBody?: never;
     responses: {
       200: components["responses"]["IpAssignmentResponse"];
+      400: components["responses"]["BadRequest"];
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
@@ -4095,6 +4992,7 @@ export interface operations {
     requestBody?: never;
     responses: {
       200: components["responses"]["IpAssignmentResponse"];
+      400: components["responses"]["BadRequest"];
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
@@ -4119,10 +5017,11 @@ export interface operations {
     requestBody?: never;
     responses: {
       204: components["responses"]["NoContent"];
+      400: components["responses"]["BadRequest"];
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
-      409: components["responses"]["Conflict"];
+      409: components["responses"]["PurgeConflict"];
       412: components["responses"]["PreconditionFailed"];
     };
   };
@@ -4138,6 +5037,8 @@ export interface operations {
         /** @description Archived resources are excluded by default. */
         archived?: components["parameters"]["Archived"];
         registrar_provider_id?: components["parameters"]["RegistrarFilter"];
+        /** @description Filter domains by the server-computed expiry state. */
+        expiry_state?: components["parameters"]["DomainExpiryStateFilter"];
       };
       header?: never;
       path?: never;
@@ -4172,6 +5073,7 @@ export interface operations {
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       409: components["responses"]["Conflict"];
+      413: components["responses"]["PayloadTooLarge"];
       422: components["responses"]["ValidationFailed"];
     };
   };
@@ -4215,6 +5117,7 @@ export interface operations {
       404: components["responses"]["NotFound"];
       409: components["responses"]["Conflict"];
       412: components["responses"]["PreconditionFailed"];
+      413: components["responses"]["PayloadTooLarge"];
       422: components["responses"]["ValidationFailed"];
     };
   };
@@ -4235,6 +5138,7 @@ export interface operations {
     requestBody?: never;
     responses: {
       200: components["responses"]["DomainResponse"];
+      400: components["responses"]["BadRequest"];
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
@@ -4259,6 +5163,7 @@ export interface operations {
     requestBody?: never;
     responses: {
       200: components["responses"]["DomainResponse"];
+      400: components["responses"]["BadRequest"];
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
@@ -4283,10 +5188,11 @@ export interface operations {
     requestBody?: never;
     responses: {
       204: components["responses"]["NoContent"];
+      400: components["responses"]["BadRequest"];
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
-      409: components["responses"]["Conflict"];
+      409: components["responses"]["PurgeConflict"];
       412: components["responses"]["PreconditionFailed"];
     };
   };
@@ -4338,6 +5244,7 @@ export interface operations {
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       409: components["responses"]["Conflict"];
+      413: components["responses"]["PayloadTooLarge"];
       422: components["responses"]["ValidationFailed"];
     };
   };
@@ -4381,6 +5288,7 @@ export interface operations {
       404: components["responses"]["NotFound"];
       409: components["responses"]["Conflict"];
       412: components["responses"]["PreconditionFailed"];
+      413: components["responses"]["PayloadTooLarge"];
       422: components["responses"]["ValidationFailed"];
     };
   };
@@ -4401,6 +5309,7 @@ export interface operations {
     requestBody?: never;
     responses: {
       200: components["responses"]["CostResponse"];
+      400: components["responses"]["BadRequest"];
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
@@ -4425,6 +5334,7 @@ export interface operations {
     requestBody?: never;
     responses: {
       200: components["responses"]["CostResponse"];
+      400: components["responses"]["BadRequest"];
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
@@ -4449,10 +5359,11 @@ export interface operations {
     requestBody?: never;
     responses: {
       204: components["responses"]["NoContent"];
+      400: components["responses"]["BadRequest"];
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
-      409: components["responses"]["Conflict"];
+      409: components["responses"]["PurgeConflict"];
       412: components["responses"]["PreconditionFailed"];
     };
   };
@@ -4501,6 +5412,7 @@ export interface operations {
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       409: components["responses"]["Conflict"];
+      413: components["responses"]["PayloadTooLarge"];
       422: components["responses"]["ValidationFailed"];
     };
   };
@@ -4544,6 +5456,7 @@ export interface operations {
       404: components["responses"]["NotFound"];
       409: components["responses"]["Conflict"];
       412: components["responses"]["PreconditionFailed"];
+      413: components["responses"]["PayloadTooLarge"];
       422: components["responses"]["ValidationFailed"];
     };
   };
@@ -4564,6 +5477,7 @@ export interface operations {
     requestBody?: never;
     responses: {
       200: components["responses"]["TagResponse"];
+      400: components["responses"]["BadRequest"];
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
@@ -4588,6 +5502,7 @@ export interface operations {
     requestBody?: never;
     responses: {
       200: components["responses"]["TagResponse"];
+      400: components["responses"]["BadRequest"];
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
@@ -4612,10 +5527,11 @@ export interface operations {
     requestBody?: never;
     responses: {
       204: components["responses"]["NoContent"];
+      400: components["responses"]["BadRequest"];
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
-      409: components["responses"]["Conflict"];
+      409: components["responses"]["PurgeConflict"];
       412: components["responses"]["PreconditionFailed"];
     };
   };
@@ -4624,8 +5540,10 @@ export interface operations {
       query?: {
         /** @description Archived resources are excluded by default. */
         archived?: components["parameters"]["Archived"];
-        /** @description Maximum returned hierarchy depth. */
-        max_depth?: number;
+        /** @description Opaque cursor returned by the previous page. */
+        "page[after]"?: components["parameters"]["PageAfter"];
+        /** @description Maximum number of items to return. */
+        "page[size]"?: components["parameters"]["PageSize"];
       };
       header?: never;
       path?: never;
@@ -4633,13 +5551,62 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description Inventory hierarchy */
+      /** @description Paged inventory root nodes */
       200: {
         headers: {
           [name: string]: unknown;
         };
         content: {
           "application/json": components["schemas"]["InventoryTree"];
+        };
+      };
+      401: components["responses"]["Unauthorized"];
+      403: components["responses"]["Forbidden"];
+    };
+  };
+  listInventoryTreeChildren: {
+    parameters: {
+      query?: {
+        /** @description Archived resources are excluded by default. */
+        archived?: components["parameters"]["Archived"];
+        /** @description Opaque cursor returned by the previous page. */
+        "page[after]"?: components["parameters"]["PageAfter"];
+        /** @description Maximum number of items to return. */
+        "page[size]"?: components["parameters"]["PageSize"];
+      };
+      header?: never;
+      path: {
+        /** @description ID of a location or compute node whose typed containment children are requested. */
+        parent_id: components["parameters"]["InventoryTreeParentId"];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: components["responses"]["InventoryTreePageResponse"];
+      400: components["responses"]["BadRequest"];
+      401: components["responses"]["Unauthorized"];
+      403: components["responses"]["Forbidden"];
+      404: components["responses"]["NotFound"];
+      422: components["responses"]["ValidationFailed"];
+    };
+  };
+  getInventorySummary: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Current inventory counts */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["InventorySummary"];
         };
       };
       401: components["responses"]["Unauthorized"];
@@ -4664,6 +5631,31 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ComputeSummary"];
+        };
+      };
+      401: components["responses"]["Unauthorized"];
+      403: components["responses"]["Forbidden"];
+      404: components["responses"]["NotFound"];
+    };
+  };
+  listComputeCollectorStatus: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        compute_id: components["parameters"]["ComputeId"];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Collector receipt and failure state */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ComputeCollectorStatus"];
         };
       };
       401: components["responses"]["Unauthorized"];
@@ -4815,11 +5807,6 @@ export interface operations {
     parameters: {
       query?: never;
       header?: {
-        /**
-         * @description Caller-generated key scoped to the authenticated actor and operation.
-         *     Reuse with a different request returns 409.
-         */
-        "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
         /** @description Required for mutations authenticated by sessionCookie; omitted for bearer authentication. */
         "X-CSRF-Token"?: components["parameters"]["CsrfToken"];
       };
@@ -4840,6 +5827,7 @@ export interface operations {
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
       409: components["responses"]["Conflict"];
+      413: components["responses"]["PayloadTooLarge"];
       422: components["responses"]["ValidationFailed"];
     };
   };
@@ -4881,6 +5869,7 @@ export interface operations {
     requestBody?: never;
     responses: {
       200: components["responses"]["AgentResponse"];
+      400: components["responses"]["BadRequest"];
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
@@ -4894,11 +5883,6 @@ export interface operations {
       header: {
         /** @description Strong ETag from the latest representation. */
         "If-Match": components["parameters"]["IfMatch"];
-        /**
-         * @description Caller-generated key scoped to the authenticated actor and operation.
-         *     Reuse with a different request returns 409.
-         */
-        "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
         /** @description Required for mutations authenticated by sessionCookie; omitted for bearer authentication. */
         "X-CSRF-Token"?: components["parameters"]["CsrfToken"];
       };
@@ -4920,6 +5904,8 @@ export interface operations {
       404: components["responses"]["NotFound"];
       409: components["responses"]["Conflict"];
       412: components["responses"]["PreconditionFailed"];
+      413: components["responses"]["PayloadTooLarge"];
+      422: components["responses"]["ValidationFailed"];
     };
   };
   enrollAgentV1: {
@@ -5053,7 +6039,8 @@ export interface operations {
       query?: never;
       header?: never;
       path: {
-        report_id: components["parameters"]["ReportId"];
+        /** @description Server-assigned immutable history id (DiscoveryReport.id), not the client-supplied report_id. */
+        report_id: components["parameters"]["HistoryReportId"];
       };
       cookie?: never;
     };
@@ -5078,7 +6065,8 @@ export interface operations {
       query?: never;
       header?: never;
       path: {
-        report_id: components["parameters"]["ReportId"];
+        /** @description Server-assigned immutable history id (DiscoveryReport.id), not the client-supplied report_id. */
+        report_id: components["parameters"]["HistoryReportId"];
       };
       cookie?: never;
     };
@@ -5103,7 +6091,13 @@ export interface operations {
   compareSnapshots: {
     parameters: {
       query: {
+        /** @description Opaque cursor returned by the previous page. */
+        "page[after]"?: components["parameters"]["PageAfter"];
+        /** @description Maximum number of items to return. */
+        "page[size]"?: components["parameters"]["PageSize"];
+        /** @description Server-assigned history id of the earlier retained report. */
         from: components["schemas"]["UuidV7"];
+        /** @description Server-assigned history id of the later retained report. */
         to: components["schemas"]["UuidV7"];
       };
       header?: never;
@@ -5222,6 +6216,7 @@ export interface operations {
       404: components["responses"]["NotFound"];
       409: components["responses"]["Conflict"];
       412: components["responses"]["PreconditionFailed"];
+      413: components["responses"]["PayloadTooLarge"];
       422: components["responses"]["ValidationFailed"];
     };
   };
@@ -5242,6 +6237,7 @@ export interface operations {
     requestBody?: never;
     responses: {
       200: components["responses"]["DnsZoneResponse"];
+      400: components["responses"]["BadRequest"];
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
@@ -5337,6 +6333,7 @@ export interface operations {
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
       409: components["responses"]["Conflict"];
+      413: components["responses"]["PayloadTooLarge"];
       422: components["responses"]["ValidationFailed"];
       502: components["responses"]["ProviderUnavailable"];
     };
@@ -5375,6 +6372,7 @@ export interface operations {
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
       409: components["responses"]["Conflict"];
+      413: components["responses"]["PayloadTooLarge"];
       422: components["responses"]["ValidationFailed"];
       502: components["responses"]["ProviderUnavailable"];
     };
@@ -5396,6 +6394,10 @@ export interface operations {
         wildcard?: components["parameters"]["WildcardFilter"];
         proxied?: components["parameters"]["ProxiedFilter"];
         projection_state?: components["parameters"]["ProjectionStateFilter"];
+        /** @description Must be supplied together with link_target_id. */
+        link_target_type?: components["parameters"]["DnsLinkTargetTypeFilter"];
+        /** @description Must be supplied together with link_target_type. */
+        link_target_id?: components["parameters"]["DnsLinkTargetIdFilter"];
       };
       header?: never;
       path?: never;
@@ -5459,6 +6461,7 @@ export interface operations {
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       409: components["responses"]["Conflict"];
+      413: components["responses"]["PayloadTooLarge"];
       422: components["responses"]["ValidationFailed"];
     };
   };
@@ -5506,6 +6509,7 @@ export interface operations {
       404: components["responses"]["NotFound"];
       409: components["responses"]["Conflict"];
       412: components["responses"]["PreconditionFailed"];
+      413: components["responses"]["PayloadTooLarge"];
       422: components["responses"]["ValidationFailed"];
     };
   };
@@ -5526,6 +6530,7 @@ export interface operations {
     requestBody?: never;
     responses: {
       204: components["responses"]["NoContent"];
+      400: components["responses"]["BadRequest"];
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
@@ -5558,11 +6563,13 @@ export interface operations {
           "application/json": components["schemas"]["DnsPreview"];
         };
       };
+      400: components["responses"]["BadRequest"];
       401: components["responses"]["Unauthorized"];
       403: components["responses"]["Forbidden"];
       404: components["responses"]["NotFound"];
       409: components["responses"]["Conflict"];
       412: components["responses"]["PreconditionFailed"];
+      413: components["responses"]["PayloadTooLarge"];
       422: components["responses"]["ValidationFailed"];
       502: components["responses"]["ProviderUnavailable"];
     };
@@ -5605,6 +6612,7 @@ export interface operations {
       404: components["responses"]["NotFound"];
       409: components["responses"]["Conflict"];
       412: components["responses"]["PreconditionFailed"];
+      413: components["responses"]["PayloadTooLarge"];
       422: components["responses"]["ValidationFailed"];
     };
   };
@@ -5789,7 +6797,7 @@ export interface operations {
           "application/json": components["schemas"]["ReadinessStatus"];
         };
       };
-      /** @description Server is not ready */
+      /** @description Server is not ready; the Problem body includes a readiness object with time and failed checks. */
       503: {
         headers: {
           [name: string]: unknown;

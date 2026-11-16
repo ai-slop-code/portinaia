@@ -7,6 +7,7 @@ package generated
 
 import (
 	"context"
+	"database/sql"
 )
 
 const createAdministrator = `-- name: CreateAdministrator :one
@@ -93,6 +94,48 @@ func (q *Queries) GetEnabledAdministrator(ctx context.Context) (*Administrator, 
 		&i.DisabledAt,
 	)
 	return &i, err
+}
+
+const revokeSession = `-- name: RevokeSession :execrows
+UPDATE sessions
+SET revoked_at = ?1
+WHERE credential_hash = ?2
+  AND revoked_at IS NULL
+`
+
+type RevokeSessionParams struct {
+	Now            sql.NullString `db:"now" json:"now"`
+	CredentialHash string         `db:"credential_hash" json:"credential_hash"`
+}
+
+func (q *Queries) RevokeSession(ctx context.Context, arg RevokeSessionParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, revokeSession, arg.Now, arg.CredentialHash)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
+const touchSessionLastSeen = `-- name: TouchSessionLastSeen :execrows
+UPDATE sessions
+SET last_seen_at = ?1
+WHERE credential_hash = ?2
+  AND revoked_at IS NULL
+  AND last_seen_at <= ?3
+`
+
+type TouchSessionLastSeenParams struct {
+	Now            string `db:"now" json:"now"`
+	CredentialHash string `db:"credential_hash" json:"credential_hash"`
+	Cutoff         string `db:"cutoff" json:"cutoff"`
+}
+
+func (q *Queries) TouchSessionLastSeen(ctx context.Context, arg TouchSessionLastSeenParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, touchSessionLastSeen, arg.Now, arg.CredentialHash, arg.Cutoff)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }
 
 const updateAdministratorPassword = `-- name: UpdateAdministratorPassword :execrows

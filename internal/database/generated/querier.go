@@ -9,27 +9,43 @@ import (
 )
 
 type Querier interface {
+	AppendAuditEvent(ctx context.Context, arg AppendAuditEventParams) error
 	ClaimDNSProjections(ctx context.Context, arg ClaimDNSProjectionsParams) ([]*DnsProjection, error)
 	CompleteDNSProjection(ctx context.Context, arg CompleteDNSProjectionParams) (int64, error)
+	CountExpiredDiscoveryReports(ctx context.Context, cutoff string) (int64, error)
+	CountReclaimableSnapshotContents(ctx context.Context, cutoff string) (int64, error)
 	CreateAdministrator(ctx context.Context, arg CreateAdministratorParams) (*Administrator, error)
 	CreateAgent(ctx context.Context, arg CreateAgentParams) (*Agent, error)
 	CreateDiscoveryReport(ctx context.Context, arg CreateDiscoveryReportParams) (*DiscoveryReport, error)
 	CreateProvider(ctx context.Context, arg CreateProviderParams) (*Provider, error)
+	DeleteExpiredDiscoveryReportsBatch(ctx context.Context, arg DeleteExpiredDiscoveryReportsBatchParams) (int64, error)
+	DeleteExpiredIdempotencyRecords(ctx context.Context, expiresAt string) (int64, error)
+	DeleteProviderRoles(ctx context.Context, providerID string) error
+	DeleteUnreferencedSnapshotContentsBatch(ctx context.Context, batchSize int64) (int64, error)
 	FailDNSProjection(ctx context.Context, arg FailDNSProjectionParams) (int64, error)
 	GetAdministratorByUsername(ctx context.Context, username string) (*Administrator, error)
 	GetAgentByCredentialHash(ctx context.Context, credentialHash string) (*Agent, error)
 	GetDNSProjection(ctx context.Context, id string) (*DnsProjection, error)
 	GetDiscoveryReportByAgentReportID(ctx context.Context, arg GetDiscoveryReportByAgentReportIDParams) (*DiscoveryReport, error)
 	GetEnabledAdministrator(ctx context.Context) (*Administrator, error)
+	GetIdempotencyRecord(ctx context.Context, arg GetIdempotencyRecordParams) (*IdempotencyRecord, error)
 	GetProvider(ctx context.Context, id string) (*Provider, error)
+	InsertIdempotencyRecord(ctx context.Context, arg InsertIdempotencyRecordParams) error
+	InsertProviderRole(ctx context.Context, arg InsertProviderRoleParams) error
 	ListAgentReports(ctx context.Context, arg ListAgentReportsParams) ([]*DiscoveryReport, error)
 	ListAgents(ctx context.Context, arg ListAgentsParams) ([]*ListAgentsRow, error)
+	ListAuditEvents(ctx context.Context, arg ListAuditEventsParams) ([]*AuditEvent, error)
 	ListDNSProjectionsForName(ctx context.Context, dnsNameID string) ([]*DnsProjection, error)
+	ListProviderRoles(ctx context.Context, providerID string) ([]string, error)
 	ListProviders(ctx context.Context, arg ListProvidersParams) ([]*Provider, error)
 	PutSnapshotContent(ctx context.Context, arg PutSnapshotContentParams) (*SnapshotContent, error)
 	ReleaseExpiredDNSProjectionLeases(ctx context.Context, arg ReleaseExpiredDNSProjectionLeasesParams) (int64, error)
+	RepairDNSProjection(ctx context.Context, arg RepairDNSProjectionParams) (*DnsProjection, error)
+	RevokeSession(ctx context.Context, arg RevokeSessionParams) (int64, error)
 	ScheduleDNSProjection(ctx context.Context, arg ScheduleDNSProjectionParams) (*DnsProjection, error)
+	TouchSessionLastSeen(ctx context.Context, arg TouchSessionLastSeenParams) (int64, error)
 	UpdateAdministratorPassword(ctx context.Context, arg UpdateAdministratorPasswordParams) (int64, error)
+	UpdateProvider(ctx context.Context, arg UpdateProviderParams) (int64, error)
 }
 
 var _ Querier = (*Queries)(nil)

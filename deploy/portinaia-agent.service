@@ -1,0 +1,30 @@
+[Unit]
+Description=Portinaia read-only discovery agent
+After=network-online.target podman.socket
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+StateDirectory=portinaia-agent
+StateDirectoryMode=0700
+ExecStart=/usr/local/bin/portinaia-agent run --state /var/lib/portinaia-agent/credential.json --podman-socket rootful=0:/run/podman/podman.sock
+Restart=on-failure
+RestartSec=10s
+# The agent retries transient network and server failures internally. A returned
+# error is terminal (for example revoked credentials or invalid configuration),
+# so restarting it would create an authenticated request loop.
+RestartPreventExitStatus=1
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+ReadWritePaths=/var/lib/portinaia-agent
+
+[Install]
+WantedBy=multi-user.target
