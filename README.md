@@ -72,6 +72,20 @@ Install the pinned frontend dependencies with `npm ci`.
 Install the Chromium browser used by the foundation smoke test with
 `npm exec playwright install chromium`.
 
+## GitHub Actions Images and Binaries
+
+Every push to `main` runs [the build workflow](.github/workflows/main.yml). It
+publishes a multi-architecture image to GitHub Container Registry:
+
+```text
+ghcr.io/ai-slop-code/portinaia:latest
+```
+
+The same workflow builds the Linux discovery agent for `amd64` (x86_64) and
+`arm64`, and uploads both files as a 30-day workflow artifact named
+`portinaia-agent-binaries-<commit>`. The workflow uses the ephemeral
+`GITHUB_TOKEN`; no registry or deployment credentials are stored in the repository.
+
 ## Local Run and First Administrator
 
 Build the embedded UI and server, then create the first administrator. Passwords
