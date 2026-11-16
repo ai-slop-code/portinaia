@@ -25,100 +25,110 @@ test("admin can create inventory and domains that survive a server restart", asy
   await page.getByLabel("Username").fill("admin");
   await page.getByLabel("Password").fill("e2e-administrator-password");
   await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page.getByRole("navigation", { name: "Main" })).toBeVisible();
+  await expect(page.getByText("Add your first host")).toBeVisible();
+
+  // Guided flow: domain → provider (as its registrar) → place → host → agent.
+  await page.getByRole("link", { name: "Add", exact: true }).click();
+  await page.getByLabel("Domain name").fill("e2e.example");
+  await page.getByRole("button", { name: "Continue" }).click();
+
+  await page.getByLabel("Provider name").fill("E2E Hosting Provider");
+  await page.getByLabel("Registrar").check();
   await expect(
-    page.getByRole("heading", { name: "Infrastructure inventory" }),
-  ).toBeVisible();
+    page.getByLabel("Use as registrar for e2e.example"),
+  ).toBeChecked();
+  await page.getByRole("button", { name: "Continue" }).click();
 
-  const providerForm = page.getByTestId("provider-create-form");
-  await providerForm.locator('input[name="name"]').fill("E2E Hosting Provider");
-  await providerForm.getByLabel("Hosting").check();
-  await providerForm.getByLabel("Registrar").check();
-  await providerForm.getByRole("button", { name: "Create provider" }).click();
-  await expect(page.getByText("E2E Hosting Provider").first()).toBeVisible();
+  await page.getByLabel("Name", { exact: true }).fill("E2E Datacenter");
+  await expect(
+    page.getByRole("combobox", { name: "Provider", exact: true }),
+  ).toHaveText("E2E Hosting Provider");
+  await page.getByRole("button", { name: "Continue" }).click();
 
-  const locationForm = page.getByTestId("location-create-form");
-  await locationForm.locator('input[name="name"]').fill("E2E Datacenter");
-  await locationForm.getByRole("combobox", { name: "Provider" }).click();
-  await page.getByRole("option", { name: "E2E Hosting Provider" }).click();
-  await locationForm.getByRole("button", { name: "Create location" }).click();
-  await expect(page.getByText("E2E Datacenter").first()).toBeVisible();
+  await page.getByLabel("Hostname").fill("E2E Physical Host");
+  await page.getByRole("radio", { name: /Physical/ }).check();
+  await expect(
+    page.getByRole("combobox", { name: "Place", exact: true }),
+  ).toHaveText("E2E Datacenter");
+  await page.getByRole("button", { name: "Create compute" }).click();
 
-  const computeForm = page.getByTestId("compute-create-form");
-  await computeForm
-    .locator('input[name="display_name"]')
-    .fill("E2E Physical Host");
-  await computeForm.getByRole("combobox", { name: "Provider" }).click();
-  await page.getByRole("option", { name: "E2E Hosting Provider" }).click();
-  await computeForm.getByRole("combobox", { name: "Location" }).click();
-  await page.getByRole("option", { name: "E2E Datacenter" }).click();
-  await computeForm.getByRole("button", { name: "Create compute" }).click();
-  await expect(page.getByText("E2E Physical Host").first()).toBeVisible();
   await page
     .getByRole("button", { name: "Create one-time enrollment token" })
     .click();
-  await expect(page.getByLabel("One-time enrollment token")).toHaveValue(/.+/);
+  await expect(
+    page.getByLabel("One-time enrollment token", { exact: true }),
+  ).toHaveText(/.+/);
+  await expect(
+    page.getByLabel("Install commands", { exact: true }),
+  ).toContainText("portinaia-agent enroll");
   await page.getByRole("button", { name: "Revoke unused token" }).click();
-  await expect(page.getByLabel("One-time enrollment token")).toHaveCount(0);
+  await expect(
+    page.getByLabel("One-time enrollment token", { exact: true }),
+  ).toHaveCount(0);
+  await page.getByRole("link", { name: "Open host" }).click();
+  await expect(
+    page.getByRole("heading", { name: "E2E Physical Host" }),
+  ).toBeVisible();
 
-  await computeForm
-    .locator('input[name="display_name"]')
-    .fill("E2E Virtual Machine");
-  await computeForm.getByRole("combobox", { name: "Kind" }).click();
-  await page.getByRole("option", { name: "VM" }).click();
-  await computeForm
-    .getByRole("combobox", { name: "Parent compute (VM only)" })
-    .click();
+  // A VM runs on the physical host.
+  await page.goto("/add?step=compute");
+  await page.getByLabel("Hostname").fill("E2E Virtual Machine");
+  await page.getByRole("radio", { name: /VM/ }).check();
+  await page.getByRole("combobox", { name: "Runs on", exact: true }).click();
   await page.getByRole("option", { name: "E2E Physical Host" }).click();
-  await computeForm.getByRole("button", { name: "Create compute" }).click();
-  await expect(page.getByText("E2E Virtual Machine").first()).toBeVisible();
+  await page.getByRole("button", { name: "Create compute" }).click();
+  await page.getByRole("link", { name: "Open host" }).click();
+  await expect(page.getByText("on E2E Physical Host")).toBeVisible();
 
-  await page
-    .getByRole("button", { name: /E2E Datacenter/ })
-    .first()
-    .click();
-  await expect(page.getByText("E2E Physical Host").first()).toBeVisible();
-  await page
-    .getByRole("button", { name: /E2E Physical Host/ })
-    .first()
-    .click();
-  await expect(page.getByText("E2E Virtual Machine").first()).toBeVisible();
-  await expect(page.getByText("Total computes: 2")).toBeVisible();
-
-  await page.getByText("E2E Virtual Machine").first().click();
-
+  await page.getByRole("tab", { name: "Network" }).click();
+  await page.getByRole("button", { name: "Add IP address" }).click();
   await page.getByRole("textbox", { name: "Address" }).fill("192.0.2.44");
   await page.getByRole("button", { name: "Add IP assignment" }).click();
   await expect(page.getByText("192.0.2.44")).toBeVisible();
 
-  const domainForm = page.getByTestId("domain-create-form");
-  await domainForm.getByLabel("Domain name").fill("e2e.example");
-  await domainForm.getByRole("combobox", { name: "Registrar" }).click();
-  await page.getByRole("option", { name: "E2E Hosting Provider" }).click();
-  await domainForm.getByRole("button", { name: "Add domain" }).click();
-  await expect(page.getByText("e2e.example").first()).toBeVisible();
-  await domainForm.getByLabel("Domain name").fill("unknown.example");
-  await domainForm.getByRole("button", { name: "Add domain" }).click();
-  await expect(page.getByText("unknown.example").first()).toBeVisible();
-  await page.getByText("unknown.example").first().click();
+  await page
+    .getByRole("navigation", { name: "Main" })
+    .getByRole("link", { name: "Compute" })
+    .click();
   await expect(
-    page.getByText("Registered: Unknown · Expires: Unknown"),
+    page.getByRole("link", { name: "Open E2E Physical Host" }),
   ).toBeVisible();
-  await expect(page.getByText("Auto-renew: Unknown")).toBeVisible();
-  const domainWorkspace = page.getByTestId("domain-workspace");
-  await domainWorkspace.getByRole("button", { name: "Edit" }).click();
-  const domainEditForm = domainWorkspace.locator("form").last();
-  await domainEditForm.getByLabel("Expires on").fill("2028-02-03");
-  await domainEditForm.getByRole("combobox", { name: "Auto-renewal" }).click();
+  await expect(
+    page.getByRole("link", { name: "Open E2E Virtual Machine" }),
+  ).toBeVisible();
+  await page
+    .getByRole("navigation", { name: "Main" })
+    .getByRole("link", { name: "Overview" })
+    .click();
+  await expect(page.getByText("1 VM · 1 physical · 0 VPS")).toBeVisible();
+
+  // Domains: quick add, then fill details in the side panel.
+  await page.goto("/domains");
+  await expect(
+    page.getByRole("link", { name: "Open e2e.example" }),
+  ).toContainText("E2E Hosting Provider");
+  await page.getByLabel("Domain name").fill("unknown.example");
+  await page.getByRole("button", { name: "Add domain" }).click();
+  const domainPanel = page.getByTestId("domain-workspace");
+  await expect(domainPanel.getByText("Not tracked").first()).toBeVisible();
+  await domainPanel.getByRole("button", { name: "Edit" }).click();
+  await domainPanel.getByLabel("Expires on").fill("2028-02-03");
+  await domainPanel
+    .getByRole("combobox", { name: "Auto-renewal", exact: true })
+    .click();
   await page.getByRole("option", { name: "No", exact: true }).click();
-  await domainEditForm.getByRole("button", { name: "Save domain" }).click();
-  await expect(page.getByText(/Expires: 2028-02-03/)).toBeVisible();
-  await expect(page.getByText("Auto-renew: No")).toBeVisible();
-  await domainWorkspace.getByRole("button", { name: "Archive" }).click();
+  await domainPanel.getByRole("button", { name: "Save domain" }).click();
+  await expect(domainPanel.getByText("2028-02-03")).toBeVisible();
+  await domainPanel.getByRole("button", { name: "Archive" }).click();
   await expect(
-    domainWorkspace.getByRole("button", { name: "Restore" }),
+    domainPanel.getByRole("button", { name: "Restore" }),
   ).toBeVisible();
-  await domainWorkspace.getByRole("button", { name: "Restore" }).click();
-  await expect(page.getByText(/Expires: 2028-02-03/)).toBeVisible();
+  await domainPanel.getByRole("button", { name: "Restore" }).click();
+  await expect(
+    domainPanel.getByRole("button", { name: "Archive" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Close" }).click();
 
   const api = page.context().request;
   const session = await (await api.get("/api/v1/auth/session")).json();
@@ -156,29 +166,20 @@ test("admin can create inventory and domains that survive a server restart", asy
     });
     expect(response.status(), `create bulk IP ${index}`).toBe(201);
   }
-  const archivedToggle = page.getByLabel("Include archived inventory");
-  await archivedToggle.check();
-  await archivedToggle.uncheck();
-  await page.getByText("bulk-000.example", { exact: true }).click();
-  await expect(page.getByText("unknown.example", { exact: true })).toHaveCount(
-    0,
-  );
-  await page.getByRole("button", { name: "Load more domains" }).click();
+  // Lists read every page, so nothing hides behind "load more".
+  await page.reload();
   await expect(
-    page.getByText("unknown.example", { exact: true }),
+    page.getByRole("link", { name: "Open bulk-050.example" }),
   ).toBeVisible();
-  await page
-    .getByRole("button", { name: /E2E Physical Host PHYSICAL/ })
-    .click();
+  await expect(
+    page.getByRole("link", { name: "Open unknown.example" }),
+  ).toBeVisible();
+  await page.goto(`/compute/${physicalHost.id}?tab=network`);
   await expect(page.getByText("198.51.100.100/24")).toBeVisible();
-  await expect(page.getByText("198.51.100.150/24")).toHaveCount(0);
-  await page.getByRole("button", { name: "Load more IP assignments" }).click();
   await expect(page.getByText("198.51.100.150/24")).toBeVisible();
 
-  await page
-    .getByRole("button", { name: /E2E Hosting Provider/ })
-    .first()
-    .click();
+  await page.goto("/providers");
+  await page.getByRole("link", { name: "Open E2E Hosting Provider" }).click();
   const providerWorkspace = page.getByTestId("provider-workspace");
   await providerWorkspace.getByRole("button", { name: "Edit" }).click();
   const providerPage = await (
@@ -240,16 +241,18 @@ test("admin can create inventory and domains that survive a server restart", asy
     },
   );
   expect(archivedLocation.ok()).toBe(true);
-  const includeArchived = page.getByLabel("Include archived inventory");
-  await includeArchived.check();
-  await includeArchived.uncheck();
-  await expect(page.getByText("location · archived")).toBeVisible();
-  await expect(page.getByText("Total computes: 2")).toBeVisible();
-  await page
-    .getByRole("button", { name: /E2E Datacenter/ })
-    .first()
-    .click();
-  await expect(page.getByText("E2E Physical Host").first()).toBeVisible();
+  await page.goto("/places");
+  await expect(
+    page.getByRole("link", { name: "Open E2E Datacenter" }),
+  ).toHaveCount(0);
+  await page.getByLabel("Show archived").check();
+  await expect(
+    page.getByRole("link", { name: "Open E2E Datacenter" }),
+  ).toContainText("Archived");
+  await page.getByRole("link", { name: "Open E2E Datacenter" }).click();
+  await expect(
+    page.getByRole("link", { name: /E2E Physical Host/ }),
+  ).toBeVisible();
 
   const hostDetail = await api.get(`/api/v1/computes/${physicalHost.id}`);
   const archivedHost = await api.post(
@@ -306,22 +309,27 @@ test("admin can create inventory and domains that survive a server restart", asy
     )
     .toBe(200);
 
-  await page.reload();
+  await page.goto("/compute");
+  await expect(page.getByRole("navigation", { name: "Main" })).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: "Infrastructure inventory" }),
+    page.getByRole("link", { name: "Open E2E Virtual Machine" }),
   ).toBeVisible();
-  await expect(page.getByText("E2E Hosting Provider").first()).toBeVisible();
-  await page.getByRole("button", { name: "Open E2E Datacenter" }).click();
-  await expect(page.getByText("E2E Datacenter").first()).toBeVisible();
-  await page.getByRole("button", { name: "Open E2E Physical Host" }).click();
-  await expect(page.getByText("E2E Physical Host").first()).toBeVisible();
-  await expect(page.getByText("E2E Virtual Machine").first()).toBeVisible();
-  await expect(page.getByText("bulk-000.example").first()).toBeVisible();
-  await page.getByRole("button", { name: "Load more domains" }).click();
-  await expect(page.getByText("e2e.example").first()).toBeVisible();
-  await expect(page.getByText("unknown.example").first()).toBeVisible();
-  await page.getByRole("button", { name: "Open E2E Physical Host" }).click();
-  await page.getByRole("button", { name: "Open E2E Physical Host" }).dblclick();
-  await page.getByRole("button", { name: "Open E2E Virtual Machine" }).click();
+  await page.getByLabel("Show archived").check();
+  await expect(
+    page.getByRole("link", { name: "Open E2E Physical Host" }),
+  ).toContainText("Archived");
+  await page.goto("/domains");
+  await expect(
+    page.getByRole("link", { name: "Open bulk-000.example" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Open e2e.example" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Open unknown.example" }),
+  ).toBeVisible();
+  await page.goto("/compute");
+  await page.getByRole("link", { name: "Open E2E Virtual Machine" }).click();
+  await page.getByRole("tab", { name: "Network" }).click();
   await expect(page.getByText("192.0.2.44")).toBeVisible();
 });

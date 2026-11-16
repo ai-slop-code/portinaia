@@ -1,16 +1,7 @@
 import { useEffect, useRef, type FormEvent } from "react";
-import {
-  Button,
-  Card,
-  CardContent,
-  Divider,
-  MenuItem,
-  Stack,
-  TextField,
-  Typography,
-  Alert,
-} from "@mui/material";
+import { Button, MenuItem, Stack, TextField, Alert } from "@mui/material";
 import type { components } from "../../api/generated";
+import { FactList } from "../../ui/primitives";
 
 type Location = components["schemas"]["Location"];
 type Provider = components["schemas"]["Provider"];
@@ -47,10 +38,10 @@ export function LocationDetails({
     onUpdate(event);
   };
   return (
-    <Card>
-      <CardContent>
+    <>
+      <div>
         <Stack direction="row" sx={{ justifyContent: "space-between" }}>
-          <Typography variant="h6">{location.name}</Typography>
+          <span />
           <Stack direction="row" spacing={1}>
             {!location.archived_at && (
               <Button onClick={onToggleEdit}>
@@ -143,34 +134,41 @@ export function LocationDetails({
             </Button>
           </Stack>
         ) : (
-          <>
-            <Divider sx={{ my: 2 }} />
-            <Typography color="text.secondary">
-              {location.type === "provider_region" ? "Provider region" : "Site"}
-            </Typography>
-            {location.provider_id && (
-              <Typography sx={{ mt: 1 }}>
-                Provider:{" "}
-                {providers.find((item) => item.id === location.provider_id)
-                  ?.name ?? location.provider_id}
-              </Typography>
-            )}
-            {location.parent_id && (
-              <Typography sx={{ mt: 1 }}>
-                Parent:{" "}
-                {locations.find((item) => item.id === location.parent_id)
-                  ?.name ?? location.parent_id}
-              </Typography>
-            )}
-            {location.description && (
-              <Typography sx={{ mt: 1 }}>{location.description}</Typography>
-            )}
-            {location.notes && (
-              <Typography sx={{ mt: 1 }}>Notes: {location.notes}</Typography>
-            )}
-          </>
+          <FactList
+            rows={[
+              [
+                "Kind",
+                location.type === "provider_region"
+                  ? "Provider region"
+                  : "Own site",
+              ],
+              [
+                "Provider",
+                location.provider_id
+                  ? (providers.find((item) => item.id === location.provider_id)
+                      ?.name ?? "Not loaded")
+                  : "None",
+              ],
+              [
+                "Inside of",
+                location.parent_id
+                  ? (locations.find((item) => item.id === location.parent_id)
+                      ?.name ?? "Not loaded")
+                  : "Top level",
+              ],
+              ...(location.description
+                ? ([["Description", location.description]] as [
+                    string,
+                    string,
+                  ][])
+                : []),
+              ...(location.notes
+                ? ([["Notes", location.notes]] as [string, string][])
+                : []),
+            ]}
+          />
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </>
   );
 }

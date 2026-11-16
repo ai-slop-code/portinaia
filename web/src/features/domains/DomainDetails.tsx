@@ -1,9 +1,10 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Button, MenuItem, Stack, TextField, Typography } from "@mui/material";
 import type { components } from "../../api/generated";
 import { apiClient } from "../../api/client";
 import { domainEditSnapshot, type DomainEditSnapshot } from "./domainAdapter";
 import { RegistrarSelector } from "./RegistrarSelector";
+import { FactList, Mono } from "../../ui/primitives";
 
 type Domain = components["schemas"]["Domain"];
 type Provider = components["schemas"]["Provider"];
@@ -71,14 +72,11 @@ export function DomainDetails({
 
   return (
     <Stack spacing={2} sx={{ width: "100%" }}>
-      <Stack
-        direction="row"
-        sx={{ justifyContent: "space-between", alignItems: "center" }}
-      >
-        <Typography variant="subtitle1">{domain.name}</Typography>
+      <Stack direction="row" sx={{ alignItems: "center" }}>
         <Stack direction="row" spacing={1}>
           {!domain.archived_at && (
             <Button
+              variant="outlined"
               size="small"
               onClick={() => {
                 if (editing) setEditSnapshot(null);
@@ -180,37 +178,57 @@ export function DomainDetails({
           </Button>
         </Stack>
       ) : (
-        <>
-          <Typography color="text.secondary">
-            Expiry: {domain.expiry_state}
-          </Typography>
-          <Typography>
-            Registrar:{" "}
-            {availableRegistrars.find(
-              (item) => item.id === domain.registrar_provider_id,
-            )?.name ??
-              (domain.registrar_provider_id
-                ? `Unloaded registrar (${domain.registrar_provider_id})`
-                : "Not specified")}
-          </Typography>
-          <Typography>
-            Registered: {domain.registered_on ?? "Unknown"} · Expires:{" "}
-            {domain.expires_on ?? "Unknown"}
-          </Typography>
-          <Typography>
-            Auto-renew:{" "}
-            {domain.auto_renew == null
-              ? "Unknown"
-              : domain.auto_renew
-                ? "Yes"
-                : "No"}
-          </Typography>
-          <Typography>
-            Nameservers: {domain.nameservers.join(", ") || "Not specified"}
-          </Typography>
-          {domain.description && <Typography>{domain.description}</Typography>}
-          {domain.notes && <Typography>Notes: {domain.notes}</Typography>}
-        </>
+        <FactList
+          rows={[
+            [
+              "Registrar",
+              availableRegistrars.find(
+                (item) => item.id === domain.registrar_provider_id,
+              )?.name ??
+                (domain.registrar_provider_id
+                  ? "Registrar not loaded"
+                  : "Not tracked"),
+            ],
+            ["Registered", domain.registered_on ?? "Unknown"],
+            ["Expires", domain.expires_on ?? "Unknown"],
+            [
+              "Auto-renew",
+              domain.auto_renew == null
+                ? "Unknown"
+                : domain.auto_renew
+                  ? "Yes"
+                  : "No",
+            ],
+            [
+              "Nameservers",
+              domain.nameservers.length ? (
+                <Stack key="ns" spacing={0.5}>
+                  {domain.nameservers.map((server) => (
+                    <Mono key={server}>{server}</Mono>
+                  ))}
+                </Stack>
+              ) : (
+                "Not tracked"
+              ),
+            ],
+            ...(domain.description
+              ? ([["Description", domain.description]] as [string, string][])
+              : []),
+            ...(domain.notes
+              ? ([
+                  [
+                    "Notes",
+                    <Typography
+                      key="n"
+                      sx={{ whiteSpace: "pre-wrap", fontSize: 14 }}
+                    >
+                      {domain.notes}
+                    </Typography>,
+                  ],
+                ] as [string, ReactNode][])
+              : []),
+          ]}
+        />
       )}
     </Stack>
   );

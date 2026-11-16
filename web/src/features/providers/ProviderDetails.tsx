@@ -1,15 +1,15 @@
-import { useEffect, useRef, type FormEvent } from "react";
+import { useEffect, useRef, type FormEvent, type ReactNode } from "react";
 import {
+  Box,
   Button,
   Checkbox,
-  Divider,
   FormControlLabel,
   Stack,
   TextField,
-  Typography,
   Alert,
 } from "@mui/material";
 import type { components } from "../../api/generated";
+import { FactList } from "../../ui/primitives";
 
 type Provider = components["schemas"]["Provider"];
 
@@ -53,7 +53,7 @@ export function ProviderDetails({
   return (
     <>
       <Stack direction="row" sx={{ justifyContent: "space-between" }}>
-        <Typography variant="h6">{provider.name}</Typography>
+        <span />
         <Stack direction="row" spacing={1}>
           {!provider.archived_at && (
             <Button onClick={onToggleEdit}>
@@ -135,28 +135,51 @@ export function ProviderDetails({
           </Button>
         </Stack>
       ) : (
-        <>
-          <Divider sx={{ my: 2 }} />
-          <Typography color="text.secondary">
-            Roles: {provider.roles.join(", ") || "None"}
-          </Typography>
-          {provider.website && (
-            <Typography sx={{ mt: 1 }}>
-              <a href={provider.website}>{provider.website}</a>
-            </Typography>
-          )}
-          {provider.external_account_reference && (
-            <Typography sx={{ mt: 1 }}>
-              Account reference: {provider.external_account_reference}
-            </Typography>
-          )}
-          {provider.description && (
-            <Typography sx={{ mt: 1 }}>{provider.description}</Typography>
-          )}
-          {provider.notes && (
-            <Typography sx={{ mt: 1 }}>Notes: {provider.notes}</Typography>
-          )}
-        </>
+        <Box sx={{ mt: 2 }}>
+          <FactList
+            rows={[
+              [
+                "Roles",
+                provider.roles
+                  .map(
+                    (role) =>
+                      roles.find(([name]) => name === role)?.[1] ?? role,
+                  )
+                  .join(", ") || "None",
+              ],
+              ...(provider.website
+                ? ([
+                    [
+                      "Website",
+                      <a
+                        key="w"
+                        href={provider.website}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {provider.website}
+                      </a>,
+                    ],
+                  ] as [string, ReactNode][])
+                : []),
+              ...(provider.external_account_reference
+                ? ([["Account", provider.external_account_reference]] as [
+                    string,
+                    string,
+                  ][])
+                : []),
+              ...(provider.description
+                ? ([["Description", provider.description]] as [
+                    string,
+                    string,
+                  ][])
+                : []),
+              ...(provider.notes
+                ? ([["Notes", provider.notes]] as [string, string][])
+                : []),
+            ]}
+          />
+        </Box>
       )}
     </>
   );
