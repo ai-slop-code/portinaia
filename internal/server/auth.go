@@ -20,6 +20,7 @@ import (
 
 	"golang.org/x/crypto/argon2"
 	apigen "portinaia/internal/api/generated"
+	"portinaia/internal/identity"
 )
 
 const sessionCookie = "portinaia_session"
@@ -327,24 +328,7 @@ func randomSecret(n int) (string, error) {
 	}
 	return base64.RawURLEncoding.EncodeToString(b), nil
 }
-func randomID() (string, error) {
-	b := make([]byte, 16)
-	if _, err := rand.Read(b); err != nil {
-		return "", err
-	}
-	// UUIDv7 stores the Unix timestamp in milliseconds in its first 48 bits.
-	ms := uint64(time.Now().UnixMilli())
-	b[0] = byte(ms >> 40)
-	b[1] = byte(ms >> 32)
-	b[2] = byte(ms >> 24)
-	b[3] = byte(ms >> 16)
-	b[4] = byte(ms >> 8)
-	b[5] = byte(ms)
-	b[6] = (b[6] & 15) | 0x70
-	b[8] = (b[8] & 63) | 128
-	x := hex.EncodeToString(b)
-	return x[:8] + "-" + x[8:12] + "-" + x[12:16] + "-" + x[16:20] + "-" + x[20:], nil
-}
+func randomID() (string, error) { return identity.New() }
 func hashSecret(value string) string {
 	sum := sha256.Sum256([]byte(value))
 	return hex.EncodeToString(sum[:])

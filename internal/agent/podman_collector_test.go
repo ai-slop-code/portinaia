@@ -4,11 +4,29 @@ import (
 	"encoding/json"
 	"net"
 	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 )
+
+func TestPodmanResponseLimitDoesNotHideTrailingData(t *testing.T) {
+	const document = `{"ok":true}`
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(document + "x"))
+	}))
+	defer server.Close()
+	response, err := podmanGET(server.Client(), server.URL, int64(len(document)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer response.Body.Close()
+	var decoded map[string]any
+	if err := decodeBoundedJSON(response.Body, &decoded, int64(len(document))); err == nil {
+		t.Fatal("accepted a truncated document with hidden trailing bytes")
+	}
+}
 
 func TestPodmanCollectorUsesReadOnlyUnixAPIAndRedactsLabels(t *testing.T) {
 	methods := []string{}

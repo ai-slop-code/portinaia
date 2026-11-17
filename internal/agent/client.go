@@ -15,6 +15,10 @@ import (
 	"strings"
 	"time"
 
+	"go.opentelemetry.io/otel/propagation"
+
+	"portinaia/internal/identity"
+	"portinaia/internal/logging"
 	"portinaia/internal/version"
 )
 
@@ -30,6 +34,7 @@ type HTTPError struct {
 	StatusCode int
 	Code       string
 	Message    string
+	RequestID  string
 	RetryAfter time.Duration
 	Permanent  bool
 }
@@ -108,12 +113,7 @@ func enrollContext(ctx context.Context, serverURL, tokenFile, stateFile, clientV
 	if token == "" {
 		return errors.New("enrollment token file is empty")
 	}
-	var client *Client
-	if allowInsecureHTTP {
-		client, err = NewClientAllowInsecureHTTP(serverURL)
-	} else {
-		client, err = NewClient(serverURL)
-	}
+	client, err := newClient(serverURL, allowInsecureHTTP)
 	if err != nil {
 		return err
 	}
@@ -163,12 +163,7 @@ func HeartbeatContext(ctx context.Context, stateFile string) error {
 	if err != nil {
 		return err
 	}
-	var client *Client
-	if state.AllowInsecureHTTP {
-		client, err = NewClientAllowInsecureHTTP(state.ServerURL)
-	} else {
-		client, err = NewClient(state.ServerURL)
-	}
+	client, err := newClient(state.ServerURL, state.AllowInsecureHTTP)
 	if err != nil {
 		return err
 	}
@@ -220,12 +215,7 @@ func UploadSnapshotContext(ctx context.Context, stateFile string, snapshot []byt
 	if err := json.Unmarshal(snapshot, &report); err != nil || report.ReportID == "" {
 		return errors.New("snapshot is missing report_id")
 	}
-	var client *Client
-	if state.AllowInsecureHTTP {
-		client, err = NewClientAllowInsecureHTTP(state.ServerURL)
-	} else {
-		client, err = NewClient(state.ServerURL)
-	}
+	client, err := newClient(state.ServerURL, state.AllowInsecureHTTP)
 	if err != nil {
 		return err
 	}
@@ -321,6 +311,10 @@ func (c *Client) request(ctx context.Context, method, path, bearer string, body 
 	req.Header.Set("Authorization", "Bearer "+bearer)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
+	if id := logging.RequestID(ctx); logging.ValidRequestID(id) {
+		req.Header.Set("X-Request-ID", id)
+	}
+	propagation.TraceContext{}.Inject(ctx, propagation.HeaderCarrier(req.Header))
 	return c.http.Do(req)
 }
 
@@ -339,7 +333,11 @@ func responseError(operation string, response *http.Response) error {
 		message = http.StatusText(response.StatusCode)
 	}
 	permanent := response.StatusCode == http.StatusUnauthorized || response.StatusCode == http.StatusForbidden || response.StatusCode == http.StatusConflict || response.StatusCode == http.StatusUnprocessableEntity || response.StatusCode == http.StatusBadRequest
-	return &HTTPError{Operation: operation, StatusCode: response.StatusCode, Code: problem.Code, Message: message, RetryAfter: parseRetryAfter(response.Header.Get("Retry-After"), time.Now()), Permanent: permanent}
+	requestID := response.Header.Get("X-Request-ID")
+	if !logging.ValidRequestID(requestID) {
+		requestID = ""
+	}
+	return &HTTPError{Operation: operation, StatusCode: response.StatusCode, Code: problem.Code, Message: message, RequestID: requestID, RetryAfter: parseRetryAfter(response.Header.Get("Retry-After"), time.Now()), Permanent: permanent}
 }
 
 func parseRetryAfter(value string, now time.Time) time.Duration {
@@ -401,21 +399,7 @@ func validSchedule(heartbeat, snapshot int) bool {
 	return heartbeat >= 15 && heartbeat <= 600 && snapshot >= 60 && snapshot <= 86400
 }
 func validUUID(value string) bool {
-	if len(value) != 36 {
-		return false
-	}
-	for i, r := range value {
-		if i == 8 || i == 13 || i == 18 || i == 23 {
-			if r != '-' {
-				return false
-			}
-			continue
-		}
-		if !((r >= '0' && r <= '9') || (r >= 'a' && r <= 'f')) {
-			return false
-		}
-	}
-	return true
+	return identity.Valid(value)
 }
 
 func readPrivateSecret(path string) ([]byte, error) {

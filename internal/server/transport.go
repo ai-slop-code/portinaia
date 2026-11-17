@@ -98,6 +98,7 @@ func writeProblemForRequest(w http.ResponseWriter, r *http.Request, status int, 
 	}
 	w.Header().Set("Content-Type", "application/problem+json")
 	w.Header().Set("Cache-Control", "no-store")
+	w.Header().Del("Content-Length")
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(problemResponse{Type: "about:blank", Title: http.StatusText(status), Status: status, Detail: fmt.Sprintf("%.*s", 2000, detail), Code: code, RequestID: requestID})
 }

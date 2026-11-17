@@ -16,6 +16,7 @@ import (
 	"time"
 
 	apigen "portinaia/internal/api/generated"
+	"portinaia/internal/identity"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -1050,21 +1051,7 @@ func sortJSONArrays(value any) any {
 }
 
 func validUUIDString(value string) bool {
-	if len(value) != 36 || (value[14] != '4' && value[14] != '7') || (value[19] != '8' && value[19] != '9' && value[19] != 'a' && value[19] != 'b') {
-		return false
-	}
-	for index, character := range value {
-		if index == 8 || index == 13 || index == 18 || index == 23 {
-			if character != '-' {
-				return false
-			}
-			continue
-		}
-		if !((character >= '0' && character <= '9') || (character >= 'a' && character <= 'f')) {
-			return false
-		}
-	}
-	return true
+	return identity.Valid(value)
 }
 
 func validCollectorCode(value string) bool {

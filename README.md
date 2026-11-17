@@ -119,10 +119,69 @@ for the accepted future collection-clock skew. Set
 Only peers in `PORTINAIA_TRUSTED_PROXY_CIDRS` contribute `X-Forwarded-For` client
 addresses; forwarded scheme headers do not control cookie security. Set
 `PORTINAIA_PUBLIC_URL` to the externally visible HTTPS URL behind TLS termination.
-Discovery retention defaults to 90 days, batches of 1000, and an hourly schedule;
-override with `PORTINAIA_DISCOVERY_RETENTION_DAYS`,
-`PORTINAIA_DISCOVERY_RETENTION_BATCH`, and
-`PORTINAIA_DISCOVERY_RETENTION_INTERVAL` or their matching server flags.
+## Observability
+
+Both binaries write structured JSON logs to stderr. Set `PORTINAIA_LOG_LEVEL` to
+`debug`, `info` (default), `warn`, or `error`. Successful health checks log at debug;
+other requests include method, route template, status, duration, and response size.
+Request logs, problem responses, and audit events share `X-Request-ID`. When tracing
+is enabled, logs also include `trace_id` and `span_id`.
+
+The server exports OpenTelemetry traces, logs, and metrics using **OTLP/HTTP
+protobuf**. Configure a collector endpoint to enable all three signals:
+
+```sh
+export OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:4318
+export OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+export OTEL_SERVICE_NAME=portinaia
+export OTEL_RESOURCE_ATTRIBUTES=deployment.environment.name=production
+./bin/portinaia server -listen 127.0.0.1:8080 -db "$PORTINAIA_DB"
+```
+
+With no endpoint or exporter selection, export is disabled and local JSON logging
+remains available. Configuration is read at startup:
+
+- `OTEL_TRACES_EXPORTER`, `OTEL_METRICS_EXPORTER`, `OTEL_LOGS_EXPORTER`: `otlp`
+  enables that signal; `none` disables it even when an endpoint is configured.
+  Explicit `otlp` without an endpoint uses `http://localhost:4318`.
+- `OTEL_SDK_DISABLED=true`: disables all telemetry export while retaining local logs.
+- `OTEL_EXPORTER_OTLP_ENDPOINT`: base URL; the SDK appends `/v1/traces`,
+  `/v1/metrics`, or `/v1/logs`.
+- `OTEL_EXPORTER_OTLP_{TRACES,METRICS,LOGS}_ENDPOINT`: overrides one signal with
+  its full endpoint URL, including the signal path.
+- `OTEL_EXPORTER_OTLP_HEADERS`: collector authentication headers; per-signal
+  overrides are supported by the SDK.
+- `OTEL_EXPORTER_OTLP_CERTIFICATE`: custom collector CA certificate; standard
+  SDK per-signal TLS options also apply.
+- `OTEL_TRACES_SAMPLER`, `OTEL_TRACES_SAMPLER_ARG`: SDK sampling policy, e.g.
+  `parentbased_traceidratio` and `0.1`. Default is parent-based always-on.
+- `OTEL_METRIC_EXPORT_INTERVAL`: metric export interval in milliseconds
+  (SDK default: 60000).
+
+Traces cover HTTP requests and discovery retention runs. W3C `traceparent` and
+`tracestate` propagate into requests; a context-aware agent caller can forward
+them as well. HTTP names and metric labels use route templates, never raw resource
+IDs or query strings. Request bodies, cookies, authorization headers, SQL text,
+and panic values are excluded from instrumentation.
+
+Exported metrics include:
+
+- `http.server.request.duration`, `http.server.active_requests`,
+  `http.server.response.body.size`, and `portinaia.http.server.requests`.
+- `portinaia.discovery.retention.{runs,duration,deleted}` with bounded result/entity labels.
+- `portinaia.db.connections`, `portinaia.db.pool.waits`, and
+  `portinaia.db.pool.wait.duration`.
+- `portinaia.process.goroutines`, `portinaia.process.heap.alloc`, and
+  `portinaia.process.gc.cycles`.
+
+Metrics are pushed to the collector. The
+[diagnostic collector configuration](deploy/otel-collector.yaml) receives all
+three signals and prints them through its debug exporter. Connect the collector
+to your monitoring backend for storage and dashboards. Shutdown drains HTTP work,
+joins background workers, then flushes telemetry within a ten-second budget.
+
+See [runtime architecture](spec/runtime-architecture.md) for extension points and
+instrumentation conventions.
 
 ## Linux Agent Client (M2 In Progress)
 

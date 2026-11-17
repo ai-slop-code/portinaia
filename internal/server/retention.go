@@ -3,8 +3,13 @@ package server
 import (
 	"context"
 	"database/sql"
-	"log"
+	"log/slog"
 	"time"
+
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 
 	"portinaia/internal/database"
 )
@@ -15,7 +20,11 @@ const (
 	discoveryRetentionEvery = time.Hour
 )
 
-func RunDiscoveryRetention(ctx context.Context, db *sql.DB, retention time.Duration, batchSize int, interval time.Duration) {
+func RunDiscoveryRetention(ctx context.Context, db *sql.DB, retention time.Duration, batchSize int, interval time.Duration, instrumentation ...*Observability) {
+	var observability *Observability
+	if len(instrumentation) > 0 {
+		observability = instrumentation[0]
+	}
 	if retention <= 0 {
 		retention = discoveryRetentionAge
 	}
@@ -36,14 +45,39 @@ func RunDiscoveryRetention(ctx context.Context, db *sql.DB, retention time.Durat
 			return
 		case now := <-ticker.C:
 			cutoff := now.UTC().Add(-retention).Format(time.RFC3339)
-			stats, err := database.CleanupExpiredDiscoveryReports(ctx, db, cutoff, batchSize)
-			if err != nil {
-				if ctx.Err() == nil {
-					log.Printf("discovery retention failed: reports_deleted=%d content_deleted=%d batches=%d error_type=%T", stats.ReportsDeleted, stats.ContentsDeleted, stats.Batches, err)
-				}
-				continue
-			}
-			log.Printf("discovery retention complete: reports_deleted=%d content_deleted=%d batches=%d", stats.ReportsDeleted, stats.ContentsDeleted, stats.Batches)
+			runRetention(ctx, db, cutoff, batchSize, observability)
 		}
 	}
+}
+
+func runRetention(ctx context.Context, db *sql.DB, cutoff string, batchSize int, o *Observability) {
+	logger := slog.Default()
+	started := time.Now()
+	if o != nil {
+		spanCtx, span := o.tracer.Start(ctx, "discovery.retention")
+		ctx = spanCtx
+		defer span.End()
+		logger = o.logger
+	}
+	stats, err := database.CleanupExpiredDiscoveryReports(ctx, db, cutoff, batchSize)
+	result := "success"
+	level := slog.LevelInfo
+	if err != nil {
+		result, level = "error", slog.LevelError
+		if ctx.Err() != nil {
+			result, level = "canceled", slog.LevelDebug
+		}
+	}
+	if o != nil {
+		span := trace.SpanFromContext(ctx)
+		span.SetAttributes(attribute.String("result", result), attribute.Int64("reports_deleted", stats.ReportsDeleted), attribute.Int64("contents_deleted", stats.ContentsDeleted))
+		if result == "error" {
+			span.SetStatus(codes.Error, "discovery retention failed")
+		}
+		o.retentionRuns.Add(ctx, 1, metric.WithAttributes(attribute.String("result", result)))
+		o.retentionTime.Record(ctx, time.Since(started).Seconds(), metric.WithAttributes(attribute.String("result", result)))
+		o.retentionDeleted.Add(ctx, stats.ReportsDeleted, metric.WithAttributes(attribute.String("entity", "report")))
+		o.retentionDeleted.Add(ctx, stats.ContentsDeleted, metric.WithAttributes(attribute.String("entity", "content")))
+	}
+	logger.Log(ctx, level, "discovery retention completed", "result", result, "reports_deleted", stats.ReportsDeleted, "contents_deleted", stats.ContentsDeleted, "batches", stats.Batches)
 }

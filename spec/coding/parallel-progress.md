@@ -1,7 +1,7 @@
 # Current implementation and verification ledger
 
-Reviewed 2026-11-16 after the Germany deployment and current-build acceptance
-checkpoint. This is the **sole current status document**. Requirements live in the
+Reviewed 2026-11-17 after runtime/observability work, retaining the Germany
+deployment and current-build acceptance checkpoint. This is the **sole current status document**. Requirements live in the
 [index](README.md); historical dispatch records are in [legacy](legacy/README.md).
 The dirty/untracked implementation was preserved. Nothing was committed or pushed.
 
@@ -19,6 +19,52 @@ The dirty/untracked implementation was preserved. Nothing was committed or pushe
 formal evidence still needs to be recorded from the target hosts. G2 remains
 pending DNS implementation.** A file/helper existing is not integrated behavior.
 No DNS runtime packet has been dispatched.
+
+## Runtime and observability checkpoint (2026-11-17)
+
+Implemented for the codebase-polish and server OpenTelemetry objective:
+
+- Shared UUID generation/validation, structured context-aware logging, and
+  cancel-and-join worker ownership across server and agent. Agent scheduling moved
+  out of the command package into `agent.RunConfig` / `agent.Run`; local failures
+  are terminal for both workers and ticks cannot bypass `Retry-After`.
+- Instance-scoped server tracer/meter/logger providers, OTLP/HTTP protobuf export,
+  standard environment/resource/sampling configuration, opt-in/disabled modes,
+  startup cleanup, and bounded concurrent shutdown flushing.
+- Mounted HTTP spans, request/active/duration/size metrics, request/trace/log
+  correlation, bounded route/method labels, and sanitized panic handling. Database
+  pool, Go runtime, and retention metrics/spans/logs are wired into server startup.
+- Agent W3C/request correlation propagation, shared canonical UUID rules, and a
+  Podman overflow-sentinel fix preventing hidden trailing response bytes.
+- Configuration is documented in the root README, extension conventions in
+  [runtime architecture](../runtime-architecture.md), and a diagnostic collector
+  in `deploy/otel-collector.yaml`.
+
+Verification on macOS with Go 1.27.4:
+
+- `go test -race ./...`: passed across all packages, including the new telemetry,
+  identity, logging, lifecycle, agent, and server regressions.
+- Final logging/telemetry refinements also passed
+  `go test -race -v ./internal/logging ./internal/telemetry ./cmd/portinaia`;
+  concurrent exporter cleanup preserves all failures and is idempotent.
+- A local OTLP/HTTP receiver decoded protobuf traces, metrics, and logs and verified
+  resource overrides, remote-parent propagation, log correlation, and final flush.
+- The subprocess SIGTERM test verified server startup wiring and final export of
+  all three signals, including database/runtime observations and the shutdown log.
+  The existing in-flight SQLite mutation drain test also passed.
+- `go vet ./...`, `go mod verify`, native server build, and `make build-agent`
+  (Linux amd64/arm64) passed. Go formatting and `git diff --check` passed.
+- `GOTOOLCHAIN=go1.26.5 go test ./...` could not start: the toolchain download
+  from `proxy.golang.org` failed with `unexpected EOF`. The passing checks above
+  used Go 1.27.4; execution on the declared minimum toolchain remains unverified.
+- `npm ci` and `make verify` are **blocked by the environment's npm registry HTTP
+  403 policy** (`yocto-queue` tarball and `openapi-typescript`). `make format-check`
+  passes its Go check but cannot run missing Prettier. Frontend tests, frontend
+  build, and complete generated-consistency verification are not claimed for this
+  checkpoint. The attempted Go API regeneration produced no diff.
+
+This checkpoint is runtime/observability work; milestone acceptance above retains
+its own evidence requirements.
 
 ## Current deployment checkpoint (2026-11-16)
 

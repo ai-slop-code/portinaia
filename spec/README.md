@@ -11,6 +11,8 @@ inventory down to containers, owned domains, and split-horizon DNS.
 3. [Legacy coding records](coding/legacy/README.md) (historical only)
    — how to finish the remaining work in parallel.
 4. [Coding index](coding/README.md) — focused technical requirements and conventions.
+5. [Runtime architecture](runtime-architecture.md) — shared agent/server patterns,
+   lifecycle ownership, and OpenTelemetry extension points.
 
 Scope, requirements, status, and scheduling have separate responsibilities. Status
 does not weaken a requirement; a component file is not an integrated workflow; a

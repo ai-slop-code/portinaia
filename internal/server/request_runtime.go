@@ -3,11 +3,10 @@ package server
 import (
 	"context"
 	"net/http"
-	"strings"
 	"time"
-)
 
-type requestIdentityKey struct{}
+	"portinaia/internal/logging"
+)
 
 // requestIdentityMiddleware establishes the single correlation identity used by
 // problems, logs, and downstream audit calls. Mount before handlers/authentication.
@@ -18,7 +17,7 @@ func requestIdentityMiddleware(next http.Handler) http.Handler {
 			id, _ = randomID()
 			id = "req_" + id
 		}
-		ctx := context.WithValue(r.Context(), requestIdentityKey{}, id)
+		ctx := logging.WithRequestID(r.Context(), id)
 		r = r.WithContext(ctx)
 		w.Header().Set("X-Request-ID", id)
 		next.ServeHTTP(w, r)
@@ -26,20 +25,11 @@ func requestIdentityMiddleware(next http.Handler) http.Handler {
 }
 
 func validRequestID(id string) bool {
-	if len(id) == 0 || len(id) > 128 {
-		return false
-	}
-	for _, r := range id {
-		if !(r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9' || strings.ContainsRune("._-", r)) {
-			return false
-		}
-	}
-	return true
+	return logging.ValidRequestID(id)
 }
 
 func requestIdentity(ctx context.Context) string {
-	id, _ := ctx.Value(requestIdentityKey{}).(string)
-	return id
+	return logging.RequestID(ctx)
 }
 
 // boundedExecutionMiddleware provides a per-request deadline. A caller must

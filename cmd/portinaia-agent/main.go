@@ -2,12 +2,9 @@ package main
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/binary"
-	"errors"
 	"flag"
 	"fmt"
-	"net/url"
+	"log/slog"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -16,14 +13,21 @@ import (
 	"time"
 
 	"portinaia/internal/agent"
+	"portinaia/internal/logging"
 	"portinaia/internal/version"
 )
 
 const defaultStatePath = "/var/lib/portinaia-agent/credential.json"
 
 func main() {
+	level, err := logging.LevelFromEnv()
+	slog.SetDefault(logging.New(os.Stderr, level))
+	if err != nil {
+		slog.Error("configuration failed", "error", err)
+		os.Exit(1)
+	}
 	if err := run(os.Args[1:]); err != nil {
-		fmt.Fprintln(os.Stderr, "portinaia-agent:", err)
+		slog.Error("command failed", "error", err)
 		os.Exit(1)
 	}
 }
@@ -103,12 +107,6 @@ func run(args []string) error {
 		if err := flags.Parse(args[1:]); err != nil {
 			return err
 		}
-		if *interval < 15*time.Second || *interval > 10*time.Minute {
-			return fmt.Errorf("heartbeat interval must be between 15s and 10m")
-		}
-		if *snapshotInterval < time.Minute || *snapshotInterval > 24*time.Hour {
-			return fmt.Errorf("snapshot interval must be between 1m and 24h")
-		}
 		endpoints, err := parsePodmanEndpoints(socketFlags)
 		if err != nil {
 			return err
@@ -121,114 +119,9 @@ func run(args []string) error {
 }
 
 func runAgent(statePath string, heartbeatInterval, snapshotInterval time.Duration, endpoints []agent.PodmanEndpoint) error {
-	// These intervals are explicit local operator overrides; server schedules are
-	// validated by the protocol client but do not silently rewrite local policy.
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-	results := make(chan error, 2)
-	go func() { results <- runHeartbeats(ctx, statePath, heartbeatInterval) }()
-	go func() { results <- runSnapshots(ctx, statePath, snapshotInterval, endpoints) }()
-	err := <-results
-	cancel()
-	// Both workers must stop before run returns (and the service considers exit complete).
-	<-results
-	return err
-}
-
-func runHeartbeats(ctx context.Context, statePath string, interval time.Duration) error {
-	if err := heartbeatWithRetry(ctx, statePath); err != nil {
-		return err
-	}
-	ticker := time.NewTicker(interval)
-	defer ticker.Stop()
-	for {
-		select {
-		case <-ctx.Done():
-			return nil
-		case <-ticker.C:
-			if err := heartbeatWithRetry(ctx, statePath); err != nil {
-				return err
-			}
-		}
-	}
-}
-
-func runSnapshots(ctx context.Context, statePath string, interval time.Duration, endpoints []agent.PodmanEndpoint) error {
-	ticker := time.NewTicker(interval)
-	defer ticker.Stop()
-	attempt := 0
-	for {
-		if err := agent.SnapshotContext(ctx, statePath, endpoints...); err != nil {
-			var responseError *agent.HTTPError
-			if errors.As(err, &responseError) && responseError.Permanent {
-				return err
-			}
-			var networkError *url.Error
-			if !errors.As(err, &responseError) && !errors.As(err, &networkError) {
-				return fmt.Errorf("snapshot local/configuration failure: %w", err)
-			}
-			fmt.Fprintln(os.Stderr, "snapshot failed; recollection or upload will be retried:", err)
-			delay := retryDelay(attempt)
-			if errors.As(err, &responseError) && responseError.RetryAfter > delay {
-				delay = responseError.RetryAfter
-			}
-			timer := time.NewTimer(delay)
-			attempt++
-			select {
-			case <-ctx.Done():
-				timer.Stop()
-				return nil
-			case <-timer.C:
-			case <-ticker.C:
-			}
-			continue
-		}
-		attempt = 0
-		select {
-		case <-ctx.Done():
-			return nil
-		case <-ticker.C:
-		}
-	}
-}
-
-func heartbeatWithRetry(ctx context.Context, statePath string) error {
-	for attempt := 0; ; attempt++ {
-		err := agent.HeartbeatContext(ctx, statePath)
-		if err == nil {
-			return nil
-		}
-		var responseError *agent.HTTPError
-		if errors.As(err, &responseError) && responseError.Permanent {
-			return err
-		}
-		fmt.Fprintln(os.Stderr, "heartbeat failed; retrying:", err)
-		delay := retryDelay(attempt)
-		if errors.As(err, &responseError) && responseError.RetryAfter > delay {
-			delay = responseError.RetryAfter
-		}
-		timer := time.NewTimer(delay)
-		select {
-		case <-ctx.Done():
-			timer.Stop()
-			return nil
-		case <-timer.C:
-		}
-	}
-}
-
-func retryDelay(attempt int) time.Duration {
-	if attempt > 8 {
-		attempt = 8
-	}
-	ceiling := time.Second * time.Duration(1<<attempt)
-	var random [8]byte
-	if _, err := rand.Read(random[:]); err != nil {
-		return ceiling / 2
-	}
-	return time.Duration(binary.LittleEndian.Uint64(random[:]) % uint64(ceiling+1))
+	return agent.Run(ctx, agent.RunConfig{StatePath: statePath, HeartbeatInterval: heartbeatInterval, SnapshotInterval: snapshotInterval, PodmanEndpoints: endpoints, Logger: slog.Default()})
 }
 
 type repeatedStrings []string

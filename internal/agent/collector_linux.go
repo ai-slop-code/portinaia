@@ -4,7 +4,6 @@ package agent
 
 import (
 	"context"
-	"crypto/rand"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -14,13 +13,15 @@ import (
 	"net/netip"
 	"os"
 	"path/filepath"
-	"portinaia/internal/version"
 	"runtime"
 	"sort"
 	"strconv"
 	"strings"
 	"syscall"
 	"time"
+
+	"portinaia/internal/identity"
+	"portinaia/internal/version"
 )
 
 type collectorError struct {
@@ -92,8 +93,12 @@ func CollectSnapshotContext(ctx context.Context, podmanEndpoints ...PodmanEndpoi
 			podmanCollections = append(podmanCollections, collection)
 		}
 	}
+	reportID, err := identity.New()
+	if err != nil {
+		return nil, fmt.Errorf("create report identity: %w", err)
+	}
 	payload := map[string]any{
-		"report_id": newReportID(), "protocol_version": protocolVersion, "client_version": version.String(),
+		"report_id": reportID, "protocol_version": protocolVersion, "client_version": version.String(),
 		"collection_started_at": started.Format(time.RFC3339), "collection_finished_at": time.Now().UTC().Truncate(time.Second).Format(time.RFC3339),
 		"host":        hostResult,
 		"disks":       writeCollector(diskCollection("success", disks), diskErr),
@@ -398,21 +403,6 @@ func unescapeMount(value string) string {
 	return strings.NewReplacer("\\040", " ", "\\011", "\t", "\\012", "\n", "\\134", "\\").Replace(value)
 }
 
-func newReportID() string {
-	var bytes [16]byte
-	_, _ = rand.Read(bytes[:])
-	milliseconds := uint64(time.Now().UTC().UnixMilli())
-	bytes[0] = byte(milliseconds >> 40)
-	bytes[1] = byte(milliseconds >> 32)
-	bytes[2] = byte(milliseconds >> 24)
-	bytes[3] = byte(milliseconds >> 16)
-	bytes[4] = byte(milliseconds >> 8)
-	bytes[5] = byte(milliseconds)
-	bytes[6] = (bytes[6] & 0x0f) | 0x70
-	bytes[8] = (bytes[8] & 0x3f) | 0x80
-	hexValue := fmt.Sprintf("%x", bytes)
-	return hexValue[:8] + "-" + hexValue[8:12] + "-" + hexValue[12:16] + "-" + hexValue[16:20] + "-" + hexValue[20:]
-}
 func sanitizeError(value string) string {
 	value = strings.Map(func(r rune) rune {
 		if r == '\n' || r == '\r' || r == '\t' {

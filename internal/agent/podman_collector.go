@@ -169,7 +169,9 @@ func podmanGETContext(ctx context.Context, client *http.Client, endpoint string,
 		response.Body.Close()
 		return nil, fmt.Errorf("Podman API returned HTTP status %d", response.StatusCode)
 	}
-	response.Body = &boundedReadCloser{ReadCloser: response.Body, reader: io.LimitReader(response.Body, limit)}
+	// Keep the overflow sentinel visible to decodeBoundedJSON. Truncating at
+	// exactly limit could otherwise hide trailing bytes after a valid document.
+	response.Body = &boundedReadCloser{ReadCloser: response.Body, reader: io.LimitReader(response.Body, limit+1)}
 	return response, nil
 }
 

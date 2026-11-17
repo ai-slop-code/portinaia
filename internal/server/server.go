@@ -38,6 +38,7 @@ type readinessResponse struct {
 type HandlerConfig struct {
 	PublicURL         string
 	TrustedProxyCIDRs []string
+	Observability     *Observability
 }
 
 func ValidateHandlerConfig(config HandlerConfig) error {
@@ -71,8 +72,11 @@ func NewConfiguredHandler(config HandlerConfig, databases ...*sql.DB) http.Handl
 	publicURL, err := url.Parse(config.PublicURL)
 	secureCookie := err == nil && strings.EqualFold(publicURL.Scheme, "https")
 	router := chi.NewRouter()
+	router.Use(requestIdentityMiddleware)
+	if config.Observability != nil {
+		router.Use(config.Observability.middleware)
+	}
 	router.Route("/api/v1", func(api chi.Router) {
-		api.Use(requestIdentityMiddleware)
 		api.Use(problemMiddleware)
 		api.Use(uuidPathMiddleware)
 		api.Use(trustedProxyMiddleware(config.TrustedProxyCIDRs))

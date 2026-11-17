@@ -6,7 +6,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -15,8 +15,13 @@ import (
 	"syscall"
 	"time"
 
+	"go.opentelemetry.io/otel/metric"
+
 	"portinaia/internal/database"
+	"portinaia/internal/lifecycle"
+	"portinaia/internal/logging"
 	"portinaia/internal/server"
+	"portinaia/internal/telemetry"
 	"portinaia/internal/version"
 )
 
@@ -72,8 +77,14 @@ func loadConfig() config {
 }
 
 func main() {
+	level, err := logging.LevelFromEnv()
+	slog.SetDefault(logging.New(os.Stderr, level))
+	if err != nil {
+		slog.Error("configuration failed", "error", err)
+		os.Exit(1)
+	}
 	if err := run(os.Args[1:]); err != nil {
-		log.Print(err)
+		slog.Error("command failed", "error", err)
 		os.Exit(1)
 	}
 }
@@ -199,7 +210,7 @@ func run(args []string) error {
 	}
 }
 
-func serve(cfg config) error {
+func serve(cfg config) (result error) {
 	if cfg.discoveryRetentionDays < 90 || cfg.discoveryRetentionDays > 3650 {
 		return fmt.Errorf("discovery retention days must be between 90 and 3650 to preserve the retry window")
 	}
@@ -230,34 +241,61 @@ func serve(cfg config) error {
 		return err
 	}
 	cancel()
-	handler := server.NewConfiguredHandler(handlerConfig, db)
-	srv := &http.Server{Addr: cfg.listenAddress, Handler: handler, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 30 * time.Second, WriteTimeout: 30 * time.Second, IdleTimeout: 60 * time.Second}
-	stop, stopCancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	retentionDone := make(chan struct{})
-	shutdownDone := make(chan struct{})
-	go func() {
-		defer close(retentionDone)
-		server.RunDiscoveryRetention(stop, db, time.Duration(cfg.discoveryRetentionDays)*24*time.Hour, cfg.discoveryRetentionBatch, cfg.discoveryRetentionInterval)
-	}()
-	go func() {
-		defer close(shutdownDone)
-		<-stop.Done()
-		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
-		defer shutdownCancel()
-		if err := srv.Shutdown(shutdownCtx); err != nil {
-			log.Printf("http graceful shutdown failed: %v", err)
-			_ = srv.Close()
+	rt, err := telemetry.New(context.Background(), "portinaia", version.Version, os.Stderr)
+	if err != nil {
+		return err
+	}
+	var registration metric.Registration
+	defer func() {
+		if result != nil {
+			rt.Logger.Error("server stopped", "error", result)
+		} else {
+			rt.Logger.Info("server stopped")
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), telemetry.ShutdownTimeout)
+		defer cancel()
+		result = errors.Join(result, rt.Shutdown(ctx))
+		if registration != nil {
+			result = errors.Join(result, registration.Unregister())
 		}
 	}()
-	log.Printf("portinaia listening on %s", cfg.listenAddress)
-	serveErr := srv.ListenAndServe()
-	stopCancel()
-	<-shutdownDone
-	<-retentionDone
-	if serveErr != nil && !errors.Is(serveErr, http.ErrServerClosed) {
-		return serveErr
+	observability, err := server.NewObservability(rt.Logger, rt.TracerProvider, rt.MeterProvider)
+	if err != nil {
+		return fmt.Errorf("initialize server instrumentation: %w", err)
 	}
-	return nil
+	registration, err = observability.ObserveRuntime(db)
+	if err != nil {
+		return fmt.Errorf("initialize database instrumentation: %w", err)
+	}
+	handlerConfig.Observability = observability
+	handler := server.NewConfiguredHandler(handlerConfig, db)
+	srv := &http.Server{Addr: cfg.listenAddress, Handler: handler, ErrorLog: slog.NewLogLogger(rt.Logger.Handler(), slog.LevelError), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 30 * time.Second, WriteTimeout: 30 * time.Second, IdleTimeout: 60 * time.Second}
+	stop, stopCancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stopCancel()
+	rt.Logger.Info("server listening", "address", cfg.listenAddress, "version", version.Version)
+	return lifecycle.Run(stop,
+		func(ctx context.Context) error {
+			server.RunDiscoveryRetention(ctx, db, time.Duration(cfg.discoveryRetentionDays)*24*time.Hour, cfg.discoveryRetentionBatch, cfg.discoveryRetentionInterval, observability)
+			return nil
+		},
+		func(ctx context.Context) error {
+			<-ctx.Done()
+			shutdownCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+			if err := srv.Shutdown(shutdownCtx); err != nil {
+				rt.Logger.Error("http graceful shutdown failed", "error", err)
+				return errors.Join(err, srv.Close())
+			}
+			return nil
+		},
+		func(context.Context) error {
+			err := srv.ListenAndServe()
+			if errors.Is(err, http.ErrServerClosed) {
+				return nil
+			}
+			return err
+		},
+	)
 }
 
 func usage() {
